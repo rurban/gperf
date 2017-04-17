@@ -69,23 +69,25 @@ static const char *const_for_struct;
    up to N.  */
 
 static const char *
-smallest_integral_type (int n)
+smallest_integral_type (long n)
 {
   if (n <= UCHAR_MAX) return "unsigned char";
   if (n <= USHRT_MAX) return "unsigned short";
-  return "unsigned int";
+  if (n <= UINT_MAX) return "unsigned int";
+  return "unsigned long";
 }
 
 /* Returns the smallest signed C type capable of holding integers
    from MIN to MAX.  */
 
 static const char *
-smallest_integral_type (int min, int max)
+smallest_integral_type (long min, long max)
 {
   if (option[ANSIC] | option[CPLUSPLUS])
     if (min >= SCHAR_MIN && max <= SCHAR_MAX) return "signed char";
   if (min >= SHRT_MIN && max <= SHRT_MAX) return "short";
-  return "int";
+  if (min>= INT_MIN && max <= INT_MAX) return "int";
+  return "long";
 }
 
 /* ------------------------------------------------------------------------- */
@@ -108,7 +110,7 @@ Output::Output (KeywordExt_List *head, const char *struct_decl,
                 unsigned int verbatim_declarations_lineno,
                 const char *verbatim_code, const char *verbatim_code_end,
                 unsigned int verbatim_code_lineno, bool charset_dependent,
-                int total_keys, int max_key_len, int min_key_len,
+                long total_keys, int max_key_len, int min_key_len,
                 bool hash_includes_len, const Positions& positions,
                 const unsigned int *alpha_inc, int total_duplicates,
                 unsigned int alpha_size, const int *asso_values)
