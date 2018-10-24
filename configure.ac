@@ -1,6 +1,6 @@
 dnl autoconf configuration for gperf
 
-dnl Copyright (C) 1998, 2002, 2003, 2005-2007, 2009-2010, 2012 Free Software Foundation, Inc.
+dnl Copyright (C) 1998, 2002, 2003, 2005-2007, 2009-2010, 2012, 2018 Free Software Foundation, Inc.
 dnl Written by Douglas C. Schmidt <schmidt@ics.uci.edu>
 dnl and Bruno Haible <bruno@clisp.org>.
 dnl
@@ -19,7 +19,7 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-AC_PREREQ([2.60])
+AC_PREREQ([2.63])
 AC_INIT([doc/gperf.texi])
 AC_CONFIG_AUX_DIR([build-aux])
 

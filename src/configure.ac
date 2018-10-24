@@ -19,7 +19,7 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-AC_PREREQ([2.60])
+AC_PREREQ([2.63])
 AC_INIT([main.cc])
 AC_CONFIG_HEADERS([config.h])
 AC_PROG_MAKE_SET

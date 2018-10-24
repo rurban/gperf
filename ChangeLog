@@ -1,3 +1,13 @@
+2018-10-24  Bruno Haible  <bruno@clisp.org>
+
+	Update after gnulib changed.
+	* configure.ac (AC_PREREQ): Require Autoconf >= 2.63.
+	* doc/configure.ac (AC_PREREQ): Likewise.
+	* lib/configure.ac (AC_PREREQ): Likewise.
+	* src/configure.ac (AC_PREREQ): Likewise.
+	* tests/configure.ac (AC_PREREQ): Likewise.
+	* autogen.sh: Update comment.
+
 2018-09-16  Bruno Haible  <bruno@clisp.org>
 
 	Fix "Unescaped left brace in regex" warnings from Perl 5.26.
