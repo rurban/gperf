@@ -1,3 +1,13 @@
+2020-02-10  Bruno Haible  <bruno@clisp.org>
+
+	Rely entirely on the GNU Build System.
+	* Makefile.vms: Remove file.
+	* INSTALL.vms: Remove file.
+	* Makefile.in (SOURCE_FILES): Remove them.
+	* Makefile.devel (src/config.h_vms): Remove target.
+	(totally-clean): Update.
+	* src/Makefile.in (GENERATED_FILES): Remove config.h_vms.
+
 2018-10-24  Bruno Haible  <bruno@clisp.org>
 
 	Update after gnulib changed.
