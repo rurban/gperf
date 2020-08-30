@@ -16,7 +16,11 @@
 #endif
 #if O_BINARY
 # include <io.h>
-# define SET_BINARY(f) setmode (f, O_BINARY)
+# if defined __EMX__ || defined __DJGPP__ || defined __CYGWIN__
+#  define SET_BINARY(f) setmode (f, O_BINARY)
+# else
+#  define SET_BINARY(f) _setmode (f, O_BINARY)
+# endif
 #else
 # define SET_BINARY(f) (void)0
 #endif
