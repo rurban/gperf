@@ -1,6 +1,6 @@
 /* getline.c -- Replacement for GNU C library function getline
 
-   Copyright (C) 1993, 1996, 2001-2003 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1996, 2001-2003, 2020 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@ getstr (char **lineptr, size_t *n, FILE *stream, char terminator, size_t offset)
 
   for (;;)
     {
-      register int c = getc (stream);
+      int c = getc (stream);
 
       /* We always want at least one char left in the buffer, since we
          always (unless we get an error while reading the first char)

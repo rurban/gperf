@@ -1,3 +1,8 @@
+2020-08-30  Bruno Haible  <bruno@clisp.org>
+
+	Make the code C++17 compliant.
+	* lib/getline.cc (getstr): Don't use the 'register' keyword.
+
 2020-08-29  Bruno Haible  <bruno@clisp.org>
 
 	Fix link error on native Windows with MSVC/clang.
