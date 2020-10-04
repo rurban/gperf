@@ -20,7 +20,8 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 AC_PREREQ([2.64])
-AC_INIT([main.cc])
+AC_INIT
+AC_CONFIG_SRCDIR([main.cc])
 AC_CONFIG_HEADERS([config.h])
 AC_PROG_MAKE_SET
 dnl
@@ -39,15 +40,14 @@ CL_PROG_INSTALL
 dnl
 dnl           checks for compiler characteristics
 dnl
-AC_MSG_CHECKING([for stack-allocated variable-size arrays])
-AC_CACHE_VAL([gp_cv_cxx_dynamic_array], [
-AC_LANG_SAVE()
-AC_LANG_CPLUSPLUS()
-AC_TRY_COMPILE([int func (int n) { int dynamic_array[n]; }], [],
-  [gp_cv_cxx_dynamic_array=yes], [gp_cv_cxx_dynamic_array=no])
-AC_LANG_RESTORE()
-])
-AC_MSG_RESULT([$gp_cv_cxx_dynamic_array])
+AC_CACHE_CHECK([for stack-allocated variable-size arrays],
+  [gp_cv_cxx_dynamic_array],
+  [AC_LANG_PUSH([C++])
+   AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM([[int func (int n) { int dynamic_array[n]; }]], [[]])],
+     [gp_cv_cxx_dynamic_array=yes], [gp_cv_cxx_dynamic_array=no])
+   AC_LANG_POP([C++])
+  ])
 if test $gp_cv_cxx_dynamic_array = yes; then
   AC_DEFINE([HAVE_DYNAMIC_ARRAY], [1],
     [Define if the C++ compiler supports stack-allocated variable-size arrays.])
@@ -63,4 +63,5 @@ AC_SUBST([GPERF_LIBM])
 dnl
 dnl           That's it.
 dnl
-AC_OUTPUT([Makefile])
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT

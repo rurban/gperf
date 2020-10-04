@@ -1,3 +1,16 @@
+2020-10-04  Bruno Haible  <bruno@clisp.org>
+
+	Fix warnings from Autoconf 2.69c.
+	* configure.ac: Invoke AC_INIT, AC_OUTPUT without arguments.
+	* doc/configure.ac: Likewise.
+	* lib/configure.ac: Likewise.
+	* src/configure.ac: Invoke AC_INIT, AC_OUTPUT without arguments. Use
+	AC_CACHE_CHECK, AC_LANG_PUSH/AC_LANG_POP, AC_COMPILE_IFELSE
+	* tests/configure.ac: Invoke AC_INIT, AC_OUTPUT without arguments. Use
+	ac_cv_c_compiler_gnu instead of ac_cv_prog_gcc, and
+	ac_cv_cxx_compiler_gnu instead of ac_cv_prog_gxx. Don't use 'test' with
+	option '-a'.
+
 2020-08-30  Bruno Haible  <bruno@clisp.org>
 
 	Make the code C++17 compliant.

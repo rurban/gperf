@@ -20,7 +20,8 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 AC_PREREQ([2.64])
-AC_INIT([hash.cc])
+AC_INIT
+AC_CONFIG_SRCDIR([hash.cc])
 AC_PROG_MAKE_SET
 dnl
 dnl           checks for programs
@@ -42,4 +43,5 @@ CL_PROG_INSTALL
 dnl
 dnl           That's it.
 dnl
-AC_OUTPUT([Makefile])
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT

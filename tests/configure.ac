@@ -20,7 +20,8 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 AC_PREREQ([2.64])
-AC_INIT([c-parse.gperf])
+AC_INIT
+AC_CONFIG_SRCDIR([c-parse.gperf])
 AC_PROG_MAKE_SET
 dnl
 dnl           checks for programs
@@ -33,7 +34,7 @@ AC_PROG_CXX
                       dnl sets variable CXX
 AC_PROG_CXXCPP
                       dnl sets variable CXXCPP
-if test $ac_cv_prog_gcc = yes -a $ac_cv_prog_gxx = yes; then
+if test $ac_cv_c_compiler_gnu = yes && test $ac_cv_cxx_compiler_gnu = yes; then
   CHECK_LANG_SYNTAX='check-lang-syntax'
 else
   CHECK_LANG_SYNTAX=''
@@ -42,4 +43,5 @@ AC_SUBST([CHECK_LANG_SYNTAX])
 dnl
 dnl           That's it.
 dnl
-AC_OUTPUT([Makefile])
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT

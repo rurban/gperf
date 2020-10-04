@@ -20,12 +20,15 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 AC_PREREQ([2.64])
-AC_INIT([doc/gperf.texi])
+AC_INIT
+AC_CONFIG_SRCDIR([doc/gperf.texi])
 AC_CONFIG_AUX_DIR([build-aux])
 
 AC_PROG_MAKE_SET
 AC_OBJEXT
 AC_EXEEXT
+
+AC_CONFIG_FILES([Makefile])
 
 AC_CONFIG_SUBDIRS([lib src tests doc])
 
@@ -49,4 +52,5 @@ p
 d
 }
 '
-AC_OUTPUT([Makefile])
+
+AC_OUTPUT
