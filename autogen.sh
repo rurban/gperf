@@ -4,7 +4,7 @@
 # also regenerates all config.h.in, configure files with new versions of
 # autoconf.
 #
-# This script requires autoconf-2.64..2.69 in the PATH.
+# This script requires autoconf-2.64..2.70 in the PATH.
 # It also requires either
 #   - the GNULIB_TOOL environment variable pointing to the gnulib-tool script
 #     in a gnulib checkout, or

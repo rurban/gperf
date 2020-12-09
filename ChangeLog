@@ -1,3 +1,8 @@
+2020-12-08  Bruno Haible  <bruno@clisp.org>
+
+	Mark Autoconf 2.70 as supported.
+	* autogen.sh: Update comment.
+
 2020-10-04  Bruno Haible  <bruno@clisp.org>
 
 	Fix warnings from Autoconf 2.69c.
