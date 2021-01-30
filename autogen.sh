@@ -4,13 +4,13 @@
 # also regenerates all config.h.in, configure files with new versions of
 # autoconf.
 #
-# This script requires autoconf-2.64..2.70 in the PATH.
+# This script requires autoconf-2.64..2.71 in the PATH.
 # It also requires either
 #   - the GNULIB_TOOL environment variable pointing to the gnulib-tool script
 #     in a gnulib checkout, or
 #   - an internet connection.
 
-# Copyright (C) 2003-2020 Free Software Foundation, Inc.
+# Copyright (C) 2003-2021 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
