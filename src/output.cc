@@ -1,5 +1,5 @@
 /* Output routines.
-   Copyright (C) 1989-1998, 2000, 2002-2004, 2006-2007, 2009, 2011-2012, 2016, 2018 Free Software Foundation, Inc.
+   Copyright (C) 1989-1998, 2000, 2002-2004, 2006-2007, 2009, 2011-2012, 2016, 2018, 2021 Free Software Foundation, Inc.
    Written by Douglas C. Schmidt <schmidt@ics.uci.edu>
    and Bruno Haible <bruno@clisp.org>.
 
@@ -288,8 +288,9 @@ output_upperlower_table ()
 
   printf ("#ifndef GPERF_DOWNCASE\n"
           "#define GPERF_DOWNCASE 1\n"
-          "static unsigned char gperf_downcase[256] =\n"
-          "  {");
+          "static %sunsigned char gperf_downcase[256] =\n"
+          "  {",
+          const_readonly_array);
   for (c = 0; c < 256; c++)
     {
       if ((c % 15) == 0)
