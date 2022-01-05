@@ -1,5 +1,5 @@
 /* Handles parsing the Options provided to the user.
-   Copyright (C) 1989-1998, 2000, 2002-2004, 2006-2009, 2011, 2016-2018 Free Software Foundation, Inc.
+   Copyright (C) 1989-1998, 2000, 2002-2004, 2006-2009, 2011, 2016-2018, 2022 Free Software Foundation, Inc.
    Written by Douglas C. Schmidt <schmidt@ics.uci.edu>
    and Bruno Haible <bruno@clisp.org>.
 
@@ -1021,7 +1021,7 @@ License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>\n
 This is free software: you are free to change and redistribute it.\n\
 There is NO WARRANTY, to the extent permitted by law.\n\
 ",
-                   "1989-2018");
+                   "2022");
           fprintf (stdout, "Written by %s and %s.\n",
                    "Douglas C. Schmidt", "Bruno Haible");
           exit (0);

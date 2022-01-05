@@ -1,4 +1,4 @@
-/* ANSI-C code produced by gperf version 3.1 */
+/* ANSI-C code produced by gperf version 3.2 */
 /* Command-line: ../src/gperf -D -t -k'1,$'  */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
