@@ -1,3 +1,8 @@
+2022-02-07  Bruno Haible  <bruno@clisp.org>
+
+	tests: Fix undefined behaviour.
+	* tests/test2.c (main): Cast bytes to unsigned before shifting left.
+
 2022-01-05  Bruno Haible  <bruno@clisp.org>
 
 	Release gperf-3.2.

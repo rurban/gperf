@@ -45,7 +45,7 @@ main (int argc, char *argv[])
       char *p = buf;
       while (fread (p, 2, 1, stdin) == 1)
         {
-          if ((p[0] << 8) + p[1] == '\n')
+          if (((unsigned char) p[0] << 8) + (unsigned char) p[1] == '\n')
             break;
           p += 2;
         }
