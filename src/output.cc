@@ -29,6 +29,8 @@
 #include "options.h"
 #include "version.h"
 #include "config.h"
+#include "nbperf.h"
+#include "output.icc"
 
 /* ============================== Portability ============================== */
 
@@ -793,6 +795,15 @@ Output::output_asso_values_ref (int pos) const
       output_asso_values_index (pos);
     }
   printf ("]");
+}
+
+/* Emits the NetBSD mi_vector_hash.c code into the output asis.
+ */
+void Output::output_mph_hash () const
+{
+  for (unsigned int i=0; i < src_mi_vector_hash_c_len; i++) {
+    printf ("%c", src_mi_vector_hash_c[i]);
+  }
 }
 
 /* Generates C code for the hash function that returns the
