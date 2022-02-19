@@ -1,4 +1,4 @@
-/* Search algorithm.
+/* Search algorithm for the default gperf algo.
    Copyright (C) 1989-1998, 2000, 2002-2003, 2009, 2016 Free Software Foundation, Inc.
    Written by Douglas C. Schmidt <schmidt@ics.uci.edu>
    and Bruno Haible <bruno@clisp.org>.
@@ -30,6 +30,7 @@
 #include "options.h"
 #include "hash-table.h"
 #include "config.h"
+#include "nbperf.h"
 
 /* ============================== Portability ============================== */
 
@@ -257,7 +258,7 @@ Search::count_duplicates_tuple (const Positions& positions, const unsigned int *
   return count;
 }
 
-/* Find good key positions.  */
+/* Find good key positions for the default gperf algo.  */
 
 void
 Search::find_positions ()
