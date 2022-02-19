@@ -85,14 +85,14 @@ enum Option_Type
   /* Optimize for position-independent code.  */
   SHAREDLIB    = 1 << 14,
 
-  /* Generate switch output to save space.  */
-  SWITCH       = 1 << 15,
-
   /* Don't include user-defined type definition in output -- it's already
      defined elsewhere.  */
   NOTYPE       = 1 << 16,
 
   /* --- Algorithm employed by gperf --- */
+
+  /* Generate switch output to save space.  */
+  SWITCH       = 1 << 15,
 
   /* Use the given key positions.  */
   POSITIONS    = 1 << 17,
@@ -106,10 +106,19 @@ enum Option_Type
   /* Randomly initialize the associated values table.  */
   RANDOM       = 1 << 20,
 
+  /* Use CHM.  */
+  CHM_ALGO     = 1 << 21,
+
+  /* Use CHM3.  */
+  CHM3_ALGO    = 1 << 22,
+
+  /* Use BPZ.  */
+  BPZ_ALGO     = 1 << 23,
+
   /* --- Informative output --- */
 
   /* Enable debugging (prints diagnostics to stderr).  */
-  DEBUG        = 1 << 21
+  DEBUG        = 1 << 24
 };
 
 /* Class manager for gperf program Options.  */
@@ -254,6 +263,9 @@ private:
 
   /* Factor by which to multiply the generated table's size.  */
   float                 _size_multiple;
+
+  /* Size utilisation factor for CHM, CHM3 and BPZ.  */
+  float                 _utilisation;
 
   /* Names used for generated lookup function.  */
   const char *          _function_name;
