@@ -68,6 +68,9 @@ private:
   /* Returns the number of different hash values.  */
   int                   num_hash_values () const;
 
+  /* Outputs C code of the mi_vector_hash() function for MPH.  */
+  void                  output_mph_hash () const;
+
   /* Outputs the maximum and minimum hash values etc.  */
   void                  output_constants (struct Output_Constants&) const;
 

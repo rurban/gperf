@@ -48,6 +48,7 @@ MV = mv
 LN = ln
 RM = rm -f
 @SET_MAKE@
+XXD = xxd
 
 # Programs used by "make install":
 INSTALL = @INSTALL@
@@ -62,9 +63,10 @@ SHELL = /bin/sh
 VPATH = $(srcdir)
 
 OBJECTS  = version.$(OBJEXT) positions.$(OBJEXT) options.$(OBJEXT) keyword.$(OBJEXT) keyword-list.$(OBJEXT) \
-           input.$(OBJEXT) bool-array.$(OBJEXT) hash-table.$(OBJEXT) search.$(OBJEXT) output.$(OBJEXT) main.$(OBJEXT)
+           input.$(OBJEXT) bool-array.$(OBJEXT) hash-table.$(OBJEXT) search.$(OBJEXT) output.$(OBJEXT) main.$(OBJEXT) \
+	   nbperf-chm.$(OBJEXT) nbperf-chm3.$(OBJEXT) nbperf-bdz.$(OBJEXT) graph2.$(OBJEXT) graph3.$(OBJEXT)
 LIBS     = ../lib/libgp.a @GPERF_LIBM@
-CPPFLAGS = @CPPFLAGS@ -I. -I$(srcdir)/../lib
+CPPFLAGS = @CPPFLAGS@ -I. -I$(srcdir)/../lib -I$(srcdir)
 
 TARGETPROG = gperf$(EXEEXT)
 
@@ -92,8 +94,8 @@ KEYWORD_LIST_H = keyword-list.h keyword-list.icc $(KEYWORD_H)
 INPUT_H = input.h $(KEYWORD_LIST_H)
 BOOL_ARRAY_H = bool-array.h bool-array.icc $(OPTIONS_H)
 HASH_TABLE_H = hash-table.h $(KEYWORD_H)
-SEARCH_H = search.h $(KEYWORD_LIST_H) $(POSITIONS_H) $(BOOL_ARRAY_H)
-OUTPUT_H = output.h $(KEYWORD_LIST_H) $(POSITIONS_H)
+SEARCH_H = search.h $(KEYWORD_LIST_H) $(POSITIONS_H) $(BOOL_ARRAY_H) nbperf.h
+OUTPUT_H = output.h $(KEYWORD_LIST_H) $(POSITIONS_H) nbperf.h
 
 version.$(OBJEXT): version.cc $(VERSION_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/version.cc
@@ -111,12 +113,24 @@ bool-array.$(OBJEXT): bool-array.cc $(BOOL_ARRAY_H) $(OPTIONS_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/bool-array.cc
 hash-table.$(OBJEXT): hash-table.cc $(HASH_TABLE_H) $(OPTIONS_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/hash-table.cc
-search.$(OBJEXT): search.cc $(SEARCH_H) $(OPTIONS_H) $(HASH_TABLE_H) $(CONFIG_H)
+search.$(OBJEXT): search.cc $(SEARCH_H) $(OPTIONS_H) $(HASH_TABLE_H) $(CONFIG_H) nbperf.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/search.cc
-output.$(OBJEXT): output.cc $(OUTPUT_H) $(OPTIONS_H) $(VERSION_H)
+output.$(OBJEXT): output.cc $(OUTPUT_H) $(OPTIONS_H) $(VERSION_H) nbperf.h output.icc
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/output.cc
+graph2.$(OBJEXT): graph2.c graph2.h nbperf.h
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $(srcdir)/graph2.c
+graph3.$(OBJEXT): graph3.c graph2.c nbperf.h
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $(srcdir)/graph3.c
+nbperf-chm.$(OBJEXT): nbperf-chm.c nbperf.h
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $(srcdir)/nbperf-chm.c
+nbperf-chm3.$(OBJEXT): nbperf-chm3.c nbperf-chm.c nbperf.h
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $(srcdir)/nbperf-chm3.c
+nbperf-bdz.$(OBJEXT): nbperf-bdz.c graph2.h nbperf.h
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $(srcdir)/nbperf-bdz.c
 main.$(OBJEXT): main.cc $(OPTIONS_H) $(INPUT_H) $(SEARCH_H) $(OUTPUT_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/main.cc
+output.icc: mi_vector_hash.c
+	$(XXD) -i mi_vector_hash.c > $@
 
 install : all force
 	$(MKINSTALLDIRS) $(DESTDIR)$(bindir)
@@ -153,6 +167,8 @@ SOURCE_FILES = \
   hash-table.cc $(HASH_TABLE_H) \
   search.cc $(SEARCH_H) \
   output.cc $(OUTPUT_H) \
+  graph2.c graph3.c graph2.h \
+  nbperf-chm.c nbperf-chm3.c nbperf-bdz.c nbperf.h \
   main.cc
 # List of distributed files imported from other packages.
 IMPORTED_FILES =
