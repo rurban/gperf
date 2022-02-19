@@ -192,6 +192,14 @@ Options::long_usage (FILE * stream)
            "                         Specify name of length table array. Default name is\n"
            "                         'lengthtable'.\n");
   fprintf (stream,
+           "  -T, --omit-struct-type\n"
+           "                         Prevents the transfer of the type declaration to the\n"
+           "                         output file. Use this option if the type is already\n"
+           "                         defined elsewhere.\n");
+  fprintf (stream, "\n");
+  fprintf (stream,
+           "Algorithms employed by gperf:\n");
+  fprintf (stream,
            "  -S, --switch=COUNT     Causes the generated C code to use a switch\n"
            "                         statement scheme, rather than an array lookup table.\n"
            "                         This can lead to a reduction in both time and space\n"
@@ -203,13 +211,21 @@ Options::long_usage (FILE * stream)
            "                         large, say 1000000, the generated C code does a\n"
            "                         binary search.\n");
   fprintf (stream,
-           "  -T, --omit-struct-type\n"
-           "                         Prevents the transfer of the type declaration to the\n"
-           "                         output file. Use this option if the type is already\n"
-           "                         defined elsewhere.\n");
-  fprintf (stream, "\n");
+           "  --chm                  Use the CHM algorithm, which creates order preserving,\n"
+           "                         optimal minimal perfect hashes\n"
+           "                         and can efficiently deal with huge input.\n");
   fprintf (stream,
-           "Algorithm employed by gperf:\n");
+           "  --chm3                 Use the CHM algorithm with 3 table lookups instead of 2,\n"
+           "                         but with a much smaller code size.\n");
+  fprintf (stream,
+           "  --bpz                  Use the BPZ algorithm, which creates non-order preserving,\n"
+           "                         optimal minimal perfect hashes\n"
+           "                         and can efficiently deal with huge input, with best-known\n"
+           "                         code sizes.\n");
+  fprintf (stream,
+           "  -u, --utilisation=FACTOR\n"
+           "                         Tune the space efficiency for chm, chm2 and bpz.\n"
+           "                         The default for chm is 2, for chm3 and bpz 1.24.\n");
   fprintf (stream,
            "  -k, --key-positions=KEYS\n"
            "                         Select the key positions used in the hash function.\n"
@@ -510,6 +526,7 @@ Options::~Options ()
                "\nGLOBAL is......: %s"
                "\nNULLSTRINGS is.: %s"
                "\nSHAREDLIB is...: %s"
+               "\nALGORITHM is...: %s"
                "\nSWITCH is......: %s"
                "\nNOTYPE is......: %s"
                "\nDUP is.........: %s"
@@ -544,6 +561,10 @@ Options::~Options ()
                _option_word & GLOBAL ? "enabled" : "disabled",
                _option_word & NULLSTRINGS ? "enabled" : "disabled",
                _option_word & SHAREDLIB ? "enabled" : "disabled",
+               _option_word & SWITCH ? "switch" :
+                 _option_word & CHM_ALGO ? "chm" :
+                 _option_word & CHM3_ALGO ? "chm3" :
+                 _option_word & BPZ_ALGO ? "bzp" : "gperf",
                _option_word & SWITCH ? "enabled" : "disabled",
                _option_word & NOTYPE ? "enabled" : "disabled",
                _option_word & DUP ? "enabled" : "disabled",
@@ -735,6 +756,10 @@ static const struct option long_options[] =
   { "null-strings", no_argument, NULL, CHAR_MAX + 3 },
   { "random", no_argument, NULL, 'r' },
   { "size-multiple", required_argument, NULL, 's' },
+  { "chm", no_argument, NULL, CHAR_MAX + 6 },
+  { "chm3", no_argument, NULL, CHAR_MAX + 7 },
+  { "bpz", no_argument, NULL, CHAR_MAX + 8 },
+  { "utilisation", required_argument, NULL, 'u' },
   { "help", no_argument, NULL, 'h' },
   { "version", no_argument, NULL, 'v' },
   { "debug", no_argument, NULL, 'd' },
@@ -983,6 +1008,8 @@ Options::parse_options (int argc, char *argv[])
                 else
                   invalid = true;
               }
+            if (_option_word & (CHM_ALGO|CHM3_ALGO|BPZ_ALGO))
+              invalid = true;
             if (invalid)
               {
                 fprintf (stderr, "Invalid value for option -s.\n");
@@ -1001,6 +1028,46 @@ Options::parse_options (int argc, char *argv[])
               fprintf (stderr, "Size multiple %g is excessive, did you really mean this?! (try '%s --help' for help)\n", _size_multiple, program_name);
             else if (_size_multiple < 0.01f)
               fprintf (stderr, "Size multiple %g is extremely small, did you really mean this?! (try '%s --help' for help)\n", _size_multiple, program_name);
+            break;
+          }
+        case 'u':               /* Space utilization for chm, chm3 or bpz only. Similar to -s */
+          {
+            float numerator;
+            float denominator = 1;
+            bool invalid = false;
+            char *endptr;
+
+            numerator = strtod (/*getopt*/optarg, &endptr);
+            if (endptr == /*getopt*/optarg)
+              invalid = true;
+            else if (*endptr != '\0')
+              {
+                if (*endptr == '/')
+                  {
+                    char *denomptr = endptr + 1;
+                    denominator = strtod (denomptr, &endptr);
+                    if (endptr == denomptr || *endptr != '\0')
+                      invalid = true;
+                  }
+                else
+                  invalid = true;
+              }
+            if (!(_option_word & (CHM_ALGO|CHM3_ALGO|BPZ_ALGO)))
+              invalid = true;
+            _utilisation = numerator / denominator;
+            if (_option_word & CHM_ALGO && _utilisation < 2.0f)
+              invalid = true;
+            if (_option_word & (CHM3_ALGO|BPZ_ALGO) && _utilisation < 1.24f)
+              invalid = true;
+            if (invalid)
+              {
+                fprintf (stderr, "Invalid value for option -u.\n");
+                short_usage (stderr);
+                exit (1);
+              }
+            /* Warnings.  */
+            if (_utilisation > 10)
+              fprintf (stderr, "utilisation %g is excessive, did you really mean this?! (try '%s --help' for help)\n", _utilisation, program_name);
             break;
           }
         case 'S':               /* Generate switch statement output, rather than lookup table.  */
@@ -1074,6 +1141,39 @@ There is NO WARRANTY, to the extent permitted by law.\n\
         case CHAR_MAX + 5:      /* Sets the prefix for the constants.  */
           {
             _constants_prefix = /*getopt*/optarg;
+            break;
+          }
+        case CHAR_MAX + 6:      /* Sets CHM_ALGO.  */
+          {
+            if (_option_word & (SWITCH|CHM3_ALGO|BPZ_ALGO))
+              {
+                fprintf (stderr, "Invalid --%s, another algorithm already selected.\n", "chm");
+                short_usage (stderr);
+                exit (1);
+              }
+            _option_word |= CHM_ALGO;
+            break;
+          }
+        case CHAR_MAX + 7:      /* Sets CHM3_ALGO.  */
+          {
+            if (_option_word & (SWITCH|CHM_ALGO|BPZ_ALGO))
+              {
+                fprintf (stderr, "Invalid --%s, another algorithm already selected.\n", "chm3");
+                short_usage (stderr);
+                exit (1);
+              }
+            _option_word |= CHM3_ALGO;
+            break;
+          }
+        case CHAR_MAX + 8:      /* Sets BPZ_ALGO.  */
+          {
+            if (_option_word & (SWITCH|CHM_ALGO|CHM_ALGO))
+              {
+                fprintf (stderr, "Invalid --%s, another algorithm already selected.\n", "bpz");
+                short_usage (stderr);
+                exit (1);
+              }
+            _option_word |= BPZ_ALGO;
             break;
           }
         default:
