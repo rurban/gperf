@@ -1241,6 +1241,69 @@ This option is supported for compatibility with previous releases of
 @section Options for changing the Algorithms employed by @code{gperf}
 
 @table @samp
+@item --chm
+@cindex CHM
+Create order-preserving optimal minimal perfect hashes, which can
+efficiently deal with huge input, using 2 nested table lookups.
+
+@itemize @bullet
+@item
+Construct minimal MPHFs in linear time.
+@item
+It is based on acyclic random graphs
+@item
+The resulting MPHFs are order preserving.
+@item
+The resulting MPHFs are stored in 4cn bytes, where c is greater than 2.
+@end itemize
+
+The only other valid algorithm option is the '--utilisation FACTOR'.
+See @url{http://cmph.sourceforge.net/papers/chm92.pdf}
+
+@item --chm3
+@cindex CHM3
+A chm variant which uses 3 table lookups with much smaller tables, thus
+trades size over speed.
+The only other valid algorithm option is the '--utilisation FACTOR'.
+See @url{http://cmph.sourceforge.net/papers/chm92.pdf}
+
+@item --bpz
+@cindex BPZ
+@cindex BDZ
+Create slower non-order preserving, optimal minimal perfect hashes, which
+can efficiently deal with huge input, with best-known code sizes.
+
+@itemize @bullet
+@item
+It is very simple and efficient. Creation outperforms all others.
+@item
+It constructs both PHFs and MPHFs in linear time.
+@item
+The maximum load factor one can achieve for a PHF is 1/1.23.
+@item
+It is based on acyclic random 3-graphs. A 3-graph is a generalization of a
+graph where each edge connects 3 vertices instead of only 2.
+@item
+The resulting MPHFs are not order preserving.
+@item
+The resulting MPHFs can be stored in only (2 + x)cn bits, where c
+should be larger than or equal to 1.23 and x is a constant larger
+than 0 (actually, x = 1/b and b is a parameter that should be larger
+than 2). For c = 1.23 and b = 8, the resulting functions are stored
+in approximately 2.6 bits per key.
+@item
+For its maximum load factor (81 %), the resulting PHFs are stored in
+approximately 1.95 bits per key.
+@end itemize
+
+The only other valid algorithm option is the '--utilisation FACTOR'.
+See @url{http://cmph.sourceforge.net/bdz.html}
+
+@item -u @var{FACTOR}
+@itemx --utilisation=@var{FACTOR}
+Tune the space efficiency for chm, chm3 and bpz.
+The default for chm is 2, for chm3 and bpz 1.24.
+
 @item -k @var{selected-byte-positions}
 @itemx --key-positions=@var{selected-byte-positions}
 Allows selection of the byte positions used in the keywords'
@@ -1370,18 +1433,21 @@ option is enabled.
 @node Bugs
 @chapter Known Bugs and Limitations with @code{gperf}
 
-The following are some limitations with the current release of
-@code{gperf}:
+The following are some limitations with the default gperf algorithm:
 
 @itemize @bullet
 @item
-The @code{gperf} utility is tuned to execute quickly, and works quickly
-for small to medium size data sets (around 1000 keywords).  It is
-extremely useful for maintaining perfect hash functions for compiler
-keyword sets.  Several recent enhancements now enable @code{gperf} to
-work efficiently on much larger keyword sets (over 15,000 keywords).
-When processing large keyword sets it helps greatly to have over 8 megs
-of RAM.
+The default @code{gperf} algorithm is tuned to execute quickly, and
+works quickly for small to medium size data sets (around 1000
+keywords).  It is extremely useful for maintaining perfect hash
+functions for compiler keyword sets.  Several recent enhancements now
+enable @code{gperf} to work efficiently on much larger keyword sets
+(over 15,000 keywords).  When processing large keyword sets it helps
+greatly to have over 8 megs of RAM.
+
+If you need more than 15.000 keywords use the @samp{--chm},
+@samp{--chm3} or @samp{--bpz} algorithm.  If you need order-preserving
+minimal perfect hashes use @samp{--chm} or @samp{--chm3}.
 
 @item 
 The size of the generate static keyword array can get @emph{extremely}
@@ -1396,10 +1462,10 @@ with an appropriate numerical argument that controls the number of
 switch statements generated.
 
 @item 
-The maximum number of selected byte positions has an
-arbitrary limit of 255.  This restriction should be removed, and if
-anyone considers this a problem write me and let me know so I can remove
-the constraint.
+The maximum number of selected byte positions has an arbitrary limit
+of 255.  This restriction should be removed, and if anyone considers
+this a problem write me and let me know so I can remove the
+constraint.
 @end itemize
 
 @node Projects
@@ -1411,20 +1477,9 @@ module is essential independent from other program modules.  Additional
 worthwhile improvements include:
 
 @itemize @bullet
-@item 
-Another useful extension involves modifying the program to generate
-``minimal'' perfect hash functions (under certain circumstances, the
-current version can be rather extravagant in the generated table size).
-This is mostly of theoretical interest, since a sparse table
-often produces faster lookups, and use of the @samp{-S} @code{switch}
-option can minimize the data size, at the expense of slightly longer
-lookups (note that the gcc compiler generally produces good code for
-@code{switch} statements, reducing the need for more complex schemes).
-
 @item
-In addition to improving the algorithm, it would also be useful to
-generate an Ada package as the code output, in addition to the current
-C and C++ routines.
+It would also be useful to generate an Ada or Rust package as the code output,
+in addition to the current C and C++ routines.
 @end itemize
 
 @page
@@ -1468,7 +1523,7 @@ Hash Functions} Communications of the ACM, 28, 5(December 1985), 523-532
 
 @noindent
 [9] Schmidt, Douglas C. @i{GPERF: A Perfect Hash Function Generator}
-Second USENIX C++ Conference Proceedings, April 1990.
+Second USENIX C++ Conference Proceedings, (April 1990).
 
 @noindent
 [10] Schmidt, Douglas C. @i{GPERF: A Perfect Hash Function Generator}
@@ -1485,14 +1540,26 @@ Retrieving Method for Static Sets} Communications of the ACM, 20
 
 @noindent
 [13] Stallman, Richard M. @i{Using and Porting GNU CC} Free Software Foundation,
-1988.
+(1988).
 
 @noindent
-[14] Stroustrup, Bjarne @i{The C++ Programming Language.} Addison-Wesley, 1986.
+[14] Stroustrup, Bjarne @i{The C++ Programming Language.} Addison-Wesley, (1986).
 
 @noindent
 [15] Tiemann, Michael D. @i{User's Guide to GNU C++} Free Software
-Foundation, 1989.
+Foundation, (1989).
+
+@noindent
+[16] Z.J. Czech, G. Havas, and B.S. Majewski. @i{An optimal algorithm for
+generating minimal perfect hash functions} Information Processing Letters,
+(1992), 43(5):257-264.
+
+@noindent
+[17] F. C. Botelho, R. Pagh, N. Ziviani. @i{Simple and space-efficient
+minimal perfect hash functions} Proceedings of the 10th International
+Workshop on Algorithms and Data Structures (WADs'07), Springer-Verlag
+Lecture Notes in Computer Science, vol. 4619, Halifax, Canada, (August
+2007), 139-150.
 
 @node Concept Index
 @unnumbered Concept Index
