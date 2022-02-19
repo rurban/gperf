@@ -76,6 +76,12 @@ Details in the output code:
       --length-table-name=NAME
                          Specify name of length table array. Default name is
                          'lengthtable'.
+  -T, --omit-struct-type
+                         Prevents the transfer of the type declaration to the
+                         output file. Use this option if the type is already
+                         defined elsewhere.
+
+Algorithms employed by gperf:
   -S, --switch=COUNT     Causes the generated C code to use a switch
                          statement scheme, rather than an array lookup table.
                          This can lead to a reduction in both time and space
@@ -86,12 +92,18 @@ Details in the output code:
                          the elements in each table, etc. If COUNT is very
                          large, say 1000000, the generated C code does a
                          binary search.
-  -T, --omit-struct-type
-                         Prevents the transfer of the type declaration to the
-                         output file. Use this option if the type is already
-                         defined elsewhere.
-
-Algorithm employed by gperf:
+  --chm                  Use the CHM algorithm, which creates order preserving,
+                         optimal minimal perfect hashes
+                         and can efficiently deal with huge input.
+  --chm3                 Use the CHM algorithm with 3 table lookups instead of 2,
+                         but with a much smaller code size.
+  --bpz                  Use the BPZ algorithm, which creates non-order preserving,
+                         optimal minimal perfect hashes
+                         and can efficiently deal with huge input, with best-known
+                         code sizes.
+  -u, --utilisation=FACTOR
+                         Tune the space efficiency for chm, chm2 and bpz.
+                         The default for chm is 2, for chm3 and bpz 1.24.
   -k, --key-positions=KEYS
                          Select the key positions used in the hash function.
                          The allowable choices range between 1-255, inclusive.
