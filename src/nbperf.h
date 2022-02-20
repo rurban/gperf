@@ -34,7 +34,7 @@
 
 #ifdef __cplusplus
 #include <cstdint>
-extern "C" {
+#include "output.h"
 #else
 #include <stdint.h>
 #endif
@@ -65,12 +65,12 @@ struct nbperf {
     void (*compute_hash)(struct nbperf *, const void *, size_t,
                          uint32_t *);
     uint32_t seed[1];
+#ifdef __cplusplus
+    uint32_t *result_map; // needed for bdz
+    Output *out;
+#endif
 };
 
 int	chm_compute(struct nbperf *);
 int	chm3_compute(struct nbperf *);
 int	bpz_compute(struct nbperf *);
-
-#ifdef __cplusplus
-}
-#endif

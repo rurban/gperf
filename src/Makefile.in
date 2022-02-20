@@ -98,8 +98,9 @@ KEYWORD_LIST_H = keyword-list.h keyword-list.icc $(KEYWORD_H)
 INPUT_H = input.h $(KEYWORD_LIST_H)
 BOOL_ARRAY_H = bool-array.h bool-array.icc $(OPTIONS_H)
 HASH_TABLE_H = hash-table.h $(KEYWORD_H)
-SEARCH_H = search.h $(KEYWORD_LIST_H) $(POSITIONS_H) $(BOOL_ARRAY_H) nbperf.h
-OUTPUT_H = output.h $(KEYWORD_LIST_H) $(POSITIONS_H) nbperf.h
+NBPERF_H = nbperf.h output.h $(KEYWORD_LIST_H) $(POSITIONS_H)
+SEARCH_H = search.h $(KEYWORD_LIST_H) $(POSITIONS_H) $(BOOL_ARRAY_H)
+OUTPUT_H = output.h $(KEYWORD_LIST_H) $(POSITIONS_H)
 
 version.$(OBJEXT): version.cc $(VERSION_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/version.cc
@@ -117,20 +118,20 @@ bool-array.$(OBJEXT): bool-array.cc $(BOOL_ARRAY_H) $(OPTIONS_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/bool-array.cc
 hash-table.$(OBJEXT): hash-table.cc $(HASH_TABLE_H) $(OPTIONS_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/hash-table.cc
-search.$(OBJEXT): search.cc $(SEARCH_H) $(OPTIONS_H) $(HASH_TABLE_H) $(CONFIG_H) nbperf.h
+search.$(OBJEXT): search.cc $(SEARCH_H) $(OPTIONS_H) $(HASH_TABLE_H) $(CONFIG_H) $(NBPERF_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/search.cc
-output.$(OBJEXT): output.cc $(OUTPUT_H) $(OPTIONS_H) $(VERSION_H) nbperf.h output.ic
+output.$(OBJEXT): output.cc $(OUTPUT_H) $(OPTIONS_H) $(VERSION_H) $(CONFIG_H) $(NBPERF_H) output.ic
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/output.cc
-graph2.$(OBJEXT): graph2.c graph2.h nbperf.h
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c $(srcdir)/graph2.c
-graph3.$(OBJEXT): graph3.c graph2.c nbperf.h
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c $(srcdir)/graph3.c
-nbperf-chm.$(OBJEXT): nbperf-chm.c nbperf.h
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c $(srcdir)/nbperf-chm.c
-nbperf-chm3.$(OBJEXT): nbperf-chm3.c nbperf-chm.c nbperf.h
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c $(srcdir)/nbperf-chm3.c
-nbperf-bdz.$(OBJEXT): nbperf-bdz.c graph2.h nbperf.h
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c $(srcdir)/nbperf-bdz.c
+graph2.$(OBJEXT): graph2.cc graph2.h $(NBPERF_H)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/graph2.cc
+graph3.$(OBJEXT): graph3.cc graph2.cc $(NBPERF_H)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/graph3.cc
+nbperf-chm.$(OBJEXT): nbperf-chm.cc $(NBPERF_H)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/nbperf-chm.cc
+nbperf-chm3.$(OBJEXT): nbperf-chm3.cc nbperf-chm.cc $(NBPERF_H)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/nbperf-chm3.cc
+nbperf-bdz.$(OBJEXT): nbperf-bdz.cc graph2.h $(NBPERF_H)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/nbperf-bdz.cc
 mi_vector_hash.$(OBJEXT): mi_vector_hash.h mi_vector_hash.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $(srcdir)/mi_vector_hash.c
 main.$(OBJEXT): main.cc $(OPTIONS_H) $(INPUT_H) $(SEARCH_H) $(OUTPUT_H)
@@ -175,8 +176,8 @@ SOURCE_FILES = \
   hash-table.cc $(HASH_TABLE_H) \
   search.cc $(SEARCH_H) \
   output.cc $(OUTPUT_H) \
-  graph2.c graph3.c graph2.h \
-  nbperf-chm.c nbperf-chm3.c nbperf-bdz.c nbperf.h \
+  graph2.cc graph3.cc graph2.h \
+  nbperf-chm.cc nbperf-chm3.cc nbperf-bdz.cc nbperf.h \
   main.cc
 # List of distributed files imported from other packages.
 IMPORTED_FILES =
