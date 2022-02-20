@@ -47,8 +47,9 @@ EXEEXT = @EXEEXT@
 MV = mv
 LN = ln
 RM = rm -f
+XXD = @XXD@
+SED = @SED@
 @SET_MAKE@
-XXD = xxd
 
 # Programs used by "make install":
 INSTALL = @INSTALL@

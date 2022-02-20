@@ -602,6 +602,18 @@ Input::read_input ()
                   option.set (NOTYPE);
                 else
 
+                if (is_declaration (line, line_end, lineno, "chm"))
+                  option.set (CHM_ALGO);
+                else
+
+                if (is_declaration (line, line_end, lineno, "chm3"))
+                  option.set (CHM3_ALGO);
+                else
+
+                if (is_declaration (line, line_end, lineno, "bpz"))
+                  option.set (BPZ_ALGO);
+                else
+
                   {
                     fprintf (stderr, "%s:%u: unrecognized %% directive\n",
                              pretty_input_file_name (), lineno);

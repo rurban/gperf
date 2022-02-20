@@ -655,6 +655,23 @@ value of 2 generates 2 tables with 1/2 the elements in each
 correctly generate code for large @code{switch} statements.  This option
 was inspired in part by Keith Bostic's original C program.
 
+@item %chm
+@cindex @samp{%chm}
+Uses the CHM algorithm to create order-preserving optimal minimal
+perfect hashes, which can efficiently deal with huge input, using 2
+nested table lookups.
+
+@item %chm3
+@cindex @samp{%chm3}
+Use the CHM variant which uses 3 table lookups with much smaller tables, thus
+trades size over speed.
+
+@item %bpz
+@cindex @samp{%bpz}
+Uses the BPZ/BDZ algorithm to create slower non-order preserving,
+optimal minimal perfect hashes, which can efficiently deal with huge
+input, with best-known code sizes.
+
 @item %omit-struct-type
 @cindex @samp{%omit-struct-type}
 Prevents the transfer of the type declaration to the output file.  Use
@@ -1257,20 +1274,21 @@ The resulting MPHFs are order preserving.
 The resulting MPHFs are stored in 4cn bytes, where c is greater than 2.
 @end itemize
 
-The only other valid algorithm option is the '--utilisation FACTOR'.
+The only other valid algorithm options are @samp{--random} and the
+@samp{--utilisation FACTOR}.
 See @url{http://cmph.sourceforge.net/papers/chm92.pdf}
 
 @item --chm3
 @cindex CHM3
 A chm variant which uses 3 table lookups with much smaller tables, thus
 trades size over speed.
-The only other valid algorithm option is the '--utilisation FACTOR'.
-See @url{http://cmph.sourceforge.net/papers/chm92.pdf}
+The only other valid algorithm options are @samp{--random} and the
+@samp{--utilisation FACTOR}.
 
 @item --bpz
 @cindex BPZ
 @cindex BDZ
-Create slower non-order preserving, optimal minimal perfect hashes, which
+Create slower, non-order preserving, optimal minimal perfect hashes, which
 can efficiently deal with huge input, with best-known code sizes.
 
 @itemize @bullet
@@ -1296,7 +1314,8 @@ For its maximum load factor (81 %), the resulting PHFs are stored in
 approximately 1.95 bits per key.
 @end itemize
 
-The only other valid algorithm option is the '--utilisation FACTOR'.
+The only other valid algorithm options are @samp{--random} and the
+@samp{--utilisation FACTOR}.
 See @url{http://cmph.sourceforge.net/bdz.html}
 
 @item -u @var{FACTOR}
@@ -1448,6 +1467,9 @@ greatly to have over 8 megs of RAM.
 If you need more than 15.000 keywords use the @samp{--chm},
 @samp{--chm3} or @samp{--bpz} algorithm.  If you need order-preserving
 minimal perfect hashes use @samp{--chm} or @samp{--chm3}.
+
+The maximum number of keywords is 4294967295, even with the new MPH
+algorithms. The graph computation is 32bit only.
 
 @item 
 The size of the generate static keyword array can get @emph{extremely}
