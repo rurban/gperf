@@ -29,6 +29,7 @@
 
 #include <stdio.h>
 #include "positions.h"
+#include "nbperf.h"
 
 /* Enumeration of the possible boolean options.  */
 
@@ -144,6 +145,13 @@ public:
   bool                  operator[] (Option_Type option) const;
   /* Sets a given boolean option.  */
   void                  set (Option_Type option);
+
+  /* Returns true if CHM, CHM3, or BPZ.  */
+  bool                  is_mph_algo () const;
+  /* Returns pointer to the struct.  */
+  struct nbperf *       nbperf ();
+  /* Initializes the struct.  */
+  void                  set_nbperf ();
 
   /* Returns the input file name.  */
   const char *          get_input_file_name () const;
@@ -264,9 +272,6 @@ private:
   /* Factor by which to multiply the generated table's size.  */
   float                 _size_multiple;
 
-  /* Size utilisation factor for CHM, CHM3 and BPZ.  */
-  float                 _utilisation;
-
   /* Names used for generated lookup function.  */
   const char *          _function_name;
 
@@ -299,6 +304,9 @@ private:
 
   /* Contains user-specified key choices.  */
   Positions             _key_positions;
+
+  /* Contains the MPH-specific nbperf options.  */
+  struct nbperf         _nbperf;
 };
 
 /* Global option coordinator for the entire program.  */

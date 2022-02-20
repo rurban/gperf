@@ -489,7 +489,7 @@ Options::Options ()
     _initial_asso_value (0),
     _asso_iterations (0),
     _total_switches (1),
-    _size_multiple (1),
+    _size_multiple (1.0f),
     _function_name (DEFAULT_FUNCTION_NAME),
     _slot_name (DEFAULT_SLOT_NAME),
     _initializer_suffix (DEFAULT_INITIALIZER_SUFFIX),
@@ -502,6 +502,8 @@ Options::Options ()
     _delimiters (DEFAULT_DELIMITERS),
     _key_positions ()
 {
+  memset(&_nbperf, 0, sizeof(struct nbperf));
+  _nbperf.hash_name = DEFAULT_HASH_NAME;
 }
 
 /* Dumps option status when debugging is enabled.  */
@@ -595,7 +597,7 @@ Options::~Options ()
 }
 
 
-/* Sets the output language, if not already set.  */
+/* Sets the output language dialect (KRC,C,ANSIC,C++), if not already set.  */
 void
 Options::set_language (const char *language)
 {
@@ -621,7 +623,7 @@ Options::set_language (const char *language)
     }
 }
 
-/* Sets the total number of switch statements, if not already set.  */
+/* Sets the total number of switch statements.  */
 void
 Options::set_total_switches (int total_switches)
 {
@@ -632,86 +634,115 @@ Options::set_total_switches (int total_switches)
     }
 }
 
-/* Sets the generated function name, if not already set.  */
+/* Sets the generated function name.  */
 void
 Options::set_function_name (const char *name)
 {
-  if (_function_name == DEFAULT_FUNCTION_NAME)
-    _function_name = name;
+  _function_name = name;
 }
 
-/* Sets the keyword key name, if not already set.  */
+/* Sets the keyword key name.  */
 void
 Options::set_slot_name (const char *name)
 {
-  if (_slot_name == DEFAULT_SLOT_NAME)
-    _slot_name = name;
+  _slot_name = name;
 }
 
 /* Sets the struct initializer suffix, if not already set.  */
 void
 Options::set_initializer_suffix (const char *initializers)
 {
-  if (_initializer_suffix == DEFAULT_INITIALIZER_SUFFIX)
-    _initializer_suffix = initializers;
+  _initializer_suffix = initializers;
 }
 
 /* Sets the generated class name, if not already set.  */
 void
 Options::set_class_name (const char *name)
 {
-  if (_class_name == DEFAULT_CLASS_NAME)
-    _class_name = name;
+  _class_name = name;
 }
 
-/* Sets the hash function name, if not already set.  */
+/* Sets the hash function name.  */
 void
 Options::set_hash_name (const char *name)
 {
-  if (_hash_name == DEFAULT_HASH_NAME)
-    _hash_name = name;
+  _hash_name = name;
 }
 
-/* Sets the hash table array name, if not already set.  */
+/* Sets the hash table array name.  */
 void
 Options::set_wordlist_name (const char *name)
 {
-  if (_wordlist_name == DEFAULT_WORDLIST_NAME)
-    _wordlist_name = name;
+  _wordlist_name = name;
 }
 
-/* Sets the length table array name, if not already set.  */
+/* Sets the length table array name.  */
 void
 Options::set_lengthtable_name (const char *name)
 {
-  if (_lengthtable_name == DEFAULT_LENGTHTABLE_NAME)
-    _lengthtable_name = name;
+  _lengthtable_name = name;
 }
 
-/* Sets the prefix for the constants, if not already set.  */
+/* Sets the prefix for the constants.  */
 void
 Options::set_constants_prefix (const char *prefix)
 {
-  if (_constants_prefix == DEFAULT_CONSTANTS_PREFIX)
     _constants_prefix = prefix;
 }
 
-/* Sets the string pool name, if not already set.  */
+/* Sets the string pool name.  */
 void
 Options::set_stringpool_name (const char *name)
 {
-  if (_stringpool_name == DEFAULT_STRINGPOOL_NAME)
-    _stringpool_name = name;
+  _stringpool_name = name;
 }
 
-/* Sets the delimiters string, if not already set.  */
+/* Sets the delimiters string.  */
 void
 Options::set_delimiters (const char *delimiters)
 {
-  if (_delimiters == DEFAULT_DELIMITERS)
-    _delimiters = delimiters;
+  _delimiters = delimiters;
 }
 
+/* nbperf specific methods */
+bool
+Options::is_mph_algo () const
+{
+  return _option_word & (CHM_ALGO|CHM3_ALGO|BPZ_ALGO);
+}
+
+struct nbperf *
+Options::nbperf ()
+{
+  return &_nbperf;
+}
+
+void
+Options::set_nbperf ()
+{
+  _nbperf.hash_size = 3; // needed for chm3 and bdz
+  _nbperf.seed_hash = mi_vector_hash_seed_hash;
+  _nbperf.compute_hash = mi_vector_hash_compute;
+  _nbperf.print_hash = mi_vector_hash_print_hash;
+  if (!(_option_word & RANDOM))
+    _nbperf.predictable = 1;
+  if (_option_word & DUP)
+    _nbperf.has_duplicates = 1;
+  if (_option_word & GLOBAL)
+    _nbperf.static_hash = 1;
+  if (_output_file_name)
+    {
+      if (_nbperf.output)
+        fclose(_nbperf.output);
+      _nbperf.output = fopen(_output_file_name, "w");
+      if (_nbperf.output == NULL) {
+        fprintf(stderr, "cannot open output file");
+        exit(2);
+      }
+    }
+  else
+    _nbperf.output = stdout;
+}
 
 /* Parses the command line Options and sets appropriate flags in option_word.  */
 
@@ -839,6 +870,7 @@ Options::parse_options (int argc, char *argv[])
         case 'H':               /* Sets the name for the hash function.  */
           {
             _hash_name = /*getopt*/optarg;
+            _nbperf.hash_name = _hash_name;
             break;
           }
         case 'i':               /* Sets the initial value for the associated values array.  */
@@ -1008,7 +1040,7 @@ Options::parse_options (int argc, char *argv[])
                 else
                   invalid = true;
               }
-            if (_option_word & (CHM_ALGO|CHM3_ALGO|BPZ_ALGO))
+            if (is_mph_algo())
               invalid = true;
             if (invalid)
               {
@@ -1030,7 +1062,7 @@ Options::parse_options (int argc, char *argv[])
               fprintf (stderr, "Size multiple %g is extremely small, did you really mean this?! (try '%s --help' for help)\n", _size_multiple, program_name);
             break;
           }
-        case 'u':               /* Space utilization for chm, chm3 or bpz only. Similar to -s */
+        case 'u':               /* Space utilisation for chm, chm3 or bpz only. Similar to -s */
           {
             float numerator;
             float denominator = 1;
@@ -1052,12 +1084,12 @@ Options::parse_options (int argc, char *argv[])
                 else
                   invalid = true;
               }
-            if (!(_option_word & (CHM_ALGO|CHM3_ALGO|BPZ_ALGO)))
+            if (!is_mph_algo())
               invalid = true;
-            _utilisation = numerator / denominator;
-            if (_option_word & CHM_ALGO && _utilisation < 2.0f)
+            _nbperf.c = numerator / denominator;
+            if (_option_word & CHM_ALGO && _nbperf.c < 2.0f)
               invalid = true;
-            if (_option_word & (CHM3_ALGO|BPZ_ALGO) && _utilisation < 1.24f)
+            if (_option_word & (CHM3_ALGO|BPZ_ALGO) && _nbperf.c < 1.24f)
               invalid = true;
             if (invalid)
               {
@@ -1066,8 +1098,8 @@ Options::parse_options (int argc, char *argv[])
                 exit (1);
               }
             /* Warnings.  */
-            if (_utilisation > 10)
-              fprintf (stderr, "utilisation %g is excessive, did you really mean this?! (try '%s --help' for help)\n", _utilisation, program_name);
+            if (_nbperf.c > 10)
+              fprintf (stderr, "utilisation %g is excessive, did you really mean this?! (try '%s --help' for help)\n", _nbperf.c, program_name);
             break;
           }
         case 'S':               /* Generate switch statement output, rather than lookup table.  */
@@ -1152,7 +1184,10 @@ There is NO WARRANTY, to the extent permitted by law.\n\
                 exit (1);
               }
             _option_word |= CHM_ALGO;
-            break;
+            if (_nbperf.c < 0.1f)
+              _nbperf.c = 2.0f;
+	    set_nbperf ();
+	    break;
           }
         case CHAR_MAX + 7:      /* Sets CHM3_ALGO.  */
           {
@@ -1163,17 +1198,23 @@ There is NO WARRANTY, to the extent permitted by law.\n\
                 exit (1);
               }
             _option_word |= CHM3_ALGO;
+            if (_nbperf.c < 0.1f)
+              _nbperf.c = 1.24f;
+	    set_nbperf ();
             break;
           }
         case CHAR_MAX + 8:      /* Sets BPZ_ALGO.  */
           {
-            if (_option_word & (SWITCH|CHM_ALGO|CHM_ALGO))
+            if (_option_word & (SWITCH|CHM_ALGO|CHM3_ALGO))
               {
                 fprintf (stderr, "Invalid --%s, another algorithm already selected.\n", "bpz");
                 short_usage (stderr);
                 exit (1);
               }
             _option_word |= BPZ_ALGO;
+            if (_nbperf.c < 0.1f)
+              _nbperf.c = 1.24f;
+	    set_nbperf ();
             break;
           }
         default:

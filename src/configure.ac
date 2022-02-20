@@ -37,6 +37,8 @@ AC_PROG_CXXCPP
                       dnl sets variable CXXCPP
 CL_PROG_INSTALL
                       dnl sets variables INSTALL, INSTALL_DATA, INSTALL_PROGRAM
+AC_CHECK_PROGS([SED],[sed])
+AC_CHECK_PROGS([XXD],[xxd])
 dnl
 dnl           checks for compiler characteristics
 dnl
