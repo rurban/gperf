@@ -1,0 +1,13 @@
+variables:
+  GIT_DEPTH: "1"
+
+before_script:
+  - apt-get update -qq
+  - DEBIAN_FRONTEND=noninteractive apt-get install -y texinfo texlive
+
+gcc:
+  script:
+    - sh autogen.sh
+    - ./configure
+    - make -j4
+    - make -j4 check
