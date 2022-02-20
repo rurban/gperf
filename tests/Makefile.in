@@ -61,11 +61,16 @@ installdirs :
 
 uninstall :
 
-check : check-c check-ada check-modula3 check-pascal check-lang-utf8 check-lang-ucs2 check-smtp check-test
+check : check-c check-ada check-modula3 check-pascal check-lang-utf8	\
+	check-lang-ucs2 check-smtp check-test check-languages		\
+	check-languages-S check-chm check-bpz
 	@true
 
 extracheck : @CHECK_LANG_SYNTAX@
 	@true
+
+check-chm: check-c-chm check-languages-chm check-languages-chm3
+check-bpz: check-c-bpz check-languages-bpz
 
 check-c: test.$(OBJEXT)
 	@echo "testing ANSI C reserved words, all items should be found in the set"
@@ -73,6 +78,17 @@ check-c: test.$(OBJEXT)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o cout cinset.c test.$(OBJEXT)
 	./cout -v < $(srcdir)/c.gperf | LC_ALL=C tr -d '\r' > c.out
 	diff $(srcdir)/c.exp c.out
+check-c-chm: test.$(OBJEXT)
+	$(GPERF) --chm -I < $(srcdir)/c.gperf > c2.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o cout2 c2.c test1.$(OBJEXT)
+	@echo "testing languages with chm, all items should be found in the set"
+	./cout2 $(srcdir)/c.gperf
+
+check-c-bpz: test.$(OBJEXT)
+	$(GPERF) --bpz -I < $(srcdir)/c.gperf > c4.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o cout4 c4.c test.$(OBJEXT)
+	@echo "testing languages with bpz, all items should be found in the set"
+	./cout4 $(srcdir)/c.gperf
 
 check-ada: test.$(OBJEXT)
 	$(GPERF) -k1,4,'$$' -I $(srcdir)/ada.gperf > adainset.c
@@ -101,16 +117,49 @@ check-pascal: test.$(OBJEXT)
 	./pout -v < $(srcdir)/pascal.gperf | LC_ALL=C tr -d '\r' > pascal.out
 	diff $(srcdir)/pascal.exp pascal.out
 
+check-languages: test1.$(OBJEXT)
+	$(GPERF) -I < $(srcdir)/languages.gperf > languages0.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o lout0 languages0.c test1.$(OBJEXT)
+	@echo "testing 685 languages, all items should be found in the set"
+	./lout0 $(srcdir)/languages.gperf
+
+check-languages-S: test1.$(OBJEXT)
+	$(GPERF) -S 2 -I < $(srcdir)/languages.gperf > languages1.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o lout1 languages1.c test1.$(OBJEXT)
+	@echo "testing languages with --switch 2, all items should be found in the set"
+	./lout1 $(srcdir)/languages.gperf
+
+check-languages-chm: test1.$(OBJEXT)
+	$(GPERF) --chm -I < $(srcdir)/languages.gperf > languages2.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o lout2 languages2.c test1.$(OBJEXT)
+	@echo "testing languages with chm, all items should be found in the set"
+	./lout2 $(srcdir)/languages.gperf
+
+check-languages-chm3: test1.$(OBJEXT)
+	$(GPERF) --chm3 -I < $(srcdir)/languages.gperf > languages3.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o lout3 languages3.c test1.$(OBJEXT)
+	@echo "testing languages with chm3, all items should be found in the set"
+	./lout3 $(srcdir)/languages.gperf
+
+check-languages-bpz: test.$(OBJEXT)
+	$(GPERF) --bpz -I < $(srcdir)/languages.gperf > languages4.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o lout4 languages4.c test1.$(OBJEXT)
+	@echo "testing languages with bpz, all items should be found in the set"
+	./lout4 $(srcdir)/languages.gperf
+
 # check for 8-bit cleanliness
-check-lang-utf8: test.$(OBJEXT)
+check-lang-utf8: test1.$(OBJEXT)
 	$(GPERF) -k1 -t -I -K foreign_name < $(srcdir)/lang-utf8.gperf > lu8inset.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o lu8out lu8inset.c test.$(OBJEXT)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o lu8out lu8inset.c test1.$(OBJEXT)
 	@echo "testing UTF-8 encoded languages, all items should be found in the set"
-	sed -e '1,6d' -e 's/,.*//' < $(srcdir)/lang-utf8.gperf | ./lu8out -v | LC_ALL=C tr -d '\r' > lang-utf8.out
+	./lu8out -v $(srcdir)/lang-utf8.gperf | LC_ALL=C tr -d '\r' > lang-utf8.out
 	diff $(srcdir)/lang-utf8.exp lang-utf8.out
 
 test.$(OBJEXT) : $(srcdir)/test.c
 	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(srcdir)/test.c
+
+test1.$(OBJEXT) : $(srcdir)/test1.c
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(srcdir)/test1.c
 
 # check for binary keywords with NUL bytes
 check-lang-ucs2: test2.$(OBJEXT)
@@ -330,6 +379,7 @@ mostlyclean : clean
 
 clean : force
 	$(RM) *.$(OBJEXT) core *inset.c output.* *.out \
+	      lout*$(EXEEXT) languages*.c c2.c c4.c cout*$(EXEEXT) \
 	      aout$(EXEEXT) aout$(EXEEXT).manifest \
 	      cout$(EXEEXT) cout$(EXEEXT).manifest \
 	      lu2out$(EXEEXT) lu2out$(EXEEXT).manifest \
