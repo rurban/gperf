@@ -27,8 +27,10 @@
 #include <ctype.h>  /* declares isdigit() */
 #include <limits.h> /* defines CHAR_MAX */
 #include "filename.h"
+#include <cinttypes> /* declares PRIx32 */
 #include "getopt.h"
 #include "version.h"
+#include "mi_vector_hash.h"
 
 /* Global option coordinator for the entire program.  */
 Options option;
@@ -596,6 +598,30 @@ Options::~Options ()
     }
 }
 
+extern "C" {
+  static void mi_vector_hash_seed_hash(struct nbperf *nbperf)
+  {
+    static uint32_t predictable_counter;
+    if (nbperf->predictable)
+      nbperf->seed[0] = predictable_counter++;
+    else
+      nbperf->seed[0] = random();
+  }
+
+  static void mi_vector_hash_compute(struct nbperf *nbperf, const void *key, size_t keylen,
+                                       uint32_t *hashes)
+  {
+    mi_vector_hash(key, keylen, nbperf->seed[0], hashes);
+  }
+
+  static void mi_vector_hash_print_hash(struct nbperf *nbperf, const char *indent,
+                                          const char *key, const char *keylen, const char *hash)
+  {
+    fprintf(nbperf->output,
+            "%smi_vector_hash(%s, %s, 0x%08" PRIx32 "U, %s);\n",
+            indent, key, keylen, nbperf->seed[0], hash);
+  }
+}
 
 /* Sets the output language dialect (KRC,C,ANSIC,C++), if not already set.  */
 void
