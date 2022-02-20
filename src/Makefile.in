@@ -119,7 +119,7 @@ hash-table.$(OBJEXT): hash-table.cc $(HASH_TABLE_H) $(OPTIONS_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/hash-table.cc
 search.$(OBJEXT): search.cc $(SEARCH_H) $(OPTIONS_H) $(HASH_TABLE_H) $(CONFIG_H) nbperf.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/search.cc
-output.$(OBJEXT): output.cc $(OUTPUT_H) $(OPTIONS_H) $(VERSION_H) nbperf.h output.icc
+output.$(OBJEXT): output.cc $(OUTPUT_H) $(OPTIONS_H) $(VERSION_H) nbperf.h output.ic
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/output.cc
 graph2.$(OBJEXT): graph2.c graph2.h nbperf.h
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $(srcdir)/graph2.c
@@ -135,8 +135,10 @@ mi_vector_hash.$(OBJEXT): mi_vector_hash.h mi_vector_hash.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $(srcdir)/mi_vector_hash.c
 main.$(OBJEXT): main.cc $(OPTIONS_H) $(INPUT_H) $(SEARCH_H) $(OUTPUT_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/main.cc
-output.icc: mi_vector_hash.c
-	$(XXD) -i mi_vector_hash.c > $@
+output.ic: mi_vector_hash.c
+	echo "/* ex: set ro ft=c: -*- mode: c; buffer-read-only: t -*- */" >$@
+	echo "/* Generated from mi_vector_hash.c */" >>$@
+	$(XXD) -i mi_vector_hash.c >>$@
 
 install : all force
 	$(MKINSTALLDIRS) $(DESTDIR)$(bindir)

@@ -45,6 +45,8 @@
 #include <string.h>
 
 #include "nbperf.h"
+extern const unsigned char mi_vector_hash_c[];
+extern const unsigned int mi_vector_hash_c_len;
 
 /*
  * A full description of the algorithm can be found in:
@@ -140,10 +142,10 @@ print_hash(struct nbperf *nbperf, struct state *state)
 	uint64_t sum;
 	size_t i;
 
-	fprintf(nbperf->output, "#include <stdint.h>\n");
-	fprintf(nbperf->output, "#include <stdlib.h>\n");
 	fprintf(nbperf->output, "#include <strings.h>\n");
-        fprintf(nbperf->output, "#include \"%s\"\n\n", nbperf->hash_header);
+        for (unsigned int i=0; i < mi_vector_hash_c_len; i++) {
+                fprintf(nbperf->output, "%c", mi_vector_hash_c[i]);
+        }
         fprintf(nbperf->output, "#ifdef __GNUC__\n"); // since gcc 4.5
         fprintf(nbperf->output, "#define popcount64 __builtin_popcountll\n");
         fprintf(nbperf->output, "#endif\n\n");
