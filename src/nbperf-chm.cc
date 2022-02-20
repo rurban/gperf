@@ -1,6 +1,7 @@
 /*	$NetBSD: nbperf-chm.c,v 1.4 2021/01/07 16:03:08 joerg Exp $	*/
 /*-
  * Copyright (c) 2009 The NetBSD Foundation, Inc.
+ * Copyright (c) 2022 Reini Urban.
  * All rights reserved.
  *
  * This code is derived from software contributed to The NetBSD Foundation
@@ -42,11 +43,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <cassert>
 
+#include "output.h"
 #include "nbperf.h"
 #include "graph2.h"
-extern const unsigned char mi_vector_hash_c[];
-extern const unsigned int mi_vector_hash_c_len;
 
 /*
  * A full description of the algorithm can be found in:
@@ -74,7 +75,7 @@ extern const unsigned int mi_vector_hash_c_len;
  * is always unvisited and can be assigned.
  */
 
-struct state {
+struct SIZED(state) {
 	struct SIZED(graph) graph;
 	uint32_t *g;
 	uint8_t *visited;
@@ -82,7 +83,7 @@ struct state {
 
 #if GRAPH_SIZE >= 3
 static void
-assign_nodes(struct state *state)
+assign_nodes(struct SIZED(state) *state)
 {
 	struct SIZED(edge) *e;
 	size_t i;
@@ -118,7 +119,7 @@ assign_nodes(struct state *state)
 }
 #else
 static void
-assign_nodes(struct state *state)
+assign_nodes(struct SIZED(state) *state)
 {
 	struct SIZED(edge) *e;
 	size_t i;
@@ -145,22 +146,19 @@ assign_nodes(struct state *state)
 #endif
 
 static void
-print_hash(struct nbperf *nbperf, struct state *state)
+print_hash(struct nbperf *nbperf, struct SIZED(state) *state)
 {
 	uint32_t i, per_line;
 	const char *g_type;
 	int g_width;
+        Output *out = nbperf->out;
 
-        for (unsigned int i=0; i < mi_vector_hash_c_len; i++) {
-                fprintf(nbperf->output, "%c", mi_vector_hash_c[i]);
-        }
-
-	fprintf(nbperf->output, "\n%suint32_t\n",
-	    nbperf->static_hash ? "static " : "");
-	fprintf(nbperf->output,
-	    "%s(const void * __restrict key, size_t keylen)\n",
-	    nbperf->hash_name);
-	fprintf(nbperf->output, "{\n");
+	//out->printf_hash_body ("\n%suint32_t\n",
+	//    nbperf->static_hash ? "static " : "");
+	//out->printf_hash_body (
+	//    "%s(const void * __restrict key, size_t keylen)\n",
+	//    nbperf->hash_name);
+	//out->printf_hash_body ("{\n");
 	/*if (state->graph.v >= 4294967295U) { // 32bit only
 		g_type = "uint64_t";
 		g_width = 16;
@@ -179,55 +177,57 @@ print_hash(struct nbperf *nbperf, struct state *state)
 		g_width = 2;
 		per_line = 10;
 	}
-	fprintf(nbperf->output, "\tstatic const %s g[%" PRId32 "] = {\n",
+	out->printf_hash_body ("\tstatic const %s g[%" PRId32 "] = {\n",
 	    g_type, state->graph.v);
 	for (i = 0; i < state->graph.v; ++i) {
-		fprintf(nbperf->output, "%s0x%0*" PRIx32 ",%s",
+		out->printf_hash_body ("%sUINT32_C(0x%0*" PRIx32 "),%s",
 		    (i % per_line == 0 ? "\t    " : " "),
 		    g_width, state->g[i],
 		    (i % per_line == per_line - 1 ? "\n" : ""));
 	}
 	if (i % per_line != 0)
-		fprintf(nbperf->output, "\n\t};\n");
+		out->printf_hash_body ("\n\t};\n");
 	else
-		fprintf(nbperf->output, "\t};\n");
-	fprintf(nbperf->output, "\tuint32_t h[%zu];\n\n", nbperf->hash_size);
-	(*nbperf->print_hash)(nbperf, "\t", "key", "keylen", "h");
+		out->printf_hash_body ("\t};\n");
+	out->printf_hash_body ("\tuint32_t h[%zu];\n\n", nbperf->hash_size);
+	(*nbperf->print_hash)(nbperf, "\t", "str", "len", "h");
 
-	fprintf(nbperf->output, "\n\th[0] = h[0] %% %" PRIu32 ";\n",
+	out->printf_hash_body ("\n\th[0] = h[0] %% %" PRIu32 ";\n",
 	    state->graph.v);
-	fprintf(nbperf->output, "\th[1] = h[1] %% %" PRIu32 ";\n",
+	out->printf_hash_body ("\th[1] = h[1] %% %" PRIu32 ";\n",
 	    state->graph.v);
 #if GRAPH_SIZE >= 3
-	fprintf(nbperf->output, "\th[2] = h[2] %% %" PRIu32 ";\n",
+	out->printf_hash_body ("\th[2] = h[2] %% %" PRIu32 ";\n",
 	    state->graph.v);
 #endif
 
 	if (state->graph.hash_fudge & 1)
-		fprintf(nbperf->output, "\th[1] ^= (h[0] == h[1]);\n");
+		out->printf_hash_body ("\th[1] ^= (h[0] == h[1]);\n");
 
 #if GRAPH_SIZE >= 3
 	if (state->graph.hash_fudge & 2) {
-		fprintf(nbperf->output,
+		out->printf_hash_body (
 		    "\th[2] ^= (h[0] == h[2] || h[1] == h[2]);\n");
-		fprintf(nbperf->output,
+		out->printf_hash_body (
 		    "\th[2] ^= 2 * (h[0] == h[2] || h[1] == h[2]);\n");
 	}
 #endif
 
 #if GRAPH_SIZE >= 3
-	fprintf(nbperf->output, "\treturn (g[h[0]] + g[h[1]] + g[h[2]]) %% "
+	out->printf_hash_body ("\treturn (g[h[0]] + g[h[1]] + g[h[2]]) %% "
 	    "%" PRIu32 ";\n", state->graph.e);
 #else
-	fprintf(nbperf->output, "\treturn (g[h[0]] + g[h[1]]) %% "
+	out->printf_hash_body ("\treturn (g[h[0]] + g[h[1]]) %% "
 	    "%" PRIu32 ";\n", state->graph.e);
 #endif
-	fprintf(nbperf->output, "}\n");
-
+	//out->printf_hash_body ("}\n");
+	assert(nbperf->n == state->graph.e);
+	/*
 	if (nbperf->map_output != NULL) {
 		for (i = 0; i < state->graph.e; ++i)
 			fprintf(nbperf->map_output, "%" PRIu32 "\n", i);
 	}
+	*/
 }
 
 int
@@ -237,7 +237,7 @@ chm3_compute(struct nbperf *nbperf)
 chm_compute(struct nbperf *nbperf)
 #endif
 {
-	struct state state;
+	struct SIZED(state) state;
 	int retval = -1;
 	uint32_t v, e;
 
@@ -278,8 +278,8 @@ chm_compute(struct nbperf *nbperf)
 		v |= 1;
 #endif
 
-	state.g = calloc(sizeof(uint32_t), v);
-	state.visited = calloc(sizeof(uint8_t), v);
+	state.g = (uint32_t*) calloc(sizeof(uint32_t), v);
+	state.visited = (uint8_t*) calloc(sizeof(uint8_t), v);
 	if (state.g == NULL || state.visited == NULL)
 		err(1, "malloc failed");
 
