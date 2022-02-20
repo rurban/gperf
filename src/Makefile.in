@@ -63,9 +63,12 @@ SHELL = /bin/sh
 
 VPATH = $(srcdir)
 
-OBJECTS  = version.$(OBJEXT) positions.$(OBJEXT) options.$(OBJEXT) keyword.$(OBJEXT) keyword-list.$(OBJEXT) \
-           input.$(OBJEXT) bool-array.$(OBJEXT) hash-table.$(OBJEXT) search.$(OBJEXT) output.$(OBJEXT) main.$(OBJEXT) \
-	   nbperf-chm.$(OBJEXT) nbperf-chm3.$(OBJEXT) nbperf-bdz.$(OBJEXT) graph2.$(OBJEXT) graph3.$(OBJEXT)
+OBJECTS  = version.$(OBJEXT) positions.$(OBJEXT) options.$(OBJEXT)	\
+           keyword.$(OBJEXT) keyword-list.$(OBJEXT) input.$(OBJEXT)	\
+           bool-array.$(OBJEXT) hash-table.$(OBJEXT) search.$(OBJEXT)	\
+           output.$(OBJEXT) main.$(OBJEXT) nbperf-chm.$(OBJEXT)		\
+           nbperf-chm3.$(OBJEXT) nbperf-bdz.$(OBJEXT)			\
+           graph2.$(OBJEXT) graph3.$(OBJEXT) mi_vector_hash.$(OBJEXT)
 LIBS     = ../lib/libgp.a @GPERF_LIBM@
 CPPFLAGS = @CPPFLAGS@ -I. -I$(srcdir)/../lib -I$(srcdir)
 
@@ -102,7 +105,7 @@ version.$(OBJEXT): version.cc $(VERSION_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/version.cc
 positions.$(OBJEXT): positions.cc $(POSITIONS_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/positions.cc
-options.$(OBJEXT): options.cc $(OPTIONS_H) $(VERSION_H)
+options.$(OBJEXT): options.cc $(OPTIONS_H) $(VERSION_H) mi_vector_hash.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/options.cc
 keyword.$(OBJEXT): keyword.cc $(KEYWORD_H) $(POSITIONS_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/keyword.cc
@@ -128,6 +131,8 @@ nbperf-chm3.$(OBJEXT): nbperf-chm3.c nbperf-chm.c nbperf.h
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $(srcdir)/nbperf-chm3.c
 nbperf-bdz.$(OBJEXT): nbperf-bdz.c graph2.h nbperf.h
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $(srcdir)/nbperf-bdz.c
+mi_vector_hash.$(OBJEXT): mi_vector_hash.h mi_vector_hash.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $(srcdir)/mi_vector_hash.c
 main.$(OBJEXT): main.cc $(OPTIONS_H) $(INPUT_H) $(SEARCH_H) $(OUTPUT_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/main.cc
 output.icc: mi_vector_hash.c
