@@ -1,0 +1,22 @@
+variables:
+  GIT_DEPTH: "1"
+
+# make fails in doc with epsf.tex and f.tex on images, so skip it.
+
+gcc:
+  script:
+    - sh autogen.sh
+    - CXXFLAGS="-g -O2 -Wall -Wextra -Werror -fno-strict-aliasing"
+      CFLAGS="$CXXFLAGS" ./configure
+    - make -j4 -C lib
+    - make -j4 -C src
+    - make -j4 -C tests check
+    - make -j4 -C tests extracheck
+asan:
+  script:
+    - sh autogen.sh
+    - CXXFLAGS="-g -O2 -fsanitize=address,undefined -fno-omit-frame-pointer -Wall -Wextra"
+       CFLAGS="$CXXFLAGS" ./configure 
+    - make -j4 -C lib
+    - make -j4 -C src
+    - make -j4 -C tests check
