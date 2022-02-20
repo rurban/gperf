@@ -27,7 +27,7 @@
 
 /* Constructor.  */
 Keyword_List::Keyword_List (Keyword *car)
-  : _cdr (NULL), _car (car)
+  : _car (car), _cdr (NULL)
 {
 }
 
@@ -37,6 +37,22 @@ Keyword_List::Keyword_List (Keyword *car)
 KeywordExt_List::KeywordExt_List (KeywordExt *car)
   : Keyword_List (car)
 {
+}
+
+/* Slow O(n) random access to an element of list. Only used for BZP output.  */
+KeywordExt *
+KeywordExt_List::at (int index)
+{
+  int i = 0;
+  KeywordExt_List *temp;
+
+  for (temp = (KeywordExt_List *)this; temp; temp = temp->rest(), i++)
+    {
+      KeywordExt *keyword = temp->first();
+      if (i == index)
+	return keyword;
+    }
+  return NULL;
 }
 
 /* ------------------------ Keyword_List functions ------------------------- */

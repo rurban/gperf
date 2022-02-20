@@ -22,10 +22,12 @@
 #include "output.h"
 
 #include <stdio.h>
+#include <iostream> /* declares cout */
 #include <string.h> /* declares strncpy(), strchr() */
 #include <ctype.h>  /* declares isprint() */
 #include <assert.h> /* defines assert() */
 #include <limits.h> /* defines SCHAR_MAX etc. */
+#include <stdarg.h> /* declares va_start() etc. */
 #include "options.h"
 #include "version.h"
 #include "config.h"
@@ -102,19 +104,31 @@ smallest_integral_type (int min, int max)
      couldn't achieve different hash values, cannot occur on the linear
      keyword list.  Search::optimize would catch this mistake.
  */
-Output::Output (KeywordExt_List *head, const char *struct_decl,
-                unsigned int struct_decl_lineno, const char *return_type,
-                const char *struct_tag, const char *verbatim_declarations,
+Output::Output (KeywordExt_List *head,
+		const char *struct_decl,
+                unsigned int struct_decl_lineno,
+		const char *return_type,
+                const char *struct_tag,
+		const char *verbatim_declarations,
                 const char *verbatim_declarations_end,
                 unsigned int verbatim_declarations_lineno,
-                const char *verbatim_code, const char *verbatim_code_end,
-                unsigned int verbatim_code_lineno, bool charset_dependent,
-                int total_keys, int max_key_len, int min_key_len,
-                bool hash_includes_len, const Positions& positions,
-                const unsigned int *alpha_inc, int total_duplicates,
-                unsigned int alpha_size, const int *asso_values)
-  : _head (head), _struct_decl (struct_decl),
-    _struct_decl_lineno (struct_decl_lineno), _return_type (return_type),
+                const char *verbatim_code,
+		const char *verbatim_code_end,
+                unsigned int verbatim_code_lineno,
+		bool charset_dependent,
+		int total_keys,
+		int max_key_len,
+		int min_key_len,
+		bool hash_includes_len,
+		const Positions& positions,
+		const unsigned int *alpha_inc,
+		int total_duplicates,
+		unsigned int alpha_size,
+		const int *asso_values)
+  : _head (head),
+    _struct_decl (struct_decl),
+    _struct_decl_lineno (struct_decl_lineno),
+    _return_type (return_type),
     _struct_tag (struct_tag),
     _verbatim_declarations (verbatim_declarations),
     _verbatim_declarations_end (verbatim_declarations_end),
@@ -124,12 +138,53 @@ Output::Output (KeywordExt_List *head, const char *struct_decl,
     _verbatim_code_lineno (verbatim_code_lineno),
     _charset_dependent (charset_dependent),
     _total_keys (total_keys),
-    _max_key_len (max_key_len), _min_key_len (min_key_len),
+    _max_key_len (max_key_len),
+    _min_key_len (min_key_len),
     _hash_includes_len (hash_includes_len),
-    _key_positions (positions), _alpha_inc (alpha_inc),
-    _total_duplicates (total_duplicates), _alpha_size (alpha_size),
+    _key_positions (positions),
+    _alpha_inc (alpha_inc),
+    _total_duplicates (total_duplicates),
+    _alpha_size (alpha_size),
     _asso_values (asso_values)
 {
+  _hash_body = vector<string>();
+}
+
+void
+Output::update_searcher (KeywordExt_List *head,
+			 int total_keys,
+			 int max_key_len,
+			 int min_key_len,
+			 bool hash_includes_len,
+			 const Positions& positions,
+			 const unsigned int *alpha_inc,
+			 int total_duplicates,
+			 unsigned int alpha_size,
+			 const int *asso_values)
+{
+  _head = head;
+  _total_keys = total_keys;
+  _max_key_len = max_key_len;
+  _min_key_len = min_key_len;
+  _hash_includes_len = hash_includes_len;
+  _key_positions = positions;
+  _alpha_inc = alpha_inc;
+  _total_duplicates = total_duplicates;
+  _alpha_size = alpha_size;
+  _asso_values = asso_values;
+}
+
+void
+Output::printf_hash_body (const char *fmt, ...)
+{
+  char buffer[1024];
+  va_list argptr;
+  va_start(argptr, fmt);
+  assert(strlen(fmt) < 1024);
+  vsnprintf(buffer, 1024, fmt, argptr);
+  va_end(argptr);
+
+  _hash_body.push_back(string(buffer));
 }
 
 /* ------------------------------------------------------------------------- */
@@ -145,10 +200,17 @@ Output::compute_min_max ()
 
   _min_hash_value = _head->first()->_hash_value;
 
-  KeywordExt_List *temp;
-  for (temp = _head; temp->rest(); temp = temp->rest())
-    ;
-  _max_hash_value = temp->first()->_hash_value;
+  if (option.is_mph_algo())
+    {
+      _max_hash_value = _total_keys;
+    }
+  else
+    {
+      KeywordExt_List *temp;
+      for (temp = _head; temp->rest(); temp = temp->rest())
+	;
+      _max_hash_value = temp->first()->_hash_value;
+    }
 }
 
 /* ------------------------------------------------------------------------- */
@@ -522,7 +584,7 @@ static void
 output_line_directive (unsigned int lineno)
 {
   const char *file_name = option.get_input_file_name ();
-  if (file_name != NULL)
+  if (file_name != NULL && !option.is_mph_algo ())
     {
       printf ("#line %u ", lineno);
       output_string (file_name, strlen (file_name));
@@ -797,14 +859,13 @@ Output::output_asso_values_ref (int pos) const
   printf ("]");
 }
 
-/* Emits the NetBSD mi_vector_hash.c code into the output asis.
-   Unused from C++ yet.
- */
+/* Emits the NetBSD mi_vector_hash.c code into the output asis.  */
 void Output::output_mph_hash () const
 {
   for (unsigned int i=0; i < mi_vector_hash_c_len; i++) {
     printf ("%c", mi_vector_hash_c[i]);
   }
+  printf ("\n");
 }
 
 /* Generates C code for the hash function that returns the
@@ -861,147 +922,156 @@ Output::output_hash_function () const
   /* Output the function's body.  */
   printf ("{\n");
 
-  /* First the asso_values array.  */
-  if (_key_positions.get_size() > 0)
+  if (option.is_mph_algo())
     {
-      /* The values in the asso_values array are all unsigned integers
-         <= MAX_HASH_VALUE + 1.  */
-      printf ("  static %s%s asso_values[] =\n"
-              "    {",
-              const_readonly_array,
-              smallest_integral_type (_max_hash_value + 1));
-
-      const int columns = 10;
-
-      /* Calculate maximum number of digits required for MAX_HASH_VALUE + 1.  */
-      int field_width = 2;
-      for (int trunc = _max_hash_value + 1; (trunc /= 10) > 0;)
-        field_width++;
-
-      for (unsigned int count = 0; count < _alpha_size; count++)
-        {
-          if (count > 0)
-            printf (",");
-          if ((count % columns) == 0)
-            printf ("\n     ");
-          printf ("%*d", field_width, _asso_values[count]);
-        }
-
-      printf ("\n"
-              "    };\n");
-    }
-
-  if (_key_positions.get_size() == 0)
-    {
-      /* Trivial case: No key positions at all.  */
-      printf ("  return %s;\n",
-              _hash_includes_len ? "len" : "0");
+      for (string s : _hash_body) {
+        cout << s;
+      }
     }
   else
     {
-      /* Iterate through the key positions.  Remember that Positions::sort()
-         has sorted them in decreasing order, with Positions::LASTCHAR coming
-         last.  */
-      PositionIterator iter = _key_positions.iterator(_max_key_len);
-      int key_pos;
-
-      /* Get the highest key position.  */
-      key_pos = iter.next ();
-
-      if (key_pos == Positions::LASTCHAR || key_pos < _min_key_len)
+      /* First the asso_values array.  */
+      if (_key_positions.get_size() > 0)
         {
-          /* We can perform additional optimizations here:
-             Write it out as a single expression. Note that the values
-             are added as 'int's even though the asso_values array may
-             contain 'unsigned char's or 'unsigned short's.  */
+          /* The values in the asso_values array are all unsigned integers
+             <= MAX_HASH_VALUE + 1.  */
+          printf ("  static %s%s asso_values[] =\n"
+                  "    {",
+                  const_readonly_array,
+                  smallest_integral_type (_max_hash_value + 1));
 
-          printf ("  return %s",
-                  _hash_includes_len ? "len + " : "");
+          const int columns = 10;
 
-          if (_key_positions.get_size() == 2
-              && _key_positions[0] == 0
-              && _key_positions[1] == Positions::LASTCHAR)
-            /* Optimize special case of "-k 1,$".  */
+          /* Calculate maximum number of digits required for MAX_HASH_VALUE + 1.  */
+          int field_width = 2;
+          for (int trunc = _max_hash_value + 1; (trunc /= 10) > 0;)
+            field_width++;
+
+          for (unsigned int count = 0; count < _alpha_size; count++)
             {
-              output_asso_values_ref (Positions::LASTCHAR);
-              printf (" + ");
-              output_asso_values_ref (0);
-            }
-          else
-            {
-              for (; key_pos != Positions::LASTCHAR; )
-                {
-                  output_asso_values_ref (key_pos);
-                  if ((key_pos = iter.next ()) != PositionIterator::EOS)
-                    printf (" + ");
-                  else
-                    break;
-                }
-
-              if (key_pos == Positions::LASTCHAR)
-                output_asso_values_ref (Positions::LASTCHAR);
+              if (count > 0)
+                printf (",");
+              if ((count % columns) == 0)
+                printf ("\n     ");
+              printf ("%*d", field_width, _asso_values[count]);
             }
 
-          printf (";\n");
+          printf ("\n"
+                  "    };\n");
+        }
+
+      if (_key_positions.get_size() == 0)
+        {
+          /* Trivial case: No key positions at all.  */
+          printf ("  return %s;\n",
+                  _hash_includes_len ? "len" : "0");
         }
       else
         {
-          /* We've got to use the correct, but brute force, technique.  */
-          /* Pseudo-statement or comment that avoids a compiler warning or
-             lint warning.  */
-          const char * const fallthrough_marker =
-            "#if defined __cplusplus && (__cplusplus >= 201703L || (__cplusplus >= 201103L && defined __clang_major__ && defined __clang_minor__ && __clang_major__ + (__clang_minor__ >= 9) > 3))\n"
-            "      [[fallthrough]];\n"
-            "#elif defined __GNUC__ && __GNUC__ >= 7\n"
-            "      __attribute__ ((__fallthrough__));\n"
-            "#endif\n"
-            "      /*FALLTHROUGH*/\n";
-          /* It doesn't really matter whether hval is an 'int' or
-             'unsigned int', but 'unsigned int' gives fewer warnings.  */
-          printf ("  %sunsigned int hval = %s;\n\n"
-                  "  switch (%s)\n"
-                  "    {\n"
-                  "      default:\n",
-                  register_scs, _hash_includes_len ? "len" : "0",
-                  _hash_includes_len ? "hval" : "len");
+          /* Iterate through the key positions.  Remember that Positions::sort()
+             has sorted them in decreasing order, with Positions::LASTCHAR coming
+             last.  */
+          PositionIterator iter = _key_positions.iterator(_max_key_len);
+          int key_pos;
 
-          while (key_pos != Positions::LASTCHAR && key_pos >= _max_key_len)
-            if ((key_pos = iter.next ()) == PositionIterator::EOS)
-              break;
+          /* Get the highest key position.  */
+          key_pos = iter.next ();
 
-          if (key_pos != PositionIterator::EOS && key_pos != Positions::LASTCHAR)
+          if (key_pos == Positions::LASTCHAR || key_pos < _min_key_len)
             {
-              int i = key_pos;
-              do
+              /* We can perform additional optimizations here:
+                 Write it out as a single expression. Note that the values
+                 are added as 'int's even though the asso_values array may
+                 contain 'unsigned char's or 'unsigned short's.  */
+
+              printf ("  return %s",
+                      _hash_includes_len ? "len + " : "");
+
+              if (_key_positions.get_size() == 2
+                  && _key_positions[0] == 0
+                  && _key_positions[1] == Positions::LASTCHAR)
+                /* Optimize special case of "-k 1,$".  */
                 {
-                  if (i > key_pos)
-                    printf ("%s", fallthrough_marker);
-                  for ( ; i > key_pos; i--)
-                    printf ("      case %d:\n", i);
-
-                  printf ("        hval += ");
-                  output_asso_values_ref (key_pos);
-                  printf (";\n");
-
-                  key_pos = iter.next ();
+                  output_asso_values_ref (Positions::LASTCHAR);
+                  printf (" + ");
+                  output_asso_values_ref (0);
                 }
-              while (key_pos != PositionIterator::EOS && key_pos != Positions::LASTCHAR);
+              else
+                {
+                  for (; key_pos != Positions::LASTCHAR; )
+                    {
+                      output_asso_values_ref (key_pos);
+                      if ((key_pos = iter.next ()) != PositionIterator::EOS)
+                        printf (" + ");
+                      else
+                        break;
+                    }
 
-              if (i >= _min_key_len)
-                printf ("%s", fallthrough_marker);
-              for ( ; i >= _min_key_len; i--)
-                printf ("      case %d:\n", i);
+                  if (key_pos == Positions::LASTCHAR)
+                    output_asso_values_ref (Positions::LASTCHAR);
+                }
+
+              printf (";\n");
             }
-
-          printf ("        break;\n"
-                  "    }\n"
-                  "  return hval");
-          if (key_pos == Positions::LASTCHAR)
+          else
             {
-              printf (" + ");
-              output_asso_values_ref (Positions::LASTCHAR);
+              /* We've got to use the correct, but brute force, technique.  */
+              /* Pseudo-statement or comment that avoids a compiler warning or
+                 lint warning.  */
+              const char * const fallthrough_marker =
+                "#if defined __cplusplus && (__cplusplus >= 201703L || (__cplusplus >= 201103L && defined __clang_major__ && defined __clang_minor__ && __clang_major__ + (__clang_minor__ >= 9) > 3))\n"
+                "      [[fallthrough]];\n"
+                "#elif defined __GNUC__ && __GNUC__ >= 7\n"
+                "      __attribute__ ((__fallthrough__));\n"
+                "#endif\n"
+                "      /*FALLTHROUGH*/\n";
+              /* It doesn't really matter whether hval is an 'int' or
+                 'unsigned int', but 'unsigned int' gives fewer warnings.  */
+              printf ("  %sunsigned int hval = %s;\n\n"
+                      "  switch (%s)\n"
+                      "    {\n"
+                      "      default:\n",
+                      register_scs, _hash_includes_len ? "len" : "0",
+                      _hash_includes_len ? "hval" : "len");
+
+              while (key_pos != Positions::LASTCHAR && key_pos >= _max_key_len)
+                if ((key_pos = iter.next ()) == PositionIterator::EOS)
+                  break;
+
+              if (key_pos != PositionIterator::EOS && key_pos != Positions::LASTCHAR)
+                {
+                  int i = key_pos;
+                  do
+                    {
+                      if (i > key_pos)
+                        printf ("%s", fallthrough_marker);
+                      for ( ; i > key_pos; i--)
+                        printf ("      case %d:\n", i);
+
+                      printf ("        hval += ");
+                      output_asso_values_ref (key_pos);
+                      printf (";\n");
+
+                      key_pos = iter.next ();
+                    }
+                  while (key_pos != PositionIterator::EOS && key_pos != Positions::LASTCHAR);
+
+                  if (i >= _min_key_len)
+                    printf ("%s", fallthrough_marker);
+                  for ( ; i >= _min_key_len; i--)
+                    printf ("      case %d:\n", i);
+                }
+
+              printf ("        break;\n"
+                      "    }\n"
+                      "  return hval");
+              if (key_pos == Positions::LASTCHAR)
+                {
+                  printf (" + ");
+                  output_asso_values_ref (Positions::LASTCHAR);
+                }
+              printf (";\n");
             }
-          printf (";\n");
         }
     }
   printf ("}\n\n");
@@ -1027,7 +1097,7 @@ Output::output_keylength_table () const
           indent);
 
   /* Generate an array of lengths, similar to output_keyword_table.  */
-  int index;
+  unsigned int index;
   int column;
   KeywordExt_List *temp;
 
@@ -1222,10 +1292,48 @@ output_keyword_entry (KeywordExt *temp, int stringpool_index, const char *indent
       printf (" /* ");
       if (is_duplicate)
         printf ("hash value duplicate, ");
-      else
+      else if (!option.is_mph_algo())
         printf ("hash value = %d, ", temp->_hash_value);
       printf ("index = %d */", temp->_final_index);
     }
+}
+
+static void
+output_nbperf_keyword_entry (char *key, uint32_t keylen, char *type_rest,
+			     uint32_t hash, uint32_t index, const char *indent)
+{
+  //if (option[TYPE])
+  //  output_line_directive (temp->_lineno);
+  printf ("%s    ", indent);
+  if (option[TYPE])
+    printf ("{");
+  if (option[SHAREDLIB])
+    /* How to determine a certain offset in stringpool at compile time?
+       - The standard way would be to use the 'offsetof' macro.  But it is only
+         defined in <stddef.h>, and <stddef.h> is not among the prerequisite
+         header files that the user must #include.
+       - The next best way would be to take the address and cast to 'intptr_t'
+         or 'uintptr_t'.  But these types are only defined in <stdint.h>, and
+         <stdint.h> is not among the prerequisite header files that the user
+         must #include.
+       - The next best approximation of 'uintptr_t' is 'size_t'.  It is defined
+         in the prerequisite header <string.h>.
+       - The types 'long' and 'unsigned long' do work as well, but on 64-bit
+         native Windows platforms, they don't have the same size as pointers
+         and therefore generate warnings.  */
+    printf ("(int)(size_t)&((struct %s_t *)0)->%s_str%d",
+            option.get_stringpool_name (), option.get_stringpool_name (),
+            index);
+  else
+    output_string (key, keylen);
+  if (option[TYPE])
+    {
+      if (type_rest)
+        printf (",%s", type_rest);
+      printf ("}");
+    }
+  if (option[DEBUG])
+    printf (" \t/* hash=%u, index=%u */", hash, index);
 }
 
 static void
@@ -1280,60 +1388,98 @@ void
 Output::output_keyword_table () const
 {
   const char *indent  = option[GLOBAL] ? "" : "  ";
-  int index;
-  KeywordExt_List *temp;
+  unsigned int index = 0;
+  KeywordExt_List *temp = _head;
+  struct nbperf *nbperf = option.nbperf ();
 
   printf ("%sstatic ",
           indent);
   output_const_type (const_readonly_array, _wordlist_eltype);
-  printf ("%s[] =\n"
+  printf ("%s[] =\n" // FIXME static const char *const wordlist
           "%s  {\n",
           option.get_wordlist_name (),
           indent);
 
   /* Generate an array of reserved words at appropriate locations.  */
-
-  for (temp = _head, index = 0; temp; temp = temp->rest())
+  /* With BPZ honor the nbperf->result_map ordering.  CHM is ordered.  */
+  if (option[BPZ_ALGO])
     {
-      KeywordExt *keyword = temp->first();
+      uint32_t* inv_map = new uint32_t[nbperf->n];
+      //uint32_t *inv_map = (uin32_t*) malloc (nbperf->n * 4);
+      for (uint32_t i = 0; i < nbperf->n; i++)
+	{
+	  uint32_t idx = nbperf->result_map[i];
+	  inv_map[idx] = i;
+	}
+      /* Quadratic (2 nested loops)  */
+      for (uint32_t i = 0; i < nbperf->n; i++)
+	{
+	  char *type_rest = NULL;
+	  uint32_t idx = inv_map[i];
+	  if (option[TYPE])
+	    {
+	      KeywordExt *keyword = temp->at(idx); /* slow O(n) access */
+	      type_rest = (char*)keyword->_rest;
+	    }
+	  output_nbperf_keyword_entry ((char*)nbperf->keys[idx],
+				       nbperf->keylens[idx],
+				       type_rest, idx, i, indent);
+	  if (i == nbperf->n - 1)
+	    printf ("\n");
+	  else
+	    printf (",\n");
+	}
+      free (nbperf->result_map);
+      delete[] inv_map;
+    }
+  else
+    {
+      for (index = 0; temp; temp = temp->rest())
+	{
+	  KeywordExt *keyword = temp->first();
 
-      /* If generating a switch statement, and there is no user defined type,
-         we generate non-duplicates directly in the code.  Only duplicates go
-         into the table.  */
-      if (option[SWITCH] && !option[TYPE] && !keyword->_duplicate_link)
-        continue;
+	  /* If generating a switch statement, and there is no user defined type,
+	     we generate non-duplicates directly in the code.  Only duplicates go
+	     into the table.  */
+	  if (option[SWITCH] && !option[TYPE] && !keyword->_duplicate_link)
+	    continue;
 
-      if (index > 0)
-        printf (",\n");
+	  if (index > 0)
+	    printf (",\n");
 
-      if (index < keyword->_hash_value && !option[SWITCH] && !option[DUP])
-        {
-          /* Some blank entries.  */
-          output_keyword_blank_entries (keyword->_hash_value - index, indent);
-          printf (",\n");
-          index = keyword->_hash_value;
-        }
+	  if (!option.is_mph_algo())
+	    {
+	      if (index < keyword->_hash_value && !option[SWITCH] && !option[DUP])
+		{
+		  /* Some blank entries.  */
+		  output_keyword_blank_entries (keyword->_hash_value - index, indent);
+		  printf (",\n");
+		  index = keyword->_hash_value;
+		}
+	    }
+	  keyword->_final_index = index;
 
-      keyword->_final_index = index;
+	  output_keyword_entry (keyword, index, indent, false);
 
-      output_keyword_entry (keyword, index, indent, false);
+	  /* Deal with duplicates specially.  */
+	  if (keyword->_duplicate_link) // implies option[DUP]
+	    for (KeywordExt *links = keyword->_duplicate_link;
+		 links;
+		 links = links->_duplicate_link)
+	      {
+		links->_final_index = ++index;
+		printf (",\n");
+		int stringpool_index =
+		  (links->_allchars_length == keyword->_allchars_length
+		   && memcmp (links->_allchars, keyword->_allchars,
+			      keyword->_allchars_length) == 0
+		   ? keyword->_final_index
+		   : links->_final_index);
+		output_keyword_entry (links, stringpool_index, indent, true);
+	      }
 
-      /* Deal with duplicates specially.  */
-      if (keyword->_duplicate_link) // implies option[DUP]
-        for (KeywordExt *links = keyword->_duplicate_link; links; links = links->_duplicate_link)
-          {
-            links->_final_index = ++index;
-            printf (",\n");
-            int stringpool_index =
-              (links->_allchars_length == keyword->_allchars_length
-               && memcmp (links->_allchars, keyword->_allchars,
-                          keyword->_allchars_length) == 0
-               ? keyword->_final_index
-               : links->_final_index);
-            output_keyword_entry (links, stringpool_index, indent, true);
-          }
-
-      index++;
+	  index++;
+	}
     }
   if (index > 0)
     printf ("\n");
@@ -1378,8 +1524,9 @@ Output::output_lookup_array () const
           int hash_value = temp->first()->_hash_value;
           lookup_array[hash_value] = temp->first()->_final_index;
           if (option[DEBUG])
-            fprintf (stderr, "keyword = %.*s, index = %d\n",
-                     temp->first()->_allchars_length, temp->first()->_allchars, temp->first()->_final_index);
+            fprintf (stderr, "keyword = %.*s, index = %u\n",
+                     temp->first()->_allchars_length, temp->first()->_allchars,
+		     temp->first()->_final_index);
           if (temp->first()->_duplicate_link)
             {
               /* Start a duplicate entry.  */
@@ -1387,7 +1534,9 @@ Output::output_lookup_array () const
               dup_ptr->index = temp->first()->_final_index;
               dup_ptr->count = 1;
 
-              for (KeywordExt *ptr = temp->first()->_duplicate_link; ptr; ptr = ptr->_duplicate_link)
+              for (KeywordExt *ptr = temp->first()->_duplicate_link;
+		   ptr;
+		   ptr = ptr->_duplicate_link)
                 {
                   dup_ptr->count++;
                   if (option[DEBUG])
@@ -1803,8 +1952,9 @@ Output::output_lookup_function_body (const Output_Compare& comparison) const
     }
   else
     {
-      printf ("      if (key <= %sMAX_HASH_VALUE)\n",
-              option.get_constants_prefix ());
+      if (!option.is_mph_algo())
+	printf ("      if (key <= %sMAX_HASH_VALUE)\n",
+		option.get_constants_prefix ());
 
       if (option[DUP])
         {
@@ -1915,7 +2065,7 @@ Output::output_lookup_function_body (const Output_Compare& comparison) const
         }
       else
         {
-          int indent = 8;
+          int indent = option.is_mph_algo() ? 4 : 8;
           if (option[LENTABLE])
             {
               printf ("%*sif (len == %s[key])\n",
@@ -1961,9 +2111,9 @@ Output::output_lookup_function_body (const Output_Compare& comparison) const
             }
           else
             {
-              printf ("%*s{\n"
-                      "%*s  %s%schar *s = %s[key]",
-                      indent, "",
+	      if (!option.is_mph_algo())
+		printf ("%*s{\n", indent, "");
+              printf ("%*s  %s%schar *s = %s[key]",
                       indent, "", register_scs, const_always,
                       option.get_wordlist_name ());
               if (option[TYPE])
@@ -1990,8 +2140,8 @@ Output::output_lookup_function_body (const Output_Compare& comparison) const
               printf ("%*s    }\n",
                       indent, "");
             }
-          printf ("%*s}\n",
-                  indent, "");
+	  if (!option.is_mph_algo())
+	    printf ("%*s}\n", indent, "");
         }
     }
   printf ("    }\n"
@@ -2105,7 +2255,7 @@ Output::output ()
   printf (" code produced by gperf version %s */\n", version_string);
   option.print_options ();
   printf ("\n");
-  if (!option[POSITIONS])
+  if (!option[POSITIONS] && !option.is_mph_algo())
     {
       printf ("/* Computed positions: -k'");
       _key_positions.print();
@@ -2159,9 +2309,6 @@ Output::output ()
       printf ("%s\n", _struct_decl);
     }
 
-  if (option.is_mph_algo()) // FIXME
-    return;
-
   if (option[INCLUDE])
     printf ("#include <string.h>\n"); /* Declare strlen(), strcmp(), strncmp(). */
 
@@ -2197,16 +2344,18 @@ Output::output ()
     }
 
   if (option[CPLUSPLUS])
-    printf ("class %s\n"
-            "{\n"
-            "private:\n"
-            "  static inline unsigned int %s (const char *str, size_t len);\n"
-            "public:\n"
-            "  static %s%s%s (const char *str, size_t len);\n"
-            "};\n"
-            "\n",
-            option.get_class_name (), option.get_hash_name (),
-            const_for_struct, _return_type, option.get_function_name ());
+    {
+      printf ("class %s\n"
+	      "{\n"
+	      "private:\n"
+	      "  static inline unsigned int %s (const char *str, size_t len);\n"
+	      "public:\n"
+	      "  static %s%s%s (const char *str, size_t len);\n"
+	      "};\n"
+	      "\n",
+	      option.get_class_name (), option.get_hash_name (),
+	      const_for_struct, _return_type, option.get_function_name ());
+    }
 
   if (option.is_mph_algo())
     output_mph_hash();

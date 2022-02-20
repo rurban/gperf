@@ -1,6 +1,7 @@
 /*	$NetBSD: graph2.c,v 1.5 2021/01/07 16:03:08 joerg Exp $	*/
 /*-
  * Copyright (c) 2009 The NetBSD Foundation, Inc.
+ * Copyright (c) 2022 Reini Urban.
  * All rights reserved.
  *
  * This code is derived from software contributed to The NetBSD Foundation
@@ -53,9 +54,9 @@ SIZED2(_setup)(struct SIZED(graph) *graph, uint32_t v, uint32_t e)
 	graph->v = v;
 	graph->e = e;
 
-	graph->verts = calloc(sizeof(*graph->verts), v);
-	graph->edges = calloc(sizeof(*graph->edges), e);
-	graph->output_order = calloc(sizeof(uint32_t), e);
+	graph->verts = (SIZED(vertex)*) calloc(sizeof(*graph->verts), v);
+	graph->edges = (SIZED(edge)*) calloc(sizeof(*graph->edges), e);
+	graph->output_order = (uint32_t*) calloc(sizeof(uint32_t), e);
 
 	if (graph->verts == NULL || graph->edges == NULL ||
 	    graph->output_order == NULL)
@@ -80,7 +81,7 @@ static int sorting_found;
 
 static int sorting_cmp(const void *a_, const void *b_)
 {
-	const uint32_t *a = a_, *b = b_;
+	const uint32_t *a = (const uint32_t *)a_, *b = (const uint32_t *)b_;
 	int i;
 	const struct SIZED(edge) *ea = &sorting_graph->edges[*a],
 	    *eb = &sorting_graph->edges[*b];
@@ -105,7 +106,7 @@ static int
 SIZED2(_check_duplicates)(struct nbperf *nbperf, struct SIZED(graph) *graph)
 {
 	size_t i;
-	uint32_t *key_index = calloc(sizeof(*key_index), graph->e);
+	uint32_t *key_index = (uint32_t*) calloc(sizeof(*key_index), graph->e);
 
 	if (key_index == NULL)
 		err(1, "malloc failed");

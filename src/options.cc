@@ -602,15 +602,16 @@ extern "C" {
   }
 
   static void mi_vector_hash_compute(struct nbperf *nbperf, const void *key, size_t keylen,
-                                       uint32_t *hashes)
+                                     uint32_t *hashes)
   {
     mi_vector_hash(key, keylen, nbperf->seed[0], hashes);
   }
 
   static void mi_vector_hash_print_hash(struct nbperf *nbperf, const char *indent,
-                                          const char *key, const char *keylen, const char *hash)
+                                        const char *key, const char *keylen, const char *hash)
   {
-    fprintf(nbperf->output,
+    Output *out = nbperf->out;
+    out->printf_hash_body (
             "%smi_vector_hash(%s, %s, 0x%08" PRIx32 "U, %s);\n",
             indent, key, keylen, nbperf->seed[0], hash);
   }
@@ -745,8 +746,7 @@ Options::set_nbperf ()
   _nbperf.print_hash = mi_vector_hash_print_hash;
   if (!(_option_word & RANDOM))
     _nbperf.predictable = 1;
-  //if (_option_word & DUP)
-  //  _nbperf.check_duplicates = 1;
+  _option_word &= ~POSITIONS;
   if (_option_word & GLOBAL)
     _nbperf.static_hash = 1;
   if (_output_file_name)
