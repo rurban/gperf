@@ -228,6 +228,9 @@ Options::long_usage (FILE * stream)
            "                         Tune the space efficiency for chm, chm2 and bpz.\n"
            "                         The default for chm is 2, for chm3 and bpz 1.24.\n");
   fprintf (stream,
+           "  -f, --allow-hash-fudging\n"
+           "                         Fudge the hashes a bit if needed for chm, chm2 and bpz.\n");
+  fprintf (stream,
            "  -k, --key-positions=KEYS\n"
            "                         Select the key positions used in the hash function.\n"
            "                         The allowable choices range between 1-%d, inclusive.\n"
@@ -791,7 +794,6 @@ static const struct option long_options[] =
   { "compare-strlen", no_argument, NULL, 'l' }, /* backward compatibility */
   { "compare-lengths", no_argument, NULL, 'l' },
   { "duplicates", no_argument, NULL, 'D' },
-  { "fast", required_argument, NULL, 'f' },
   { "initial-asso", required_argument, NULL, 'i' },
   { "jump", required_argument, NULL, 'j' },
   { "multiple-iterations", required_argument, NULL, 'm' },
@@ -807,6 +809,7 @@ static const struct option long_options[] =
   { "chm3", no_argument, NULL, CHAR_MAX + 7 },
   { "bpz", no_argument, NULL, CHAR_MAX + 8 },
   { "utilisation", required_argument, NULL, 'u' },
+  { "allow-hash-fudging", no_argument, NULL, 'f' },
   { "help", no_argument, NULL, 'h' },
   { "version", no_argument, NULL, 'v' },
   { "debug", no_argument, NULL, 'd' },
@@ -864,8 +867,6 @@ Options::parse_options (int argc, char *argv[])
             _option_word |= ENUM;
             break;
           }
-        case 'f':               /* Generate the hash table "fast".  */
-          break;                /* Not needed any more.  */
         case 'F':
           {
             _initializer_suffix = /*getopt*/optarg;
@@ -1032,6 +1033,13 @@ Options::parse_options (int argc, char *argv[])
             _option_word |= RANDOM;
             if (_initial_asso_value != 0)
               fprintf (stderr, "warning, -r option supersedes -i, disabling -i option and continuing\n");
+            break;
+          }
+        case 'f':               /* Allow MPH hash-fudging */
+          {
+            if (is_mph_algo())
+              _nbperf.allow_hash_fudging = 1;
+            // else ignore. was 'fast'
             break;
           }
         case 's':               /* Range of associated values, determines size of final table.  */

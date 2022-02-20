@@ -104,6 +104,8 @@ Algorithms employed by gperf:
   -u, --utilisation=FACTOR
                          Tune the space efficiency for chm, chm2 and bpz.
                          The default for chm is 2, for chm3 and bpz 1.24.
+  -f, --allow-hash-fudging
+                         Fudge the hashes a bit if needed for chm, chm2 and bpz.
   -k, --key-positions=KEYS
                          Select the key positions used in the hash function.
                          The allowable choices range between 1-255, inclusive.
