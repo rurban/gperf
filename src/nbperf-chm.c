@@ -45,6 +45,8 @@
 
 #include "nbperf.h"
 #include "graph2.h"
+extern const unsigned char mi_vector_hash_c[];
+extern const unsigned int mi_vector_hash_c_len;
 
 /*
  * A full description of the algorithm can be found in:
@@ -149,9 +151,9 @@ print_hash(struct nbperf *nbperf, struct state *state)
 	const char *g_type;
 	int g_width;
 
-	fprintf(nbperf->output, "#include <stdlib.h>\n");
-	fprintf(nbperf->output, "#include <stdint.h>\n");
-        fprintf(nbperf->output, "#include \"%s\"\n\n", nbperf->hash_header);
+        for (unsigned int i=0; i < mi_vector_hash_c_len; i++) {
+                fprintf(nbperf->output, "%c", mi_vector_hash_c[i]);
+        }
 
 	fprintf(nbperf->output, "%suint32_t\n",
 	    nbperf->static_hash ? "static " : "");

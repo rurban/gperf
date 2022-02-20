@@ -30,7 +30,7 @@
 #include "version.h"
 #include "config.h"
 #include "nbperf.h"
-#include "output.icc"
+#include "output.ic"
 
 /* ============================== Portability ============================== */
 
@@ -801,8 +801,8 @@ Output::output_asso_values_ref (int pos) const
  */
 void Output::output_mph_hash () const
 {
-  for (unsigned int i=0; i < src_mi_vector_hash_c_len; i++) {
-    printf ("%c", src_mi_vector_hash_c[i]);
+  for (unsigned int i=0; i < mi_vector_hash_c_len; i++) {
+    printf ("%c", mi_vector_hash_c[i]);
   }
 }
 
