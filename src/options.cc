@@ -506,6 +506,7 @@ Options::Options ()
 {
   memset(&_nbperf, 0, sizeof(struct nbperf));
   _nbperf.hash_name = DEFAULT_HASH_NAME;
+  _nbperf.check_duplicates = 1;
 }
 
 /* Dumps option status when debugging is enabled.  */
@@ -752,8 +753,8 @@ Options::set_nbperf ()
   _nbperf.print_hash = mi_vector_hash_print_hash;
   if (!(_option_word & RANDOM))
     _nbperf.predictable = 1;
-  if (_option_word & DUP)
-    _nbperf.has_duplicates = 1;
+  //if (_option_word & DUP)
+  //  _nbperf.check_duplicates = 1;
   if (_option_word & GLOBAL)
     _nbperf.static_hash = 1;
   if (_output_file_name)
