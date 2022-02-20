@@ -30,9 +30,11 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+#pragma once
 
 #ifdef __cplusplus
 #include <cstdint>
+extern "C" {
 #else
 #include <stdint.h>
 #endif
@@ -67,3 +69,7 @@ struct nbperf {
 int	chm_compute(struct nbperf *);
 int	chm3_compute(struct nbperf *);
 int	bpz_compute(struct nbperf *);
+
+#ifdef __cplusplus
+}
+#endif

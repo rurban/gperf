@@ -1597,6 +1597,69 @@ Search::optimize ()
   /* Preparations.  */
   prepare ();
 
+  if (option.is_mph_algo())
+    {
+      int rv;
+      int i = 0;
+      uint32_t max_iterations = 0xffffffU;
+      struct nbperf *nbperf = option.nbperf();
+
+      char** keys = (char**)malloc(_total_keys * sizeof(char*));
+      size_t *keylens = (size_t *)malloc(_total_keys * sizeof(size_t));
+      for (KeywordExt_List *temp = _head; temp; temp = temp->rest(), i++)
+        {
+          KeywordExt *keyword = temp->first();
+          const char *k = keyword->_allchars;
+          const size_t len = keyword->_allchars_length;
+          // need 4 byte padding for faster hashing
+          if (len % 4 == 0) {
+            if ((keys[i] = strndup(k, len)) == NULL) {
+              perror("strndup failed");
+              exit(1);
+            }
+          }
+          else {
+            ssize_t padded_len = len + (4 - (len % 4));
+            if ((keys[i] = (char*)calloc(padded_len, 1)) == NULL) {
+              perror("calloc failed");
+              exit(1);
+            }
+            memcpy((char*)keys[i], k, len);
+          }
+          keylens[i] = len;
+        }
+      nbperf->n = _total_keys;
+      nbperf->keys = (const void * __restrict *)keys;
+      nbperf->keylens = (const size_t *)keylens;
+
+      for (;;) {
+        if (option[CHM_ALGO])
+          rv = chm_compute(nbperf);
+        else if (option[CHM3_ALGO])
+          rv = chm3_compute(nbperf);
+        else if (option[BPZ_ALGO])
+          rv = bpz_compute(nbperf);
+        if (!rv)
+          break;
+        //if (nbperf->has_duplicates) {
+        //  fputc('\n', stderr);
+        //  errx(1, "Duplicate keys detected");
+        //}
+        fputc('.', stderr);
+        //if (!looped)
+        //  nbperf->check_duplicates = 1;
+        //looped = 1;
+        if (max_iterations == 0xffffffffU)
+          continue;
+        if (--max_iterations == 0) {
+          fputc('\n', stderr);
+          fprintf(stderr, "Iteration count reached");
+          exit(1);
+        }
+      }
+      return;
+    }
+
   /* Step 1: Finding good byte positions.  */
   find_positions ();
 
@@ -1694,4 +1757,12 @@ Search::~Search ()
   delete[] _occurrences;
   delete[] _alpha_unify;
   delete[] _alpha_inc;
+
+  {
+    struct nbperf *nbperf = option.nbperf();
+    free ((void*)nbperf->keylens);
+    for (int i=0; i < nbperf->n; i++)
+      free ((void*)nbperf->keys[i]);
+    free ((void*)nbperf->keys);
+  }
 }
