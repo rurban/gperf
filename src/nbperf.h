@@ -44,26 +44,27 @@ extern "C" {
 #define	NBPERF_MAX_HASH_SIZE	3
 
 struct nbperf {
-	FILE *output;
-	FILE *map_output;
-	const char *hash_name;
-	const char *hash_header;
-	int static_hash;
-	int allow_hash_fudging;
-	size_t n;
-	const void * __restrict * keys;
-	const size_t *keylens;
-	int check_duplicates, has_duplicates;
+    FILE *output;
+    FILE *map_output;
+    const char *hash_name;
+    const char *hash_header;
+    int static_hash;
+    int allow_hash_fudging;
+    size_t n;
+    const void * __restrict * keys;
+    const size_t *keylens;
+    int check_duplicates, has_duplicates;
+    int predictable;
 
-	double c;
+    double c; /* utilisation factor */
 
-	size_t hash_size;
-	void (*seed_hash)(struct nbperf *);
-	void (*print_hash)(struct nbperf *, const char *, const char *, const char *,
-	    const char *);
-	void (*compute_hash)(struct nbperf *, const void *, size_t,
-	    uint32_t *);
-	uint32_t seed[1];
+    size_t hash_size;
+    void (*seed_hash)(struct nbperf *);
+    void (*print_hash)(struct nbperf *, const char *, const char *, const char *,
+                       const char *);
+    void (*compute_hash)(struct nbperf *, const void *, size_t,
+                         uint32_t *);
+    uint32_t seed[1];
 };
 
 int	chm_compute(struct nbperf *);
