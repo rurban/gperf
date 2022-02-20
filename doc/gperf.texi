@@ -1274,16 +1274,16 @@ The resulting MPHFs are order preserving.
 The resulting MPHFs are stored in 4cn bytes, where c is greater than 2.
 @end itemize
 
-The only other valid algorithm options are @samp{--random} and the
-@samp{--utilisation FACTOR}.
+The only other valid algorithm options are @samp{--random}, @samp{-f}
+and the @samp{--utilisation FACTOR}.
 See @url{http://cmph.sourceforge.net/papers/chm92.pdf}
 
 @item --chm3
 @cindex CHM3
 A chm variant which uses 3 table lookups with much smaller tables, thus
 trades size over speed.
-The only other valid algorithm options are @samp{--random} and the
-@samp{--utilisation FACTOR}.
+The only other valid algorithm options are @samp{--random}, @samp{-f}
+and the @samp{--utilisation FACTOR}.
 
 @item --bpz
 @cindex BPZ
@@ -1314,14 +1314,19 @@ For its maximum load factor (81 %), the resulting PHFs are stored in
 approximately 1.95 bits per key.
 @end itemize
 
-The only other valid algorithm options are @samp{--random} and the
-@samp{--utilisation FACTOR}.
+The only other valid algorithm options are @samp{--random}, @samp{-f}
+and the @samp{--utilisation FACTOR}.
 See @url{http://cmph.sourceforge.net/bdz.html}
 
 @item -u @var{FACTOR}
 @itemx --utilisation=@var{FACTOR}
 Tune the space efficiency for chm, chm3 and bpz.
 The default for chm is 2, for chm3 and bpz 1.24.
+
+@item -f
+@itemx --allow-hash-fudging
+With chm, chm3 and bpz allow for slightly slower hashes to find
+better solutions faster. The old @samp{--fast} option is now illegal.
 
 @item -k @var{selected-byte-positions}
 @itemx --key-positions=@var{selected-byte-positions}
