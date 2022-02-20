@@ -1631,6 +1631,7 @@ Search::optimize ()
       nbperf->n = _total_keys;
       nbperf->keys = (const void * __restrict *)keys;
       nbperf->keylens = (const size_t *)keylens;
+      _total_duplicates = 0;
 
       for (;;) {
         if (option[CHM_ALGO])
@@ -1720,6 +1721,27 @@ Search::optimize ()
 
 Search::~Search ()
 {
+  if (option.is_mph_algo())
+    {
+      struct nbperf *nbperf = option.nbperf();
+
+      if (option[DEBUG])
+        fprintf (stderr, "\nDumping key list information:\n"
+                 "total keywords = %d\n"
+                 "duplicates = %d\n"
+                 "minimum key length = %d\n"
+                 "maximum key length = %d\n",
+                 _total_keys, nbperf->has_duplicates,
+                 _min_key_len, _max_key_len);
+
+      free ((void*)nbperf->keylens);
+      for (int i=0; i < nbperf->n; i++)
+        free ((void*)nbperf->keys[i]);
+      free ((void*)nbperf->keys);
+
+      return;
+    }
+
   delete _collision_detector;
   if (option[DEBUG])
     {
@@ -1757,12 +1779,4 @@ Search::~Search ()
   delete[] _occurrences;
   delete[] _alpha_unify;
   delete[] _alpha_inc;
-
-  {
-    struct nbperf *nbperf = option.nbperf();
-    free ((void*)nbperf->keylens);
-    for (int i=0; i < nbperf->n; i++)
-      free ((void*)nbperf->keys[i]);
-    free ((void*)nbperf->keys);
-  }
 }

@@ -155,7 +155,7 @@ print_hash(struct nbperf *nbperf, struct state *state)
                 fprintf(nbperf->output, "%c", mi_vector_hash_c[i]);
         }
 
-	fprintf(nbperf->output, "%suint32_t\n",
+	fprintf(nbperf->output, "\n%suint32_t\n",
 	    nbperf->static_hash ? "static " : "");
 	fprintf(nbperf->output,
 	    "%s(const void * __restrict key, size_t keylen)\n",

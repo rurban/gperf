@@ -128,22 +128,25 @@ main (int argc, char *argv[])
 
     /* Also delete the list that was allocated inside Input and reordered
        inside Search.  */
-    for (KeywordExt_List *ptr = list; ptr; ptr = ptr->rest())
+    if (!option.is_mph_algo())
       {
-        KeywordExt *keyword = ptr->first();
-        do
+        for (KeywordExt_List *ptr = list; ptr; ptr = ptr->rest())
           {
-            KeywordExt *next_keyword = keyword->_duplicate_link;
-            delete[] const_cast<unsigned int *>(keyword->_selchars);
-            if (keyword->_rest != empty_string)
-              delete[] const_cast<char*>(keyword->_rest);
-            if (!(keyword->_allchars >= inputter._input
-                  && keyword->_allchars < inputter._input_end))
-              delete[] const_cast<char*>(keyword->_allchars);
-            delete keyword;
-            keyword = next_keyword;
+            KeywordExt *keyword = ptr->first();
+            do
+              {
+                KeywordExt *next_keyword = keyword->_duplicate_link;
+                delete[] const_cast<unsigned int *>(keyword->_selchars);
+                if (keyword->_rest != empty_string)
+                  delete[] const_cast<char*>(keyword->_rest);
+                if (!(keyword->_allchars >= inputter._input
+                      && keyword->_allchars < inputter._input_end))
+                  delete[] const_cast<char*>(keyword->_allchars);
+                delete keyword;
+                keyword = next_keyword;
+              }
+            while (keyword != NULL);
           }
-        while (keyword != NULL);
       }
     delete_list (list);
 

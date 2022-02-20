@@ -146,7 +146,7 @@ print_hash(struct nbperf *nbperf, struct state *state)
         for (unsigned int i=0; i < mi_vector_hash_c_len; i++) {
                 fprintf(nbperf->output, "%c", mi_vector_hash_c[i]);
         }
-        fprintf(nbperf->output, "#ifdef __GNUC__\n"); // since gcc 4.5
+        fprintf(nbperf->output, "\n#ifdef __GNUC__\n"); // since gcc 4.5
         fprintf(nbperf->output, "#define popcount64 __builtin_popcountll\n");
         fprintf(nbperf->output, "#endif\n\n");
 

@@ -798,6 +798,7 @@ Output::output_asso_values_ref (int pos) const
 }
 
 /* Emits the NetBSD mi_vector_hash.c code into the output asis.
+   Unused from C++ yet.
  */
 void Output::output_mph_hash () const
 {
@@ -2158,6 +2159,9 @@ Output::output ()
       printf ("%s\n", _struct_decl);
     }
 
+  if (option.is_mph_algo()) // FIXME
+    return;
+
   if (option[INCLUDE])
     printf ("#include <string.h>\n"); /* Declare strlen(), strcmp(), strncmp(). */
 
@@ -2203,6 +2207,9 @@ Output::output ()
             "\n",
             option.get_class_name (), option.get_hash_name (),
             const_for_struct, _return_type, option.get_function_name ());
+
+  if (option.is_mph_algo())
+    output_mph_hash();
 
   output_hash_function ();
 
