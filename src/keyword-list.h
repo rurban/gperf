@@ -38,8 +38,8 @@ public:
   Keyword_List *&       rest ();
 
 protected:
-  Keyword_List *        _cdr;
   Keyword * const       _car;
+  Keyword_List *        _cdr;
 };
 
 /* List node of a linear list of KeywordExt.  */
@@ -53,6 +53,8 @@ public:
   KeywordExt *          first () const;
   /* Access to next element of list.  */
   KeywordExt_List *&    rest ();
+  /* Slow O(n) random access to an element of list. Only for BPZ output.  */
+  KeywordExt *          at (int index);
 };
 
 /* Copies a linear list, sharing the list elements.  */

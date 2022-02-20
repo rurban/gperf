@@ -24,6 +24,9 @@
 #ifndef output_h
 #define output_h 1
 
+#include <vector>
+#include <string>
+using namespace std;
 #include "keyword-list.h"
 #include "positions.h"
 
@@ -36,7 +39,7 @@ class Output
 public:
   /* Constructor.  */
                         Output (KeywordExt_List *head,
-                                const char *struct_decl,
+				const char *struct_decl,
                                 unsigned int struct_decl_lineno,
                                 const char *return_type,
                                 const char *struct_tag,
@@ -47,17 +50,33 @@ public:
                                 const char *verbatim_code_end,
                                 unsigned int verbatim_code_lineno,
                                 bool charset_dependent,
-                                int total_keys,
-                                int max_key_len, int min_key_len,
-                                bool hash_includes_len,
-                                const Positions& positions,
-                                const unsigned int *alpha_inc,
-                                int total_duplicates,
-                                unsigned int alpha_size,
-                                const int *asso_values);
+				int total_keys,
+				int max_key_len,
+				int min_key_len,
+				bool hash_includes_len,
+				const Positions& positions,
+				const unsigned int *alpha_inc,
+				int total_duplicates,
+				unsigned int alpha_size,
+				const int *asso_values);
+
+  /* Update from searcher fields.  */
+  void                  update_searcher (KeywordExt_List *head,
+					 int total_keys,
+					 int max_key_len,
+					 int min_key_len,
+					 bool hash_includes_len,
+					 const Positions& positions,
+					 const unsigned int *alpha_inc,
+					 int total_duplicates,
+					 unsigned int alpha_size,
+					 const int *asso_values);
 
   /* Generates the hash function and the key word recognizer function.  */
   void                  output ();
+
+  /* Adds C code per line for the hash function from the MPH generators.  */
+  void                  printf_hash_body (const char* fmt, ...);
 
 private:
 
@@ -135,27 +154,28 @@ private:
      character set.  */
   bool                  _charset_dependent;
   /* Total number of keys, counting duplicates. */
-  int const             _total_keys;
+  int                   _total_keys;
   /* Maximum length of the longest keyword. */
-  int const             _max_key_len;
+  int                   _max_key_len;
   /* Minimum length of the shortest keyword. */
-  int const             _min_key_len;
+  int                   _min_key_len;
   /* Whether the hash function includes the length.  */
   bool                  _hash_includes_len;
   /* Key positions.  */
-  Positions const       _key_positions;
+  Positions             _key_positions;
   /* Adjustments to add to bytes add specific key positions.  */
-  const unsigned int * const _alpha_inc;
+  const unsigned int *  _alpha_inc;
   /* Total number of duplicate hash values. */
-  int const             _total_duplicates;
+  int                   _total_duplicates;
   /* Minimum hash value for all keywords. */
   int                   _min_hash_value;
   /* Maximum hash value for all keywords. */
   int                   _max_hash_value;
   /* Size of alphabet. */
-  unsigned int const    _alpha_size;
+  unsigned int          _alpha_size;
   /* Value associated with each character. */
-  const int * const     _asso_values;
+  const int *           _asso_values;
+  vector<string>        _hash_body;
 };
 
 #endif

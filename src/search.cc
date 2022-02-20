@@ -27,6 +27,7 @@
 #include <time.h> /* declares time() */
 #include <math.h> /* declares exp() */
 #include <limits.h> /* defines INT_MIN, INT_MAX, UINT_MAX */
+#include <err.h>
 #include "options.h"
 #include "hash-table.h"
 #include "config.h"
@@ -146,6 +147,10 @@ Search::prepare ()
         _max_key_len = keyword->_allchars_length;
       if (_min_key_len > keyword->_allchars_length)
         _min_key_len = keyword->_allchars_length;
+      keyword->_selchars = NULL;
+      keyword->_selchars_length = 0;
+      keyword->_duplicate_link = NULL;
+      keyword->_hash_value = 0;
     }
 
   /* Exit program if an empty string is used as keyword, since the comparison
@@ -1613,17 +1618,13 @@ Search::optimize ()
           const size_t len = keyword->_allchars_length;
           // need 4 byte padding for faster hashing
           if (len % 4 == 0) {
-            if ((keys[i] = strndup(k, len)) == NULL) {
-              perror("strndup failed");
-              exit(1);
-            }
+            if ((keys[i] = strndup(k, len)) == NULL)
+              errx(1, "strndup failed");
           }
           else {
             ssize_t padded_len = len + (4 - (len % 4));
-            if ((keys[i] = (char*)calloc(padded_len, 1)) == NULL) {
-              perror("calloc failed");
-              exit(1);
-            }
+            if ((keys[i] = (char*)calloc(padded_len, 1)) == NULL)
+              errx(1, "calloc failed");
             memcpy((char*)keys[i], k, len);
           }
           keylens[i] = len;
@@ -1633,31 +1634,45 @@ Search::optimize ()
       nbperf->keylens = (const size_t *)keylens;
       _total_duplicates = 0;
 
-      for (;;) {
-        if (option[CHM_ALGO])
-          rv = chm_compute(nbperf);
-        else if (option[CHM3_ALGO])
-          rv = chm3_compute(nbperf);
-        else if (option[BPZ_ALGO])
-          rv = bpz_compute(nbperf);
-        if (!rv)
-          break;
-        //if (nbperf->has_duplicates) {
-        //  fputc('\n', stderr);
-        //  errx(1, "Duplicate keys detected");
-        //}
-        fputc('.', stderr);
-        //if (!looped)
-        //  nbperf->check_duplicates = 1;
-        //looped = 1;
-        if (max_iterations == 0xffffffffU)
-          continue;
-        if (--max_iterations == 0) {
-          fputc('\n', stderr);
-          fprintf(stderr, "Iteration count reached");
-          exit(1);
-        }
-      }
+      if (option[CHM_ALGO])
+	{
+	  for (;;) {
+	    rv = chm_compute(nbperf);
+	    if (!rv)
+	      break;
+	    if (nbperf->has_duplicates)
+	      errx(1, "Duplicate keys forbidden");
+	    fputc('.', stderr);
+	    if (--max_iterations == 0)
+	      errx(1, "Iteration count reached");
+	  }
+	}
+      else if (option[CHM3_ALGO])
+	{
+	  for (;;) {
+	    rv = chm3_compute(nbperf);
+	    if (!rv)
+	      break;
+	    if (nbperf->has_duplicates)
+	      errx(1, "Duplicate keys forbidden");
+	    fputc('.', stderr);
+	    if (--max_iterations == 0)
+	      errx(1, "Iteration count reached");
+	  }
+	}
+      else if (option[BPZ_ALGO])
+	{
+	  for (;;) {
+	    rv = bpz_compute(nbperf);
+	    if (!rv)
+	      break;
+	    if (nbperf->has_duplicates)
+	      errx(1, "Duplicate keys forbidden");
+	    fputc('.', stderr);
+	    if (--max_iterations == 0)
+	      errx(1, "Iteration count reached");
+	  }
+	}
       return;
     }
 
