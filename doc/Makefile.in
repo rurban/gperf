@@ -67,7 +67,7 @@ VPATH = $(srcdir)
 all : info pdf html man
 
 
-info : $(srcdir)/gperf.info
+info : Makefile $(srcdir)/gperf.info
 
 $(srcdir)/gperf.info : $(srcdir)/gperf.texi $(srcdir)/gpl-3.0.texi
 	cd $(srcdir) && $(MAKEINFO) --no-split gperf.texi
@@ -148,6 +148,9 @@ uninstall : force
 #	$(RM) $(DESTDIR)$(psdir)/gperf.ps
 #	$(RM) $(DESTDIR)$(pdfdir)/gperf.pdf
 	$(RM) $(DESTDIR)$(htmldir)/gperf.html
+
+Makefile: Makefile.in
+	./config.status Makefile
 
 check : all
 
