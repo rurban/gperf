@@ -2345,16 +2345,25 @@ Output::output ()
 
   if (option[CPLUSPLUS])
     {
-      printf ("class %s\n"
-	      "{\n"
-	      "private:\n"
-	      "  static inline unsigned int %s (const char *str, size_t len);\n"
-	      "public:\n"
-	      "  static %s%s%s (const char *str, size_t len);\n"
-	      "};\n"
-	      "\n",
-	      option.get_class_name (), option.get_hash_name (),
-	      const_for_struct, _return_type, option.get_function_name ());
+      if (option.get_function_name ())
+	printf ("class %s\n"
+		"{\n"
+		"private:\n"
+		"  static inline unsigned int %s (const char *str, size_t len);\n"
+		"public:\n"
+		"  static %s%s%s (const char *str, size_t len);\n"
+		"};\n"
+		"\n",
+		option.get_class_name (), option.get_hash_name (),
+		const_for_struct, _return_type, option.get_function_name ());
+      else
+        printf ("class %s\n"
+                "{\n"
+                "public:\n"
+                "  static inline unsigned int %s (const char *str, size_t len);\n"
+                "};\n"
+                "\n",
+                option.get_class_name (), option.get_hash_name ());
     }
 
   if (option.is_mph_algo())
@@ -2367,7 +2376,8 @@ Output::output ()
   if (option[GLOBAL])
     output_lookup_tables ();
 
-  output_lookup_function ();
+  if (option.get_function_name())
+    output_lookup_function ();
 
   if (_verbatim_code < _verbatim_code_end)
     {
