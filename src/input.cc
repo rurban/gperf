@@ -24,6 +24,8 @@
 #include <stdio.h>
 #include <stdlib.h> /* declares exit() */
 #include <string.h> /* declares strncpy(), strchr() */
+#include <string>
+using namespace std;
 #include <limits.h> /* defines UCHAR_MAX etc. */
 #include "options.h"
 #include "getline.h"
@@ -408,7 +410,7 @@ Input::read_input ()
   _struct_tag = NULL;
   {
     unsigned int lineno = 1;
-    char *struct_decl = NULL;
+    string struct_decl;
     unsigned int *struct_decl_linenos = NULL;
     unsigned int struct_decl_linecount = 0;
     for (const char *line = declarations; line < declarations_end; )
@@ -625,17 +627,8 @@ Input::read_input ()
                    && _verbatim_declarations_end == NULL))
           {
             /* Append the line to struct_decl.  */
-            size_t old_len = (struct_decl ? strlen (struct_decl) : 0);
             size_t line_len = line_end - line;
-            size_t new_len = old_len + line_len + 1;
-            char *new_struct_decl = new char[new_len];
-            if (old_len > 0)
-              memcpy (new_struct_decl, struct_decl, old_len);
-            memcpy (new_struct_decl + old_len, line, line_len);
-            new_struct_decl[old_len + line_len] = '\0';
-            if (struct_decl)
-              delete[] struct_decl;
-            struct_decl = new_struct_decl;
+            struct_decl.append (line, line_len);
             /* Append the lineno to struct_decl_linenos.  */
             unsigned int *new_struct_decl_linenos =
               new unsigned int[struct_decl_linecount + 1];
@@ -662,11 +655,11 @@ Input::read_input ()
     /* Determine _struct_decl, _return_type, _struct_tag.  */
     if (option[TYPE])
       {
-        if (struct_decl)
+	if (struct_decl.size ())
           {
             /* Drop leading whitespace and comments.  */
             {
-              char *p = struct_decl;
+	      char *p = (char *)struct_decl.c_str();
               unsigned int *l = struct_decl_linenos;
               for (;;)
                 {
@@ -716,64 +709,49 @@ Input::read_input ()
                     }
                   break;
                 }
-              if (p != struct_decl)
-                {
-                  size_t len = strlen (p);
-                  char *new_struct_decl = new char[len + 1];
-                  memcpy (new_struct_decl, p, len + 1);
-                  delete[] struct_decl;
-                  struct_decl = new_struct_decl;
-                }
+              if (p != struct_decl.c_str())
+		struct_decl.append(p);
               _struct_decl_lineno = *l;
             }
             /* Drop trailing whitespace.  */
-            for (char *p = struct_decl + strlen (struct_decl); p > struct_decl;)
-              if (p[-1] == '\n' || p[-1] == ' ' || p[-1] == '\t')
-                *--p = '\0';
-              else
-                break;
+	    std::size_t found = struct_decl.find_last_not_of("\t\f\v\n\r ");
+	    if (found != std::string::npos)
+	      struct_decl.erase(found + 1);
+	    else
+	      struct_decl.clear(); // all whitespace
           }
-        if (struct_decl == NULL || struct_decl[0] == '\0')
+        if (struct_decl.empty ())
           {
             fprintf (stderr, "%s: missing struct declaration"
                      " for option --struct-type\n",
                      pretty_input_file_name ());
             exit (1);
           }
-        {
-          /* Ensure trailing semicolon.  */
-          size_t old_len = strlen (struct_decl);
-          if (struct_decl[old_len - 1] != ';')
-            {
-              char *new_struct_decl = new char[old_len + 2];
-              memcpy (new_struct_decl, struct_decl, old_len);
-              new_struct_decl[old_len] = ';';
-              new_struct_decl[old_len + 1] = '\0';
-              delete[] struct_decl;
-              struct_decl = new_struct_decl;
-            }
-        }
+	/* Ensure trailing semicolon.  */
+	if (struct_decl.back() != ';')
+	  struct_decl.append(";");
         /* Set _struct_decl to the entire declaration.  */
-        _struct_decl = struct_decl;
+        _struct_decl = new char[struct_decl.size() + 1];
+        memcpy ((void*)_struct_decl, struct_decl.c_str(), struct_decl.size() + 1);
         /* Set _struct_tag to the naked "struct something".  */
         const char *p;
-        for (p = struct_decl; *p && *p != '{' && *p != ';' && *p != '\n'; p++)
+        for (p = struct_decl.c_str(); *p && *p != '{' && *p != ';' && *p != '\n'; p++)
           ;
-        for (; p > struct_decl;)
+        for (; p > struct_decl.c_str();)
           if (p[-1] == '\n' || p[-1] == ' ' || p[-1] == '\t')
             --p;
           else
             break;
-        size_t struct_tag_length = p - struct_decl;
+        size_t struct_tag_length = p - struct_decl.c_str();
         char *struct_tag = new char[struct_tag_length + 1];
-        memcpy (struct_tag, struct_decl, struct_tag_length);
+        memcpy (struct_tag, struct_decl.c_str(), struct_tag_length);
         struct_tag[struct_tag_length] = '\0';
         _struct_tag = struct_tag;
         /* The return type of the lookup function is "struct something *".
            No "const" here, because if !option[CONST], some user code might
            want to modify the structure. */
         char *return_type = new char[struct_tag_length + 3];
-        memcpy (return_type, struct_decl, struct_tag_length);
+        memcpy (return_type, struct_decl.c_str(), struct_tag_length);
         return_type[struct_tag_length] = ' ';
         return_type[struct_tag_length + 1] = '*';
         return_type[struct_tag_length + 2] = '\0';
