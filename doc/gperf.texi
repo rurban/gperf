@@ -17,7 +17,7 @@
 
 @c some day we should @include version.texi instead of defining
 @c these values at hand.
-@set UPDATED 19 February 2022
+@set UPDATED 21 February 2022
 @set EDITION 3.3-beta
 @set VERSION 3.3-beta
 @c ---------------------
@@ -1119,7 +1119,11 @@ the same file.
 @itemx --lookup-function-name=@var{lookup-function-name}
 Allows you to specify the name for the generated lookup function.
 Default name is @samp{in_word_set}.  This option permits multiple
-generated hash functions to be used in the same application.
+generated hash functions to be used in the same application.  With the
+option @samp{-N NONE} no @code{in_word_set()} function and no keyword
+list will be generated, which is a massive size improvement for
+ordered minmal perfect hashes (chm and chm3 only). Ordered MPH's
+can keep their own array, and the hash returns just the index into it.
 
 @item -Z @var{class-name}
 @itemx --class-name=@var{class-name}
