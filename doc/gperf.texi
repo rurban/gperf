@@ -193,6 +193,13 @@ that greatly helped improve the quality and functionality of @code{gperf}.
 Bruno Haible enhanced and optimized the search algorithm.  He also rewrote
 the input routines and the output routines for better reliability, and
 added a testsuite.
+
+@item
+Joerg Sonnenberger wrote the original NetBSD code of nbperf, the minimal
+perfect hash (MPH) parts.
+
+Reini Urban ported it to linux, converted it to C++, and integrated it
+into gperf.
 @end itemize
 
 @node Motivation
@@ -246,8 +253,11 @@ often locate a table entry in constant time, but typically impose
 additional memory overhead and exhibit poor worst case performance.
 
 @cindex Minimal perfect hash functions
-@emph{Minimal perfect hash functions} provide an optimal solution for a
-particular class of static search sets.  A minimal perfect hash
+@cindex MPH
+@emph{Minimal perfect hash functions} provide an optimal solution for
+a particular class of static search sets. gperf produces minimal
+perfect hash functions (@emph{MPH}'s) only with the options
+@samp{--chm}, @samp{--chm3} or @samp{--bpz}.  A minimal perfect hash
 function is defined by two properties:
 
 @itemize @bullet
@@ -257,7 +267,7 @@ It allows keyword recognition in a static search set using at most
 property.
 @item 
 The actual memory allocated to store the keywords is precisely large
-enough for the keyword set, and @emph{no larger}.  This is the
+enough for the keyword set, and @emph{not larger}.  This is the
 ``minimal'' property.
 @end itemize
 
@@ -838,6 +848,12 @@ keyword.  More exactly, if the option @samp{-t} (or, equivalently, the
 @samp{%struct-type} declaration) was given, it returns
 a pointer to the matching keyword's structure.  Otherwise it returns
 @code{NULL}.
+
+This function may be omitted via @samp{-N NONE} or
+@samp{%lookup-function-name NONE}, which might be useful if you are
+sure that you only lookup known keywords (no false-positives), and if
+you use one of the 3 minimal perfect hashes, chm, chm3 or bpz.  With
+those the returned hash is the index into the keyword array.
 @end deftypefun
 
 If the option @samp{-c} (or, equivalently, the @samp{%compare-strncmp}
@@ -1492,11 +1508,26 @@ large switch statements it is important to qualify the @var{-S} option
 with an appropriate numerical argument that controls the number of
 switch statements generated.
 
+Recommended with over 15.000 keywords is to use @samp{--chm} or
+@samp{--chm3}, with @samp{-N NONE}, so that no @code{in_word_set()}
+function and no keyword list is generated. @code{hash()} will return
+the index into your keyword array, and you need to manually check for
+false-positives via @samp{strcmp()}.
+
 @item 
 The maximum number of selected byte positions has an arbitrary limit
 of 255.  This restriction should be removed, and if anyone considers
 this a problem write me and let me know so I can remove the
 constraint.
+
+@item 
+The BPZ algorithm is constrained by the choice for a linked list for
+the keywords, not a vector. Thus to create the final wordlist, we
+need to lookup the keyword from the computed map of indices via linear
+list search, nested in the wordlist loop, thus being quadratic O(n^2).
+But this is only needed with custom structs, with words alone it's linear.
+BPZ still uses the fastest computation method for huge lists, just the
+output for structs can be improved from O(n^2) to O(n).
 @end itemize
 
 @node Projects
