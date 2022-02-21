@@ -1009,7 +1009,10 @@ Options::parse_options (int argc, char *argv[])
           }
         case 'N':               /* Make generated lookup function name be optarg.  */
           {
-            _function_name = /*getopt*/optarg;
+	    if (strcmp(optarg, "NONE") == 0) /* skip in_word_set generation */
+	      _function_name = NULL;
+	    else
+	      _function_name = /*getopt*/optarg;
             break;
           }
         case 'o':               /* Order input by frequency of key set occurrence.  */
