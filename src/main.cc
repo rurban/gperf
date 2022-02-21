@@ -123,20 +123,17 @@ main (int argc, char *argv[])
               exit (1);
             }
 
-      {
-        outputter.output ();
+      outputter.output ();
 
-        /* Check for write error on stdout.  */
-        exitcode = 0;
-        if (fflush (stdout) || ferror (stdout))
-          {
-            fprintf (stderr, "error while writing output file\n");
-            exitcode = 1;
-          }
+      /* Check for write error on stdout.  */
+      exitcode = 0;
+      if (fflush (stdout) || ferror (stdout))
+	{
+	  fprintf (stderr, "error while writing output file\n");
+	  exitcode = 1;
+	}
 
-        /* Here we run the Output destructor.  */
-      }
-      /* Here we run the Search destructor.  */
+      /* Here we run the Search and Output destructors.  */
     }
 
     /* Also delete the list that was allocated inside Input and reordered
