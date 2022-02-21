@@ -53,13 +53,16 @@ VPATH = $(srcdir)
 GPERF = ../src/gperf
 #GPERF = valgrind --num-callers=20 --leak-check=yes --leak-resolution=high --show-reachable=yes ../src/gperf
 
-all :
+all : Makefile
 
 install : all
 
 installdirs :
 
 uninstall :
+
+Makefile: Makefile.in
+	./config.status Makefile
 
 check : check-c check-ada check-modula3 check-pascal check-lang-utf8	\
 	check-lang-ucs2 check-smtp check-test check-languages		\

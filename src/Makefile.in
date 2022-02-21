@@ -76,7 +76,7 @@ TARGETPROG = gperf$(EXEEXT)
 
 all : $(TARGETPROG)
 
-$(TARGETPROG): $(OBJECTS)
+$(TARGETPROG): $(OBJECTS) Makefile
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBS)
 
 # Don't use implicit rules, since AIX "make" and OSF/1 "make" don't always
@@ -150,6 +150,9 @@ installdirs : force
 
 uninstall : force
 	$(RM) $(DESTDIR)$(bindir)/$(TARGETPROG)
+
+Makefile: Makefile.in
+	./config.status Makefile
 
 check : all
 
