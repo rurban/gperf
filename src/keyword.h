@@ -73,10 +73,10 @@ struct KeywordExt : public Keyword
   void                  delete_selchars ();
 
   /* Data members used by the algorithm.  */
-  int                   _hash_value; /* Hash value for the keyword.  */
+  unsigned int          _hash_value; /* Hash value for the keyword.  */
 
   /* Data members used by the output routines.  */
-  int                   _final_index;
+  unsigned int          _final_index;
 
 private:
   unsigned int *        init_selchars_low (const Positions& positions, const unsigned int *alpha_unify, const unsigned int *alpha_inc);
