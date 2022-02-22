@@ -576,6 +576,44 @@ output_string (const char *key, int len)
   putchar ('"');
 }
 
+/* Outputs a keyword as a string for MPH hashes, padded to len % 4.  */
+
+static void
+output_padded_string (const char *key, int len)
+{
+  int orig_len = len;
+  putchar ('"');
+  for (; len > 0; len--)
+    {
+      unsigned char c = static_cast<unsigned char>(*key++);
+      if (isprint (c))
+        {
+          if (c == '"' || c == '\\')
+            putchar ('\\');
+          putchar (c);
+        }
+      else
+        {
+          /* Use octal escapes, not hexadecimal escapes, because some old
+             C compilers didn't understand hexadecimal escapes, and because
+             hexadecimal escapes are not limited to 2 digits, thus needing
+             special care if the following character happens to be a digit.  */
+          putchar ('\\');
+          putchar ('0' + ((c >> 6) & 7));
+          putchar ('0' + ((c >> 3) & 7));
+          putchar ('0' + (c & 7));
+        }
+    }
+  for (; orig_len % 4 != 0; orig_len--)
+    {
+      putchar ('\\');
+      putchar ('0');
+      putchar ('0');
+      putchar ('0');
+    }
+  putchar ('"');
+}
+
 /* ------------------------------------------------------------------------- */
 
 /* Outputs a #line directive, referring to the given line number.  */
@@ -1327,7 +1365,7 @@ output_nbperf_keyword_entry (char *key, uint32_t keylen, char *type_rest,
             option.get_stringpool_name (), option.get_stringpool_name (),
             index);
   else
-    output_string (key, keylen);
+    output_padded_string (key, keylen);
   if (option[TYPE])
     {
       if (type_rest)
