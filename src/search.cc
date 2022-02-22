@@ -1750,7 +1750,7 @@ Search::~Search ()
                  _min_key_len, _max_key_len);
 
       free ((void*)nbperf->keylens);
-      for (int i=0; i < nbperf->n; i++)
+      for (size_t i=0; i < nbperf->n; i++)
         free ((void*)nbperf->keys[i]);
       free ((void*)nbperf->keys);
 
