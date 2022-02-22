@@ -147,8 +147,8 @@ main (argc, argv)
      int argc;
      char *argv[];
 {
-  int i, j, k, n, exitcode;
-  size_t len;
+  int i, j, n, exitcode;
+  size_t k, len;
   const struct header_state *hs;
 
   n = 1;

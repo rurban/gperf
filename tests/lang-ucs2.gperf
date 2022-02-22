@@ -1,3 +1,4 @@
+%null-strings
 struct language {
   const char *foreign_name;
   const char *english_name;
