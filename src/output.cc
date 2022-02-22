@@ -600,7 +600,9 @@ output_line_directive (unsigned int lineno)
 static void
 output_const_type (const char *const_string, const char *type_string)
 {
-  if (type_string[strlen(type_string)-1] == '*')
+  if (option[KRC])
+    printf ("%s ", type_string);
+  else if (type_string[strlen(type_string)-1] == '*')
     /* For pointer types, put the 'const' after the type.  */
     printf ("%s %s", type_string, const_string);
   else
@@ -1394,8 +1396,9 @@ Output::output_keyword_table () const
 
   printf ("%sstatic ",
           indent);
+  /* FIXME static const char *const wordlist */
   output_const_type (const_readonly_array, _wordlist_eltype);
-  printf ("%s[] =\n" // FIXME static const char *const wordlist
+  printf ("%s[] =\n"
           "%s  {\n",
           option.get_wordlist_name (),
           indent);

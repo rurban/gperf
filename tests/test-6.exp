@@ -28,7 +28,7 @@ Language for the output code:
   -L, --language=LANGUAGE-NAME
                          Generates code in the specified language. Languages
                          handled are currently C++, ANSI-C, C, and KR-C. The
-                         default is ANSI-C.
+                         default is ANSI-C. KR-C is incompatible with the MPH hashes.
 
 Details in the output code:
   -K, --slot-name=NAME   Select name of the keyword component in the keyword
@@ -93,12 +93,12 @@ Algorithms employed by gperf:
                          large, say 1000000, the generated C code does a
                          binary search.
   --chm                  Use the CHM algorithm, which creates order preserving,
-                         optimal minimal perfect hashes
+                         optimal minimal perfect hashes (MPH)
                          and can efficiently deal with huge input.
   --chm3                 Use the CHM algorithm with 3 table lookups instead of 2,
-                         but with a much smaller code size.
+                         but with a much smaller code size. (MPH)
   --bpz                  Use the BPZ algorithm, which creates non-order preserving,
-                         optimal minimal perfect hashes
+                         optimal minimal perfect hashes (MPH)
                          and can efficiently deal with huge input, with best-known
                          code sizes.
   -u, --utilisation=FACTOR
