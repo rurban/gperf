@@ -1367,7 +1367,7 @@ output_nbperf_keyword_entry (char *key, uint32_t keylen, char *type_rest,
   else if (option[PADDING])
     output_padded_string (key, keylen);
   else
-    output_string (key, keylen);
+    output_padded_string (key, keylen);
   if (option[TYPE])
     {
       if (type_rest)
