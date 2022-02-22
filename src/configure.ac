@@ -40,9 +40,11 @@ CL_PROG_INSTALL
 dnl
 dnl           checks for compiler characteristics
 dnl
+CXXFLAGS_save="$CXXFLAGS"
 AC_CACHE_CHECK([for stack-allocated variable-size arrays],
   [gp_cv_cxx_dynamic_array],
   [AC_LANG_PUSH([C++])
+   CXXFLAGS="$CXXFLAGS -Werror=vla"
    AC_COMPILE_IFELSE(
      [AC_LANG_PROGRAM([[int func (int n) { int dynamic_array[n]; }]], [[]])],
      [gp_cv_cxx_dynamic_array=yes], [gp_cv_cxx_dynamic_array=no])
@@ -52,6 +54,7 @@ if test $gp_cv_cxx_dynamic_array = yes; then
   AC_DEFINE([HAVE_DYNAMIC_ARRAY], [1],
     [Define if the C++ compiler supports stack-allocated variable-size arrays.])
 fi
+CXXFLAGS="$CXXFLAGS_save"
 dnl
 dnl           checks for functions and declarations
 dnl
