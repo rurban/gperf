@@ -7,30 +7,20 @@
 
 //__RCSID("$NetBSD: mi_vector_hash.c,v 1.1 2013/12/11 01:24:08 joerg Exp $");
 
-#if !HAVE_NBTOOL_CONFIG_H || HAVE_ENDIAN_H
+#ifdef HAVE_ENDIAN_H
 #include <endian.h>
 #endif
-
-#if defined(_KERNEL) || defined(_STANDALONE)
-#include <sys/types.h>
-#include <sys/systm.h>
-#include <lib/libkern/libkern.h>
-#else
-//#include "namespace.h"
-
 #include <stdint.h>
 #include <stdlib.h>
+
+#ifndef le32toh
+#define le32toh(x) x
 #endif
 
 static inline uint32_t
 le32dec(const void *buf)
 {
-#if 0
-	uint8_t const *p = (uint8_t const *)buf;
-	return (((unsigned)p[3] << 24) | (p[2] << 16) | (p[1] << 8) | p[0]);
-#else
         return *(uint32_t*)buf;
-#endif
 }
 
 #define mix(a, b, c) do {		\
@@ -46,12 +36,6 @@ le32dec(const void *buf)
 } while (/* CONSTCOND */0)
 
 #define FIXED_SEED	0x9e3779b9	/* Golden ratio, arbitrary constant */
-
-#if !defined(_KERNEL) && !defined(_STANDALONE)
-#ifdef __weak_alias
-__weak_alias(mi_vector_hash, _mi_vector_hash)
-#endif
-#endif
 
 void
 mi_vector_hash(const void * __restrict key, size_t len, uint32_t seed,
