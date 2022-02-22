@@ -31,12 +31,6 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-//#if HAVE_NBTOOL_CONFIG_H
-//#include "nbtool_config.h"
-//#endif
-//
-//#include <sys/cdefs.h>
-//__RCSID("$NetBSD: nbperf-chm.c,v 1.4 2021/01/07 16:03:08 joerg Exp $");
 
 #include <err.h>
 #include <inttypes.h>
@@ -45,6 +39,7 @@
 #include <string.h>
 #include <cassert>
 
+#include "options.h"
 #include "output.h"
 #include "nbperf.h"
 #include "graph2.h"
@@ -153,32 +148,27 @@ print_hash(struct nbperf *nbperf, struct SIZED(state) *state)
 	int g_width;
         Output *out = nbperf->out;
 
-	//out->printf_hash_body ("\n%suint32_t\n",
-	//    nbperf->static_hash ? "static " : "");
-	//out->printf_hash_body (
-	//    "%s(const void * __restrict key, size_t keylen)\n",
-	//    nbperf->hash_name);
-	//out->printf_hash_body ("{\n");
 	/*if (state->graph.v >= 4294967295U) { // 32bit only
 		g_type = "uint64_t";
 		g_width = 16;
 		per_line = 2;
         } else */
         if (state->graph.v >= 65536) {
-		g_type = "uint32_t";
+		g_type = !option[KRC] ? "uint32_t" : "unsigned int";
 		g_width = 8;
 		per_line = 4;
 	} else if (state->graph.v >= 256) {
-		g_type = "uint16_t";
+		g_type = !option[KRC] ? "uint16_t" : "unsigned short";
 		g_width = 4;
 		per_line = 8;
 	} else {
-		g_type = "uint8_t";
+		g_type = !option[KRC] ? "uint8_t" : "unsigned char";
 		g_width = 2;
 		per_line = 10;
 	}
-	out->printf_hash_body ("\tstatic const %s g[%" PRId32 "] = {\n",
-	    g_type, state->graph.v);
+	out->printf_hash_body ("\tstatic %s %s g[%" PRId32 "] = {\n",
+			       option[KRC] ? "" : "const",
+			       g_type, state->graph.v);
 	for (i = 0; i < state->graph.v; ++i) {
 		out->printf_hash_body ("%sUINT32_C(0x%0*" PRIx32 "),%s",
 		    (i % per_line == 0 ? "\t    " : " "),
@@ -220,14 +210,7 @@ print_hash(struct nbperf *nbperf, struct SIZED(state) *state)
 	out->printf_hash_body ("\treturn (g[h[0]] + g[h[1]]) %% "
 	    "%" PRIu32 ";\n", state->graph.e);
 #endif
-	//out->printf_hash_body ("}\n");
 	assert(nbperf->n == state->graph.e);
-	/*
-	if (nbperf->map_output != NULL) {
-		for (i = 0; i < state->graph.e; ++i)
-			fprintf(nbperf->map_output, "%" PRIu32 "\n", i);
-	}
-	*/
 }
 
 int

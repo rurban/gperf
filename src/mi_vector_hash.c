@@ -4,8 +4,7 @@
  * the full internal state and avoiding byte operations in the inner loop
  * if the key is aligned correctly.
  */
-
-//__RCSID("$NetBSD: mi_vector_hash.c,v 1.1 2013/12/11 01:24:08 joerg Exp $");
+/* __RCSID("$NetBSD: mi_vector_hash.c,v 1.1 2013/12/11 01:24:08 joerg Exp $"); */
 
 #ifdef HAVE_ENDIAN_H
 #include <endian.h>
@@ -17,7 +16,12 @@
 #define le32toh(x) x
 #endif
 
-static inline uint32_t
+#ifdef __GNUC__
+__inline
+#elif defined __cplusplus
+inline
+#endif
+static uint32_t
 le32dec(const void *buf)
 {
         return *(uint32_t*)buf;
@@ -53,7 +57,7 @@ mi_vector_hash(const void * __restrict key, size_t len, uint32_t seed,
 	c = seed;
 
 	if ((uintptr_t)key & 3) {
-		k = key;
+		k = (const uint8_t *)key;
 		while (len >= 12) {
 			a += le32dec(k);
 			b += le32dec(k + 4);
@@ -111,7 +115,7 @@ mi_vector_hash(const void * __restrict key, size_t len, uint32_t seed,
 			}
 		}
 	} else {
-		const uint32_t *key32 = key;
+		const uint32_t *key32 = (const uint32_t *)key;
 		while (len >= 12) {
 			a += le32toh(key32[0]);
 			b += le32toh(key32[1]);

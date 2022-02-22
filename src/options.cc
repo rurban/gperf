@@ -125,7 +125,7 @@ Options::long_usage (FILE * stream)
            "  -L, --language=LANGUAGE-NAME\n"
            "                         Generates code in the specified language. Languages\n"
            "                         handled are currently C++, ANSI-C, C, and KR-C. The\n"
-           "                         default is ANSI-C.\n");
+           "                         default is ANSI-C. KR-C is incompatible with the MPH hashes.\n");
   fprintf (stream, "\n");
   fprintf (stream,
            "Details in the output code:\n");
@@ -213,14 +213,14 @@ Options::long_usage (FILE * stream)
            "                         binary search.\n");
   fprintf (stream,
            "  --chm                  Use the CHM algorithm, which creates order preserving,\n"
-           "                         optimal minimal perfect hashes\n"
+           "                         optimal minimal perfect hashes (MPH)\n"
            "                         and can efficiently deal with huge input.\n");
   fprintf (stream,
            "  --chm3                 Use the CHM algorithm with 3 table lookups instead of 2,\n"
-           "                         but with a much smaller code size.\n");
+           "                         but with a much smaller code size. (MPH)\n");
   fprintf (stream,
            "  --bpz                  Use the BPZ algorithm, which creates non-order preserving,\n"
-           "                         optimal minimal perfect hashes\n"
+           "                         optimal minimal perfect hashes (MPH)\n"
            "                         and can efficiently deal with huge input, with best-known\n"
            "                         code sizes.\n");
   fprintf (stream,
@@ -827,7 +827,7 @@ Options::parse_options (int argc, char *argv[])
 
   while ((option_char =
             getopt_long (_argument_count, _argument_vector,
-                         "acCdDe:Ef:F:gGhH:i:Ij:k:K:lL:m:nN:oOpPQ:rs:S:tTvW:Z:7",
+                         "acCdDe:EfF:gGhH:i:Ij:k:K:lL:m:nN:oOpPQ:rs:S:tTu:vW:Z:7",
                          long_options, NULL))
          != -1)
     {
@@ -1210,6 +1210,11 @@ There is NO WARRANTY, to the extent permitted by law.\n\
                 short_usage (stderr);
                 exit (1);
               }
+	    if (_option_word & KRC)
+              {
+                fprintf(stderr, "--%s may not be used with -L KR-C.\n", "chm");
+                exit (1);
+              }
             _option_word |= CHM_ALGO;
             if (_nbperf.c < 0.1f)
               _nbperf.c = 2.0f;
@@ -1224,6 +1229,11 @@ There is NO WARRANTY, to the extent permitted by law.\n\
                 short_usage (stderr);
                 exit (1);
               }
+	    if (_option_word & KRC)
+              {
+                fprintf(stderr, "--%s may not be used with -L KR-C.\n", "chm");
+                exit (1);
+              }
             _option_word |= CHM3_ALGO;
             if (_nbperf.c < 0.1f)
               _nbperf.c = 1.24f;
@@ -1236,6 +1246,11 @@ There is NO WARRANTY, to the extent permitted by law.\n\
               {
                 fprintf (stderr, "Invalid --%s, another algorithm already selected.\n", "bpz");
                 short_usage (stderr);
+                exit (1);
+              }
+	    if (_option_word & KRC)
+              {
+                fprintf(stderr, "--%s may not be used with -L KR-C.\n", "chm");
                 exit (1);
               }
             _option_word |= BPZ_ALGO;

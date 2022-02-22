@@ -117,13 +117,13 @@ static const char* testdata[] = {
 };
 int main ()
 {
-  int i;
+  unsigned i;
   for (i = 0; i < sizeof(testdata)/sizeof(testdata[0]); i++)
     {
 #ifdef CPLUSPLUS_TEST
-      const struct js_keyword * resword = Perfect_Hash::in_word_set(testdata[i],strlen(testdata[i]));
+      struct js_keyword *resword = (struct js_keyword *)Perfect_Hash::in_word_set(testdata[i],strlen(testdata[i]));
 #else
-      const struct js_keyword * resword = in_word_set(testdata[i],strlen(testdata[i]));
+      struct js_keyword *resword = (struct js_keyword *)in_word_set(testdata[i],strlen(testdata[i]));
 #endif
       if (i > 0)
         {
