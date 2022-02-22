@@ -32,6 +32,7 @@ extern struct language * in_word_set (const char *, size_t);
 int
 main (int argc, char *argv[])
 {
+  (void)argv; /* unused */
   int  verbose = argc > 1 ? 1 : 0;
   char buf[2*MAX_LEN];
   int buflen;
