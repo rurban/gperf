@@ -32,14 +32,6 @@
  * SUCH DAMAGE.
  */
 
-//#if HAVE_NBTOOL_CONFIG_H
-//#include "nbtool_config.h"
-//#endif
-
-//#include <sys/cdefs.h>
-//__RCSID("$NetBSD: graph2.c,v 1.5 2021/01/07 16:03:08 joerg Exp $");
-
-#include <err.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -76,7 +76,7 @@ public:
   void                  output ();
 
   /* Adds C code per line for the hash function from the MPH generators.  */
-  void                  printf_hash_body (const char* fmt, ...);
+  void                  add_hash_body (const char* fmt, ...);
 
 private:
 

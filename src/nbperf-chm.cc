@@ -32,7 +32,6 @@
  * SUCH DAMAGE.
  */
 
-#include <err.h>
 #include <inttypes.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -166,48 +165,48 @@ print_hash(struct nbperf *nbperf, struct SIZED(state) *state)
 		g_width = 2;
 		per_line = 10;
 	}
-	out->printf_hash_body ("\tstatic %s %s g[%" PRId32 "] = {\n",
+	out->add_hash_body ("\tstatic %s %s g[%" PRId32 "] = {\n",
 			       option[KRC] ? "" : "const",
 			       g_type, state->graph.v);
 	for (i = 0; i < state->graph.v; ++i) {
-		out->printf_hash_body ("%sUINT32_C(0x%0*" PRIx32 "),%s",
-		    (i % per_line == 0 ? "\t    " : " "),
-		    g_width, state->g[i],
-		    (i % per_line == per_line - 1 ? "\n" : ""));
+		out->add_hash_body ("%s0x%0*" PRIx32 ",%s",
+				       (i % per_line == 0 ? "\t    " : " "),
+				       g_width, state->g[i],
+				       (i % per_line == per_line - 1 ? "\n" : ""));
 	}
 	if (i % per_line != 0)
-		out->printf_hash_body ("\n\t};\n");
+		out->add_hash_body ("\n\t};\n");
 	else
-		out->printf_hash_body ("\t};\n");
-	out->printf_hash_body ("\tuint32_t h[%zu];\n\n", nbperf->hash_size);
+		out->add_hash_body ("\t};\n");
+	out->add_hash_body ("\tuint32_t h[%zu];\n\n", nbperf->hash_size);
 	(*nbperf->print_hash)(nbperf, "\t", "str", "len", "h");
 
-	out->printf_hash_body ("\n\th[0] = h[0] %% %" PRIu32 ";\n",
+	out->add_hash_body ("\n\th[0] = h[0] %% %" PRIu32 ";\n",
 	    state->graph.v);
-	out->printf_hash_body ("\th[1] = h[1] %% %" PRIu32 ";\n",
+	out->add_hash_body ("\th[1] = h[1] %% %" PRIu32 ";\n",
 	    state->graph.v);
 #if GRAPH_SIZE >= 3
-	out->printf_hash_body ("\th[2] = h[2] %% %" PRIu32 ";\n",
+	out->add_hash_body ("\th[2] = h[2] %% %" PRIu32 ";\n",
 	    state->graph.v);
 #endif
 
 	if (state->graph.hash_fudge & 1)
-		out->printf_hash_body ("\th[1] ^= (h[0] == h[1]);\n");
+		out->add_hash_body ("\th[1] ^= (h[0] == h[1]);\n");
 
 #if GRAPH_SIZE >= 3
 	if (state->graph.hash_fudge & 2) {
-		out->printf_hash_body (
+		out->add_hash_body (
 		    "\th[2] ^= (h[0] == h[2] || h[1] == h[2]);\n");
-		out->printf_hash_body (
+		out->add_hash_body (
 		    "\th[2] ^= 2 * (h[0] == h[2] || h[1] == h[2]);\n");
 	}
 #endif
 
 #if GRAPH_SIZE >= 3
-	out->printf_hash_body ("\treturn (g[h[0]] + g[h[1]] + g[h[2]]) %% "
+	out->add_hash_body ("\treturn (g[h[0]] + g[h[1]] + g[h[2]]) %% "
 	    "%" PRIu32 ";\n", state->graph.e);
 #else
-	out->printf_hash_body ("\treturn (g[h[0]] + g[h[1]]) %% "
+	out->add_hash_body ("\treturn (g[h[0]] + g[h[1]]) %% "
 	    "%" PRIu32 ";\n", state->graph.e);
 #endif
 	assert(nbperf->n == state->graph.e);

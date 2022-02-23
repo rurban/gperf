@@ -38,7 +38,7 @@ AC_CHECK_TOOL([AR], [ar])
                       dnl sets variable AR
 AC_PROG_RANLIB
                       dnl sets variable RANLIB
-CL_PROG_INSTALL
+AC_PROG_INSTALL
                       dnl sets variables INSTALL, INSTALL_DATA, INSTALL_PROGRAM
 dnl
 dnl           That's it.

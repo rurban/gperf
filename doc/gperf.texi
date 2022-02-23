@@ -456,7 +456,10 @@ There are three forms of declarations:
 
 @enumerate
 @item
-Declarations without argument, like @samp{%compare-lengths}.
+Boolean declarations without argument, like @samp{%compare-lengths}.
+
+@item
+Negative boolean declarations without argument, like @samp{%no-compare-lengths}.
 
 @item
 Declarations with an argument, like @samp{%switch=@var{count}}.
@@ -546,6 +549,15 @@ Allows you to specify the name for the generated lookup function.
 Default name is @samp{in_word_set}.  This option permits multiple
 generated hash functions to be used in the same application.
 
+@item %omit-lookup-function
+@cindex @samp{%omit-lookup-function}
+This is the same as the option @samp{-N NONE} or @samp{%define
+lookup-function-name NONE}.  This might be useful if you are sure that
+you only lookup known keywords, no false-positives or you are doing
+your own strcmp check, and if you use the chm or chm3 minimal perfect
+hashes.  With those the returned hash is the index into your own
+keyword array.
+
 @item %define class-name @var{name}
 @cindex @samp{%define class-name}
 This option is only useful when option @samp{-L C++} (or, equivalently,
@@ -555,6 +567,7 @@ allows you to specify the name of generated C++ class.  Default name is
 
 @item %7bit
 @cindex @samp{%7bit}
+@cindex @samp{%no-7bit}
 This option specifies that all strings that will be passed as arguments
 to the generated hash function and the generated lookup function will
 solely consist of 7-bit ASCII characters (bytes in the range 0..127).
@@ -564,6 +577,7 @@ test like @samp{c >= 'A' && c <= 'Z'} guarantees this.)
 
 @item %compare-lengths
 @cindex @samp{%compare-lengths}
+@cindex @samp{%no-compare-lengths}
 Compare keyword lengths before trying a string comparison.  This option
 is mandatory for binary comparisons (@pxref{Binary Strings}).  It also might
 cut down on the number of string comparisons made during the lookup, since
@@ -575,35 +589,41 @@ table contains as many elements as there are entries in the lookup table.
 
 @item %compare-strncmp
 @cindex @samp{%compare-strncmp}
+@cindex @samp{%no-compare-strncmp}
 Generates C code that uses the @code{strncmp} function to perform
 string comparisons.  The default action is to use @code{strcmp}.
 
 @item %readonly-tables
 @cindex @samp{%readonly-tables}
+@cindex @samp{%no-readonly-tables}
 Makes the contents of all generated lookup tables constant, i.e.,
 ``readonly''.  Many compilers can generate more efficient code for this
 by putting the tables in readonly memory.
 
 @item %enum
 @cindex @samp{%enum}
+@cindex @samp{%no-enum}
 Define constant values using an enum local to the lookup function rather
 than with #defines.  This also means that different lookup functions can
 reside in the same file.  Thanks to James Clark @code{<jjc@@ai.mit.edu>}.
 
 @item %includes
 @cindex @samp{%includes}
+@cindex @samp{%no-includes}
 Include the necessary system include file, @code{<string.h>}, at the
 beginning of the code.  By default, this is not done; the user must
 include this header file himself to allow compilation of the code.
 
 @item %global-table
 @cindex @samp{%global-table}
+@cindex @samp{%no-global-table}
 Generate the static table of keywords as a static global variable,
 rather than hiding it inside of the lookup function (which is the
 default behavior).
 
 @item %pic
 @cindex @samp{%pic}
+@cindex @samp{%no-pic}
 Optimize the generated table for inclusion in shared libraries.  This
 reduces the startup time of programs using a shared library containing
 the generated code.  If the @samp{%struct-type} declaration (or,
@@ -625,6 +645,7 @@ is given.
 
 @item %null-strings
 @cindex @samp{%null-strings}
+@cindex @samp{%no-null-strings}
 Use NULL strings instead of empty strings for empty keyword table entries.
 This reduces the startup time of programs using a shared library containing
 the generated code (but not as much as the declaration @samp{%pic}), at the
@@ -827,8 +848,8 @@ functions
 Several options control how the generated C code appears on the standard 
 output.  Two C functions are generated.  They are called @code{hash} and 
 @code{in_word_set}, although you may modify their names with a command-line 
-option.  Both functions require two arguments, a string, @code{char *} 
-@var{str}, and a length parameter, @code{int} @var{len}.  Their default 
+option.  Both functions require two arguments, a string, @code{const char *}
+@var{str}, and a length parameter, @code{size_t} @var{len}.  Their default
 function prototypes are as follows:
 
 @deftypefun {unsigned int} hash (const char * @var{str}, size_t @var{len})
@@ -849,11 +870,11 @@ keyword.  More exactly, if the option @samp{-t} (or, equivalently, the
 a pointer to the matching keyword's structure.  Otherwise it returns
 @code{NULL}.
 
-This function may be omitted via @samp{-N NONE} or
+This function may be omitted via @samp{-N NONE} or @samp{%omit-lookup-function}
 @samp{%lookup-function-name NONE}, which might be useful if you are
 sure that you only lookup known keywords (no false-positives), and if
-you use one of the 3 minimal perfect hashes, chm, chm3 or bpz.  With
-those the returned hash is the index into the keyword array.
+you use the chm or chm3 minimal perfect hashes.  With those the returned
+hash is the index into the keyword array.
 @end deftypefun
 
 If the option @samp{-c} (or, equivalently, the @samp{%compare-strncmp}
@@ -1073,7 +1094,8 @@ option's argument.  Languages handled are currently:
 @item KR-C
 Old-style K&R C.  This language is understood by old-style C compilers and
 ANSI C compilers, but ANSI C compilers may flag warnings (or even errors)
-because of lacking @samp{const}.
+because of lacking @samp{const}. The 3 MPH algorithms are incompatible with
+@samp{KR-C}.
 
 @item C
 Common C.  This language is understood by ANSI C compilers, and also by
@@ -1338,6 +1360,21 @@ The only other valid algorithm options are @samp{--random}, @samp{-f}
 and the @samp{--utilisation FACTOR}.
 See @url{http://cmph.sourceforge.net/bdz.html}
 
+@item --mph-hash-function=@samp{mi_vector_hash}|@samp{jenkins}|@samp{wyhash}|@samp{fnv}|@samp{crc}
+Select a different run-time hash function than the default
+mi_vector_hash. jenkins is an alias for mi_vector_hash. This variant requires
+padding of the keyword lookup table entries to 4-byte, because it accesses
+each group of characters by 4, @i{*(uint32_t*)}, for performance reasons.
+You can disable this padding with the declaration or option @samp{no-padding}.
+
+mph hash functions need to return 3x 32bit values, i.e. at least 96bit.
+
+wyhash is a modified 64bit variant of wyhash64, which is one of the
+fastest small and safe hash functions.
+fnv is a modified variant of FNV, which is one of the
+smallest hash functions, which is esp. recommended for short keys (length < 100).
+crc uses the fast HW intrinsics if available.
+
 @item -u @var{FACTOR}
 @itemx --utilisation=@var{FACTOR}
 Tune the space efficiency for chm, chm3 and bpz.
@@ -1534,8 +1571,8 @@ output for structs can be improved from O(n^2) to O(n).
 @chapter Things Still Left to Do
 
 It should be ``relatively'' easy to replace the current perfect hash
-function algorithm with a more exhaustive approach; the perfect hash
-module is essential independent from other program modules.  Additional
+function algorithms with more variants; the perfect hash module is
+essential independent from other program modules.  Additional
 worthwhile improvements include:
 
 @itemize @bullet
