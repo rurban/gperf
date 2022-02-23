@@ -495,9 +495,15 @@ Input::read_input ()
                 if (is_declaration (line, line_end, lineno, "struct-type"))
                   option.set (TYPE);
                 else
+                if (is_declaration (line, line_end, lineno, "omit-struct-type"))
+                  option.set (NOTYPE);
+                else
 
                 if (is_declaration (line, line_end, lineno, "ignore-case"))
                   option.set (UPPERLOWER);
+                else
+                if (is_declaration (line, line_end, lineno, "no-ignore-case"))
+                  option.unset (UPPERLOWER);
                 else
 
                 if (is_declaration_with_arg (line, line_end, lineno,
@@ -524,6 +530,10 @@ Input::read_input ()
                                            "lookup-function-name", &arg))
                   option.set_function_name (arg);
                 else
+                if (is_declaration (line, line_end, lineno,
+				    "omit-lookup-function"))
+                  option.set_function_name ("NONE");
+                else
 
                 if (is_define_declaration (line, line_end, lineno,
                                            "class-name", &arg))
@@ -533,9 +543,15 @@ Input::read_input ()
                 if (is_declaration (line, line_end, lineno, "7bit"))
                   option.set (SEVENBIT);
                 else
+                if (is_declaration (line, line_end, lineno, "no-7bit"))
+                  option.unset (SEVENBIT);
+                else
 
                 if (is_declaration (line, line_end, lineno, "compare-lengths"))
                   option.set (LENTABLE);
+                else
+                if (is_declaration (line, line_end, lineno, "no-compare-lengths"))
+                  option.unset (LENTABLE);
                 else
 
                 if (is_declaration (line, line_end, lineno, "compare-strncmp"))
@@ -545,22 +561,38 @@ Input::read_input ()
                 if (is_declaration (line, line_end, lineno, "readonly-tables"))
                   option.set (CONST);
                 else
+                if (is_declaration (line, line_end, lineno, "no-readonly-tables"))
+                  option.unset (CONST);
+                else
 
                 if (is_declaration (line, line_end, lineno, "enum"))
                   option.set (ENUM);
+                else
+                if (is_declaration (line, line_end, lineno, "no-enum"))
+                  option.unset (ENUM);
                 else
 
                 if (is_declaration (line, line_end, lineno, "includes"))
                   option.set (INCLUDE);
                 else
+                if (is_declaration (line, line_end, lineno, "no-includes"))
+                  option.unset (INCLUDE);
+                else
 
                 if (is_declaration (line, line_end, lineno, "global-table"))
                   option.set (GLOBAL);
+                else
+                if (is_declaration (line, line_end, lineno, "no-global-table"))
+                  option.unset (GLOBAL);
                 else
 
                 if (is_declaration (line, line_end, lineno, "pic"))
                   option.set (SHAREDLIB);
                 else
+                if (is_declaration (line, line_end, lineno, "no-pic"))
+                  option.unset (SHAREDLIB);
+                else
+
 
                 if (is_define_declaration (line, line_end, lineno,
                                            "string-pool-name", &arg))
@@ -569,6 +601,9 @@ Input::read_input ()
 
                 if (is_declaration (line, line_end, lineno, "null-strings"))
                   option.set (NULLSTRINGS);
+                else
+                if (is_declaration (line, line_end, lineno, "no-null-strings"))
+                  option.unset (NULLSTRINGS);
                 else
 
                 if (is_define_declaration (line, line_end, lineno,
@@ -600,8 +635,11 @@ Input::read_input ()
                   }
                 else
 
-                if (is_declaration (line, line_end, lineno, "omit-struct-type"))
-                  option.set (NOTYPE);
+                if (is_declaration (line, line_end, lineno, "no-padding"))
+		    option.unset (PADDING);
+                else
+                if (is_declaration (line, line_end, lineno, "padding"))
+		    option.set (PADDING);
                 else
 
                 if (is_declaration (line, line_end, lineno, "chm"))

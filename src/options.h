@@ -116,11 +116,23 @@ enum Option_Type
   /* Use BPZ.  */
   BPZ_ALGO     = 1 << 23,
 
+  /* 4-byte padding with MPH mi_vector_hash.  */
+  PADDING      = 1 << 24,
+
   /* --- Informative output --- */
 
   /* Enable debugging (prints diagnostics to stderr).  */
-  DEBUG        = 1 << 24
+  DEBUG        = 1 << 25
 };
+
+enum Option_Mph_Hash_Function
+{
+  e_jenkins,
+  e_wyhash,
+  e_fnv,
+  e_crc
+};
+
 
 /* Class manager for gperf program Options.  */
 
@@ -145,6 +157,8 @@ public:
   bool                  operator[] (Option_Type option) const;
   /* Sets a given boolean option.  */
   void                  set (Option_Type option);
+  /* Clears a given boolean option.  */
+  void                  unset (Option_Type option);
 
   /* Returns true if CHM, CHM3, or BPZ.  */
   bool                  is_mph_algo () const;
@@ -304,6 +318,9 @@ private:
 
   /* Contains user-specified key choices.  */
   Positions             _key_positions;
+
+  /* Selected MPH hash function  */
+  enum Option_Mph_Hash_Function _mph_hash_function;
 
   /* Contains the MPH-specific nbperf options.  */
   struct nbperf         _nbperf;

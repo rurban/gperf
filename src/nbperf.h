@@ -39,6 +39,20 @@
 #include <stdint.h>
 #endif
 
+#define err(r, ...)				     \
+  do {					             \
+    fprintf (stderr, "gperf: ");	             \
+    fprintf (stderr, __VA_ARGS__);	             \
+    fprintf (stderr, ": %s\n", strerror(errno));     \
+    exit (r);				             \
+  } while (0);
+#define errx(r, ...)		                     \
+  do {			                             \
+    fprintf (stderr, "gperf: ");                     \
+    fprintf (stderr, __VA_ARGS__);                   \
+    exit (r);                                        \
+  } while (0);
+
 // number of u32 results
 #define	NBPERF_MIN_HASH_SIZE	2
 #define	NBPERF_MAX_HASH_SIZE	3
@@ -64,7 +78,7 @@ struct nbperf {
                        const char *);
     void (*compute_hash)(struct nbperf *, const void *, size_t,
                          uint32_t *);
-    uint32_t seed[1];
+    uint32_t seed[2];
 #ifdef __cplusplus
     uint32_t *result_map; // needed for bdz
     Output *out;

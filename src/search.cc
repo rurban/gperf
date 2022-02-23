@@ -27,7 +27,6 @@
 #include <time.h> /* declares time() */
 #include <math.h> /* declares exp() */
 #include <limits.h> /* defines INT_MIN, INT_MAX, UINT_MAX */
-#include <err.h>
 #include "options.h"
 #include "hash-table.h"
 #include "config.h"
@@ -1616,18 +1615,38 @@ Search::optimize ()
           KeywordExt *keyword = temp->first();
           const char *k = keyword->_allchars;
           const size_t len = keyword->_allchars_length;
-          // need 4 byte padding for faster hashing
-          if (len % 4 == 0) {
-            if ((keys[i] = strndup(k, len)) == NULL)
-              errx(1, "strndup failed");
-          }
-          else {
-            ssize_t padded_len = len + (4 - (len % 4));
-            if ((keys[i] = (char*)calloc(padded_len, 1)) == NULL)
-              errx(1, "calloc failed");
-            memcpy((char*)keys[i], k, len);
-          }
-          keylens[i] = len;
+	  if (option[PADDING])
+	    {
+	      /* with mi_vector_hash we need 4 byte padding for faster hashing */
+	      if (len % 4 == 0) {
+#ifdef HAVE_STRNDUP
+		if ((keys[i] = strndup(k, len)) == NULL)
+		  errx(1, "strndup failed");
+#else
+		if ((keys[i] = strdup(k)) == NULL)
+		  errx(1, "strdup failed");
+		keys[i][len-1] = '\0';
+#endif
+	      }
+	      else {
+		ssize_t padded_len = len + (4 - (len % 4));
+		if ((keys[i] = (char*)calloc(padded_len, 1)) == NULL)
+		  errx(1, "calloc failed");
+		memcpy((char*)keys[i], k, len);
+	      }
+	    }
+	  else
+	    {
+#ifdef HAVE_STRNDUP
+	      if ((keys[i] = strndup(k, len)) == NULL)
+		errx(1, "strndup failed");
+#else
+	      if ((keys[i] = strdup(k)) == NULL)
+		errx(1, "strdup failed");
+	      keys[i][len-1] = '\0';
+#endif
+	    }
+	  keylens[i] = len;
         }
       nbperf->n = _total_keys;
       nbperf->keys = (const void * __restrict *)keys;
