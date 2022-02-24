@@ -230,7 +230,11 @@ Options::long_usage (FILE * stream)
            "                         The default for chm is 2, for chm3 and bpz 1.24.\n");
   fprintf (stream,
            "  -f, --allow-hash-fudging\n"
-           "                         Fudge the hashes a bit if needed for chm, chm2 and bpz.\n\n");
+           "                         Fudge the hashes a bit if needed for chm, chm2 and bpz.\n");
+  fprintf (stream,
+           "  --no-padding\n"
+           "                         Disabled padding of the keyword strings with chm, chm2\n"
+           "                         or bpz, which is only needed with asan or valgrind.\n\n");
   fprintf (stream,
            "  -k, --key-positions=KEYS\n"
            "                         Select the key positions used in the hash function.\n"
@@ -746,7 +750,6 @@ Options::set_nbperf ()
   _nbperf.seed_hash = mi_vector_hash_seed_hash;
   _nbperf.compute_hash = mi_vector_hash_compute;
   _nbperf.print_hash = mi_vector_hash_print_hash;
-  _option_word |= PADDING;
   if (!(_option_word & RANDOM))
     _nbperf.predictable = 1;
   _option_word &= ~POSITIONS;
@@ -813,6 +816,7 @@ static const struct option long_options[] =
   { "bpz", no_argument, NULL, CHAR_MAX + 8 },
   { "utilisation", required_argument, NULL, 'u' },
   { "allow-hash-fudging", no_argument, NULL, 'f' },
+  { "no-padding", no_argument, NULL, CHAR_MAX + 9 },
   { "help", no_argument, NULL, 'h' },
   { "version", no_argument, NULL, 'v' },
   { "debug", no_argument, NULL, 'd' },
@@ -1218,7 +1222,7 @@ There is NO WARRANTY, to the extent permitted by law.\n\
                 fprintf(stderr, "--%s may not be used with -L KR-C.\n", "chm");
                 exit (1);
               }
-            _option_word |= CHM_ALGO;
+            _option_word |= CHM_ALGO|PADDING;
             if (_nbperf.c < 0.1f)
               _nbperf.c = 2.0f;
 	    set_nbperf ();
@@ -1237,7 +1241,7 @@ There is NO WARRANTY, to the extent permitted by law.\n\
                 fprintf(stderr, "--%s may not be used with -L KR-C.\n", "chm");
                 exit (1);
               }
-            _option_word |= CHM3_ALGO;
+            _option_word |= CHM3_ALGO|PADDING;
             if (_nbperf.c < 0.1f)
               _nbperf.c = 1.24f;
 	    set_nbperf ();
@@ -1256,10 +1260,15 @@ There is NO WARRANTY, to the extent permitted by law.\n\
                 fprintf(stderr, "--%s may not be used with -L KR-C.\n", "chm");
                 exit (1);
               }
-            _option_word |= BPZ_ALGO;
+            _option_word |= BPZ_ALGO|PADDING;
             if (_nbperf.c < 0.1f)
               _nbperf.c = 1.24f;
 	    set_nbperf ();
+            break;
+          }
+        case CHAR_MAX + 9:      /* --no-padding.  */
+          {
+            option.unset(PADDING);
             break;
           }
         default:

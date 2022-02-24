@@ -1358,6 +1358,15 @@ The default for chm is 2, for chm3 and bpz 1.24.
 With chm, chm3 and bpz allow for slightly slower hashes to find
 better solutions faster. The old @samp{--fast} option is now illegal.
 
+@item no-padding
+Only needed for MPH algorithms with mi_vector_hash.
+mi_vector_hash requires padding of the keyword lookup table entries to 4-byte,
+because it accesses each group of characters by 4, @i{*(uint32_t*)},
+for performance reasons.
+You can disable this padding with this option or the declaration @samp{%no-padding}.
+But in practice the padding is only needed with strict memory bounds checkers,
+like valgrind or -fsanitize=address.
+
 @item -k @var{selected-byte-positions}
 @itemx --key-positions=@var{selected-byte-positions}
 Allows selection of the byte positions used in the keywords'
