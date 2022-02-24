@@ -32,14 +32,6 @@
  * SUCH DAMAGE.
  */
 
-//#if HAVE_NBTOOL_CONFIG_H
-//#include "nbtool_config.h"
-//#endif
-//
-//#include <sys/cdefs.h>
-//__RCSID("$NetBSD: nbperf-bdz.c,v 1.10 2021/01/07 16:03:08 joerg Exp $");
-
-#include <err.h>
 #include <inttypes.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -143,18 +135,18 @@ print_hash(struct nbperf *nbperf, struct bdzstate *state)
 	size_t i;
         Output *out = nbperf->out;
 
-        out->printf_hash_body ("\n#ifdef __GNUC__\n"); // since gcc 4.5
-        out->printf_hash_body ("#define popcount64 __builtin_popcountll\n");
-        out->printf_hash_body ("#endif\n\n");
+        out->add_hash_body ("\n#ifdef __GNUC__\n"); // since gcc 4.5
+        out->add_hash_body ("#define popcount64 __builtin_popcountll\n");
+        out->add_hash_body ("#endif\n\n");
 
-	out->printf_hash_body (
+	out->add_hash_body (
 	    "\tstatic const uint64_t g1[%" PRId32 "] = {\n",
 	    (state->graph.v + 63) / 64);
 	sum = 0;
 	for (i = 0; i < state->graph.v; ++i) {
 		sum |= ((uint64_t)state->g[i] & 1) << (i & 63);
 		if (i % 64 == 63) {
-			out->printf_hash_body ("%sUINT64_C(0x%016" PRIx64 "),%s",
+			out->add_hash_body ("%s0x%016" PRIx64 ",%s",
 			    (i / 64 % 2 == 0 ? "\t    " : " "),
 			    sum,
 			    (i / 64 % 2 == 1 ? "\n" : ""));
@@ -162,21 +154,21 @@ print_hash(struct nbperf *nbperf, struct bdzstate *state)
 		}
 	}
 	if (i % 64 != 0) {
-		out->printf_hash_body ("%sUINT64_C(0x%016" PRIx64 "),%s",
+		out->add_hash_body ("%s0x%016" PRIx64 ",%s",
 		    (i / 64 % 2 == 0 ? "\t    " : " "),
 		    sum,
 		    (i / 64 % 2 == 1 ? "\n" : ""));
 	}
-	out->printf_hash_body ("%s\t};\n", (i % 2 ? "\n" : ""));
+	out->add_hash_body ("%s\t};\n", (i % 2 ? "\n" : ""));
 
-	out->printf_hash_body (
+	out->add_hash_body (
 	    "\tstatic const uint64_t g2[%" PRId32 "] = {\n",
 	    (state->graph.v + 63) / 64);
 	sum = 0;
 	for (i = 0; i < state->graph.v; ++i) {
 		sum |= (((uint64_t)state->g[i] & 2) >> 1) << (i & 63);
 		if (i % 64 == 63) {
-			out->printf_hash_body ("%sUINT64_C(0x%016" PRIx64 "),%s",
+			out->add_hash_body ("%s0x%016" PRIx64 ",%s",
 			    (i / 64 % 2 == 0 ? "\t    " : " "),
 			    sum,
 			    (i / 64 % 2 == 1 ? "\n" : ""));
@@ -184,56 +176,56 @@ print_hash(struct nbperf *nbperf, struct bdzstate *state)
 		}
 	}
 	if (i % 64 != 0) {
-		out->printf_hash_body ("%sUINT64_C(0x%016" PRIx64 "),%s",
+		out->add_hash_body ("%s0x%016" PRIx64 ",%s",
 		    (i / 64 % 2 == 0 ? "\t    " : " "),
 		    sum,
 		    (i / 64 % 2 == 1 ? "\n" : ""));
 	}
-	out->printf_hash_body ("%s\t};\n", (i % 2 ? "\n" : ""));
+	out->add_hash_body ("%s\t};\n", (i % 2 ? "\n" : ""));
 
-	out->printf_hash_body (
+	out->add_hash_body (
 	    "\tstatic const uint32_t holes64k[%" PRId32 "] = {\n",
 	    (state->graph.v + 65535) / 65536);
 	for (i = 0; i < state->graph.v; i += 65536)
-		out->printf_hash_body ("%sUINT32_C(0x%08" PRIx32 "),%s",
+		out->add_hash_body ("%s0x%08" PRIx32 ",%s",
 		    (i / 65536 % 4 == 0 ? "\t    " : " "),
 		    state->holes64k[i >> 16],
 		    (i / 65536 % 4 == 3 ? "\n" : ""));
-	out->printf_hash_body ("%s\t};\n", (i / 65536 % 4 ? "\n" : ""));
+	out->add_hash_body ("%s\t};\n", (i / 65536 % 4 ? "\n" : ""));
 
-	out->printf_hash_body (
+	out->add_hash_body (
 	    "\tstatic const uint16_t holes64[%" PRId32 "] = {\n",
 	    (state->graph.v + 63) / 64);
 	for (i = 0; i < state->graph.v; i += 64)
-		out->printf_hash_body ("%sUINT32_C(0x%04" PRIx32 "),%s",
+		out->add_hash_body ("%s0x%04" PRIx32 ",%s",
 		    (i / 64 % 4 == 0 ? "\t    " : " "),
 		    state->holes64[i >> 6],
 		    (i / 64 % 4 == 3 ? "\n" : ""));
-	out->printf_hash_body ("%s\t};\n", (i / 64 % 4 ? "\n" : "")); 
+	out->add_hash_body ("%s\t};\n", (i / 64 % 4 ? "\n" : ""));
 
-	out->printf_hash_body ("\tuint32_t idx, idx2;\n");
-	out->printf_hash_body ("\tuint32_t h[%zu];\n\n", nbperf->hash_size);
+	out->add_hash_body ("\tuint32_t idx, idx2;\n");
+	out->add_hash_body ("\tuint32_t h[%zu];\n\n", nbperf->hash_size);
 
 	(*nbperf->print_hash)(nbperf, "\t", "str", "len", "h");
 
-	out->printf_hash_body ("\n\th[0] = h[0] %% %" PRIu32 ";\n",
+	out->add_hash_body ("\n\th[0] = h[0] %% %" PRIu32 ";\n",
 	    state->graph.v);
-	out->printf_hash_body ("\th[1] = h[1] %% %" PRIu32 ";\n",
+	out->add_hash_body ("\th[1] = h[1] %% %" PRIu32 ";\n",
 	    state->graph.v);
-	out->printf_hash_body ("\th[2] = h[2] %% %" PRIu32 ";\n",
+	out->add_hash_body ("\th[2] = h[2] %% %" PRIu32 ";\n",
 	    state->graph.v);
 
 	if (state->graph.hash_fudge & 1)
-		out->printf_hash_body ("\th[1] ^= (h[0] == h[1]);\n");
+		out->add_hash_body ("\th[1] ^= (h[0] == h[1]);\n");
 
 	if (state->graph.hash_fudge & 2) {
-		out->printf_hash_body (
+		out->add_hash_body (
 		    "\th[2] ^= (h[0] == h[2] || h[1] == h[2]);\n");
-		out->printf_hash_body (
+		out->add_hash_body (
 		    "\th[2] ^= 2 * (h[0] == h[2] || h[1] == h[2]);\n");
 	}
 
-	out->printf_hash_body (
+	out->add_hash_body (
 	    "\tidx = 9 + ((g1[h[0] >> 6] >> (h[0] & 63)) & 1)\n"
 	    "\t        + ((g1[h[1] >> 6] >> (h[1] & 63)) & 1)\n"
 	    "\t        + ((g1[h[2] >> 6] >> (h[2] & 63)) & 1)\n"
@@ -242,9 +234,9 @@ print_hash(struct nbperf *nbperf, struct bdzstate *state)
 	    "\t        - ((g2[h[2] >> 6] >> (h[2] & 63)) & 1);\n"
 	    );
 
-	out->printf_hash_body (
+	out->add_hash_body (
 	    "\tidx = h[idx %% 3];\n");
-	out->printf_hash_body (
+	out->add_hash_body (
 	    "\tidx2 = idx - holes64[idx >> 6] - holes64k[idx >> 16];\n"
 	    "\tidx2 -= popcount64(g1[idx >> 6]\n"
             "\t                 & g2[idx >> 6]\n"

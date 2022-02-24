@@ -102,11 +102,14 @@ Algorithms employed by gperf:
                          optimal minimal perfect hashes (MPH)
                          and can efficiently deal with huge input, with best-known
                          code sizes.
+  --mph-hash-function=mi_vector_hash|jenkins|wyhash|fnv|fnv3|crc
+                         Select the MPH hash function. Default mi_vector_hash.
   -u, --utilisation=FACTOR
                          Tune the space efficiency for chm, chm2 and bpz.
                          The default for chm is 2, for chm3 and bpz 1.24.
   -f, --allow-hash-fudging
                          Fudge the hashes a bit if needed for chm, chm2 and bpz.
+
   --no-padding
                          Disabled padding of the keyword strings with chm, chm2
                          or bpz, which is only needed with asan or valgrind.

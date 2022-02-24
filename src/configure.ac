@@ -60,6 +60,14 @@ CXXFLAGS="$CXXFLAGS_save"
 dnl
 dnl           checks for functions and declarations
 dnl
+AC_CHECK_FUNCS([strndup])
+
+AC_CHECK_HEADER([endian.h])     dnl for mi_vector_hash
+AC_CHECK_HEADER([sys/endian.h]) dnl for mi_vector_hash
+
+AC_CHECK_HEADER([smmintrin.h])  dnl for crc
+AC_CHECK_FUNCS([_mm_crc32_u32])
+AC_CHECK_FUNCS([_mm_crc32_u64])
 dnl
 dnl           checks for libraries
 dnl
