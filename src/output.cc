@@ -1364,8 +1364,10 @@ output_nbperf_keyword_entry (char *key, uint32_t keylen, char *type_rest,
     printf ("(int)(size_t)&((struct %s_t *)0)->%s_str%d",
             option.get_stringpool_name (), option.get_stringpool_name (),
             index);
-  else
+  else if (option[PADDING])
     output_padded_string (key, keylen);
+  else
+    output_string (key, keylen);
   if (option[TYPE])
     {
       if (type_rest)
@@ -1452,7 +1454,7 @@ Output::output_keyword_table () const
 	  uint32_t idx = nbperf->result_map[i];
 	  inv_map[idx] = i;
 	}
-      /* Quadratic (2 nested loops)  */
+      /* Quadratic (2 nested loops) with struct-type.  */
       for (uint32_t i = 0; i < nbperf->n; i++)
 	{
 	  char *type_rest = NULL;

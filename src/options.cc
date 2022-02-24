@@ -144,7 +144,8 @@ Options::long_usage (FILE * stream)
   fprintf (stream,
            "  -N, --lookup-function-name=NAME\n"
            "                         Specify name of generated lookup function. Default\n"
-           "                         name is 'in_word_set'.\n");
+           "                         name is 'in_word_set'.\n"
+	   "                         -N NONE generates no lookup function nor table.\n");
   fprintf (stream,
            "  -Z, --class-name=NAME  Specify name of generated C++ class. Default name is\n"
            "                         'Perfect_Hash'.\n");
@@ -230,7 +231,7 @@ Options::long_usage (FILE * stream)
            "                         The default for chm is 2, for chm3 and bpz 1.24.\n");
   fprintf (stream,
            "  -f, --allow-hash-fudging\n"
-           "                         Fudge the hashes a bit if needed for chm, chm2 and bpz.\n");
+           "                         Fudge the hashes a bit if needed for chm, chm2 and bpz.\n\n");
   fprintf (stream,
            "  -k, --key-positions=KEYS\n"
            "                         Select the key positions used in the hash function.\n"
@@ -540,6 +541,7 @@ Options::~Options ()
                "\nDUP is.........: %s"
                "\nNOLENGTH is....: %s"
                "\nRANDOM is......: %s"
+               "\nPADDING is.....: %s"
                "\nDEBUG is.......: %s"
                "\nlookup function name = %s"
                "\nhash function name = %s"
@@ -578,6 +580,7 @@ Options::~Options ()
                _option_word & DUP ? "enabled" : "disabled",
                _option_word & NOLENGTH ? "enabled" : "disabled",
                _option_word & RANDOM ? "enabled" : "disabled",
+               _option_word & PADDING ? "enabled" : "disabled",
                _option_word & DEBUG ? "enabled" : "disabled",
                _function_name, _hash_name, _wordlist_name, _lengthtable_name,
                _stringpool_name, _slot_name, _initializer_suffix,
@@ -603,6 +606,7 @@ Options::~Options ()
 }
 
 extern "C" {
+  /* Callbacks for our supported MPH hash variants.  To be extended.  */
   static void mi_vector_hash_seed_hash(struct nbperf *nbperf)
   {
     static uint32_t predictable_counter;
@@ -611,13 +615,11 @@ extern "C" {
     else
       nbperf->seed[0] = random();
   }
-
   static void mi_vector_hash_compute(struct nbperf *nbperf, const void *key, size_t keylen,
                                      uint32_t *hashes)
   {
     mi_vector_hash(key, keylen, nbperf->seed[0], hashes);
   }
-
   static void mi_vector_hash_print_hash(struct nbperf *nbperf, const char *indent,
                                         const char *key, const char *keylen, const char *hash)
   {
@@ -755,6 +757,7 @@ Options::set_nbperf ()
   _nbperf.seed_hash = mi_vector_hash_seed_hash;
   _nbperf.compute_hash = mi_vector_hash_compute;
   _nbperf.print_hash = mi_vector_hash_print_hash;
+  _option_word |= PADDING;
   if (!(_option_word & RANDOM))
     _nbperf.predictable = 1;
   _option_word &= ~POSITIONS;
