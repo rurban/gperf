@@ -546,6 +546,15 @@ Allows you to specify the name for the generated lookup function.
 Default name is @samp{in_word_set}.  This option permits multiple
 generated hash functions to be used in the same application.
 
+@item %omit-lookup-function
+@cindex @samp{%omit-lookup-function}
+This is the same as the option @samp{-N NONE} or @samp{%define
+lookup-function-name NONE}.  This might be useful if you are sure that
+you only lookup known keywords, no false-positives or you are doing
+your own strcmp check, and if you use the chm or chm3 minimal perfect
+hashes.  With those the returned hash is the index into your own
+keyword array.
+
 @item %define class-name @var{name}
 @cindex @samp{%define class-name}
 This option is only useful when option @samp{-L C++} (or, equivalently,
@@ -837,8 +846,8 @@ functions
 Several options control how the generated C code appears on the standard 
 output.  Two C functions are generated.  They are called @code{hash} and 
 @code{in_word_set}, although you may modify their names with a command-line 
-option.  Both functions require two arguments, a string, @code{char *} 
-@var{str}, and a length parameter, @code{int} @var{len}.  Their default 
+option.  Both functions require two arguments, a string, @code{const char *}
+@var{str}, and a length parameter, @code{size_t} @var{len}.  Their default
 function prototypes are as follows:
 
 @deftypefun {unsigned int} hash (const char * @var{str}, size_t @var{len})
@@ -860,10 +869,11 @@ a pointer to the matching keyword's structure.  Otherwise it returns
 @code{NULL}.
 
 This function may be omitted via @samp{-N NONE} or
-@samp{%lookup-function-name NONE}, which might be useful if you are
-sure that you only lookup known keywords (no false-positives), and if
-you use one of the 3 minimal perfect hashes, chm, chm3 or bpz.  With
-those the returned hash is the index into the keyword array.
+@samp{%omit-lookup-function} or @samp{%lookup-function-name NONE},
+which might be useful if you are sure that you only lookup known
+keywords (no false-positives), and if you use the chm or chm3 minimal
+perfect hashes.  With those the returned hash is the index into the
+keyword array.
 @end deftypefun
 
 If the option @samp{-c} (or, equivalently, the @samp{%compare-strncmp}
@@ -1083,7 +1093,8 @@ option's argument.  Languages handled are currently:
 @item KR-C
 Old-style K&R C.  This language is understood by old-style C compilers and
 ANSI C compilers, but ANSI C compilers may flag warnings (or even errors)
-because of lacking @samp{const}.
+because of lacking @samp{const}. The 3 MPH algorithms are incompatible with
+@samp{KR-C}.
 
 @item C
 Common C.  This language is understood by ANSI C compilers, and also by
@@ -1553,8 +1564,8 @@ output for structs can be improved from O(n^2) to O(n).
 @chapter Things Still Left to Do
 
 It should be ``relatively'' easy to replace the current perfect hash
-function algorithm with a more exhaustive approach; the perfect hash
-module is essential independent from other program modules.  Additional
+function algorithms with more variants; the perfect hash module is
+essential independent from other program modules.  Additional
 worthwhile improvements include:
 
 @itemize @bullet
