@@ -107,6 +107,9 @@ Algorithms employed by gperf:
                          The default for chm is 2, for chm3 and bpz 1.24.
   -f, --allow-hash-fudging
                          Fudge the hashes a bit if needed for chm, chm2 and bpz.
+  --no-padding
+                         Disabled padding of the keyword strings with chm, chm2
+                         or bpz, which is only needed with asan or valgrind.
 
   -k, --key-positions=KEYS
                          Select the key positions used in the hash function.
