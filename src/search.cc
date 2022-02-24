@@ -27,7 +27,6 @@
 #include <time.h> /* declares time() */
 #include <math.h> /* declares exp() */
 #include <limits.h> /* defines INT_MIN, INT_MAX, UINT_MAX */
-#include <err.h>
 #include "options.h"
 #include "hash-table.h"
 #include "config.h"

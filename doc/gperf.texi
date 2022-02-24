@@ -456,7 +456,7 @@ There are three forms of declarations:
 
 @enumerate
 @item
-Declarations without argument, like @samp{%compare-lengths}.
+Boolean declarations without argument, like @samp{%compare-lengths}.
 
 @item
 Declarations with an argument, like @samp{%switch=@var{count}}.
@@ -1315,16 +1315,16 @@ The resulting MPHFs are order preserving.
 The resulting MPHFs are stored in 4cn bytes, where c is greater than 2.
 @end itemize
 
-The only other valid algorithm options are @samp{--random}, @samp{-f}
-and the @samp{--utilisation FACTOR}.
+The only other valid algorithm options are @samp{--random}, @samp{-f},
+@samp{--mph-hash-function HASH} and the @samp{--utilisation FACTOR}.
 See @url{http://cmph.sourceforge.net/papers/chm92.pdf}
 
 @item --chm3
 @cindex CHM3
 A chm variant which uses 3 table lookups with much smaller tables, thus
 trades size over speed.
-The only other valid algorithm options are @samp{--random}, @samp{-f}
-and the @samp{--utilisation FACTOR}.
+The only other valid algorithm options are @samp{--random}, @samp{-f},
+@samp{--mph-hash-function HASH} and the @samp{--utilisation FACTOR}.
 
 @item --bpz
 @cindex BPZ
@@ -1355,9 +1355,26 @@ For its maximum load factor (81 %), the resulting PHFs are stored in
 approximately 1.95 bits per key.
 @end itemize
 
-The only other valid algorithm options are @samp{--random}, @samp{-f}
-and the @samp{--utilisation FACTOR}.
+The only other valid algorithm options are @samp{--random}, @samp{-f},
+@samp{--mph-hash-function HASH} and the @samp{--utilisation FACTOR}.
 See @url{http://cmph.sourceforge.net/bdz.html}
+
+@item --mph-hash-function=@samp{mi_vector_hash}|@samp{jenkins}|@samp{wyhash}|@samp{fnv}|@samp{crc}
+Select a different run-time hash function than the default
+mi_vector_hash. jenkins is an alias for mi_vector_hash. This variant requires
+padding of the keyword lookup table entries to 4-byte, because it accesses
+each group of characters by 4, @i{*(uint32_t*)}, for performance reasons.
+You can disable this padding with the declaration or option @samp{no-padding}.
+
+mph hash functions (at least for chm3 and bpz) need to return at least
+3x 32bit values, i.e. at least 96bit.
+
+wyhash is a modified 128-bit variant of wyhash64, which is one of the
+fastest small and safe hash functions.
+fnv is a modified 64-bit variant of FNV, which is one of the
+smallest hash functions, which is esp. recommended for short keys (length < 100).
+fnv3 returns 128-bit and is needed for --chm3 and -bpz.
+crc uses the fast HW intrinsics if available.
 
 @item -u @var{FACTOR}
 @itemx --utilisation=@var{FACTOR}

@@ -125,6 +125,15 @@ enum Option_Type
   DEBUG        = 1 << 25
 };
 
+enum Option_Mph_Hash_Function
+{
+  e_jenkins,
+  e_wyhash,
+  e_fnv,
+  e_fnv3,
+  e_crc
+};
+
 /* Class manager for gperf program Options.  */
 
 class Options
@@ -309,6 +318,9 @@ private:
 
   /* Contains user-specified key choices.  */
   Positions             _key_positions;
+
+  /* Selected MPH hash function  */
+  enum Option_Mph_Hash_Function _mph_hash_function;
 
   /* Contains the MPH-specific nbperf options.  */
   struct nbperf         _nbperf;

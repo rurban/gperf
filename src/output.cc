@@ -175,7 +175,7 @@ Output::update_searcher (KeywordExt_List *head,
 }
 
 void
-Output::printf_hash_body (const char *fmt, ...)
+Output::add_hash_body (const char *fmt, ...)
 {
   char buffer[1024];
   va_list argptr;

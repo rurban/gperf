@@ -31,6 +31,11 @@
 #include "getopt.h"
 #include "version.h"
 #include "mi_vector_hash.h"
+#include "wyhash.h"
+#include "wyhash3.h"
+#include "fnv.h"
+#include "fnv3.h"
+#include "crc3.h"
 
 /* Global option coordinator for the entire program.  */
 Options option;
@@ -70,6 +75,9 @@ static const char *const DEFAULT_CONSTANTS_PREFIX = "";
 
 /* Default delimiters that separate keywords from their attributes.  */
 static const char *const DEFAULT_DELIMITERS = ",";
+
+/* Default MPH hash function.  */
+static const enum Option_Mph_Hash_Function DEFAULT_MPH_HASH_FUNCTION = e_jenkins;
 
 /* Prints program usage to given stream.  */
 
@@ -226,12 +234,15 @@ Options::long_usage (FILE * stream)
            "                         and can efficiently deal with huge input, with best-known\n"
            "                         code sizes.\n");
   fprintf (stream,
+           "  --mph-hash-function=mi_vector_hash|jenkins|wyhash|fnv|fnv3|crc\n"
+           "                         Select the MPH hash function. Default mi_vector_hash.\n");
+  fprintf (stream,
            "  -u, --utilisation=FACTOR\n"
            "                         Tune the space efficiency for chm, chm2 and bpz.\n"
            "                         The default for chm is 2, for chm3 and bpz 1.24.\n");
   fprintf (stream,
            "  -f, --allow-hash-fudging\n"
-           "                         Fudge the hashes a bit if needed for chm, chm2 and bpz.\n");
+           "                         Fudge the hashes a bit if needed for chm, chm2 and bpz.\n\n");
   fprintf (stream,
            "  --no-padding\n"
            "                         Disabled padding of the keyword strings with chm, chm2\n"
@@ -510,7 +521,8 @@ Options::Options ()
     _stringpool_name (DEFAULT_STRINGPOOL_NAME),
     _constants_prefix (DEFAULT_CONSTANTS_PREFIX),
     _delimiters (DEFAULT_DELIMITERS),
-    _key_positions ()
+    _key_positions (),
+    _mph_hash_function (DEFAULT_MPH_HASH_FUNCTION)
 {
   memset(&_nbperf, 0, sizeof(struct nbperf));
   _nbperf.hash_name = DEFAULT_HASH_NAME;
@@ -549,6 +561,7 @@ Options::~Options ()
                "\nDEBUG is.......: %s"
                "\nlookup function name = %s"
                "\nhash function name = %s"
+               "\nMPH hash function = %s"
                "\nword list name = %s"
                "\nlength table name = %s"
                "\nstring pool name = %s"
@@ -586,7 +599,13 @@ Options::~Options ()
                _option_word & RANDOM ? "enabled" : "disabled",
                _option_word & PADDING ? "enabled" : "disabled",
                _option_word & DEBUG ? "enabled" : "disabled",
-               _function_name, _hash_name, _wordlist_name, _lengthtable_name,
+               _function_name, _hash_name,
+               _mph_hash_function == e_jenkins ? "jenkins" :
+               _mph_hash_function == e_wyhash ? "wyhash" :
+               _mph_hash_function == e_fnv ? "fnv" :
+               _mph_hash_function == e_fnv3 ? "fnv3" :
+               _mph_hash_function == e_crc ? "crc" : "<invalid>",
+               _wordlist_name, _lengthtable_name,
                _stringpool_name, _slot_name, _initializer_suffix,
                _asso_iterations, _jump, _size_multiple, _initial_asso_value,
                _delimiters, _total_switches);
@@ -610,27 +629,99 @@ Options::~Options ()
 }
 
 extern "C" {
-  /* Callbacks for our supported MPH hash variants.  To be extended.  */
-  static void mi_vector_hash_seed_hash(struct nbperf *nbperf)
+  /* Callbacks for our supported MPH hash variants.  */
+  static void small_seed(struct nbperf *nbperf)
   {
     static uint32_t predictable_counter;
     if (nbperf->predictable)
       nbperf->seed[0] = predictable_counter++;
     else
-      nbperf->seed[0] = random();
+      nbperf->seed[0] = rand();
+  }
+  static void large_seed(struct nbperf *nbperf)
+  {
+    static uint32_t predictable_counter;
+    if (nbperf->predictable)
+      {
+        nbperf->seed[0] = predictable_counter++;
+        nbperf->seed[1] = predictable_counter++;
+      }
+    else
+      {
+        nbperf->seed[0] = rand();
+        nbperf->seed[1] = rand();
+      }
   }
   static void mi_vector_hash_compute(struct nbperf *nbperf, const void *key, size_t keylen,
                                      uint32_t *hashes)
   {
     mi_vector_hash(key, keylen, nbperf->seed[0], hashes);
   }
-  static void mi_vector_hash_print_hash(struct nbperf *nbperf, const char *indent,
-                                        const char *key, const char *keylen, const char *hash)
+  static void mi_vector_hash_print(struct nbperf *nbperf, const char *indent,
+                                   const char *key, const char *keylen, const char *hash)
   {
     Output *out = nbperf->out;
-    out->printf_hash_body (
-            "%smi_vector_hash(%s, %s, 0x%08" PRIx32 "U, %s);\n",
-            indent, key, keylen, nbperf->seed[0], hash);
+    out->add_hash_body ("%smi_vector_hash(%s, %s, UINT32_C(0x%08" PRIx32 "), %s);\n",
+                        indent, key, keylen, nbperf->seed[0], hash);
+  }
+  static void wyhash_seed(struct nbperf *nbperf)
+  {
+    large_seed (nbperf);
+    if (nbperf->seed[0] == UINT32_C(0x14cc886e) ||
+        nbperf->seed[0] == UINT32_C(0xd637dbf3))
+      nbperf->seed[0]++;
+    if (nbperf->seed[1] == UINT32_C(0x14cc886e) ||
+        nbperf->seed[1] == UINT32_C(0xd637dbf3))
+      nbperf->seed[1]++;
+  }
+  static void wyhash_compute(struct nbperf *nbperf, const void *key, size_t keylen,
+                             uint32_t *hashes)
+  {
+    wyhash3(key, keylen, *(uint64_t*)nbperf->seed, (uint64_t*)hashes);
+  }
+  static void wyhash_print(struct nbperf *nbperf, const char *indent,
+                           const char *key, const char *keylen, const char *hash)
+  {
+    Output *out = nbperf->out;
+    out->add_hash_body ("%swyhash3(%s, %s, UINT64_C(0x%" PRIx64 "), (uint64_t *)%s);\n",
+                        indent, key, keylen, *(uint64_t*)nbperf->seed, hash);
+  }
+
+  static void fnv_compute(struct nbperf *nbperf, const void *key, size_t keylen,
+                          uint32_t *hashes)
+  {
+    fnv(key, keylen, *(uint64_t*)nbperf->seed, (uint64_t*)hashes);
+  }
+  static void fnv_print(struct nbperf *nbperf, const char *indent,
+                        const char *key, const char *keylen, const char *hash)
+  {
+    Output *out = nbperf->out;
+    out->add_hash_body ("%sfnv(%s, %s, UINT64_C(0x%" PRIx64 "), %s);\n",
+                        indent, key, keylen, *(uint64_t*)nbperf->seed, hash);
+  }
+  static void fnv3_compute(struct nbperf *nbperf, const void *key, size_t keylen,
+                          uint32_t *hashes)
+  {
+    fnv3(key, keylen, *(uint64_t*)nbperf->seed, (uint64_t*)hashes);
+  }
+  static void fnv3_print(struct nbperf *nbperf, const char *indent,
+                        const char *key, const char *keylen, const char *hash)
+  {
+    Output *out = nbperf->out;
+    out->add_hash_body ("%sfnv3(%s, %s, UINT64_C(0x%" PRIx64 "), %s);\n",
+                        indent, key, keylen, *(uint64_t*)nbperf->seed, hash);
+  }
+  static void crc_compute(struct nbperf *nbperf, const void *key, size_t keylen,
+                          uint32_t *hashes)
+  {
+    crc3(key, keylen, nbperf->seed[0], (uint64_t*)hashes);
+  }
+  static void crc_print(struct nbperf *nbperf, const char *indent,
+                        const char *key, const char *keylen, const char *hash)
+  {
+    Output *out = nbperf->out;
+    out->add_hash_body ("%scrc3(%s, %s, UINT64_C(0x%" PRIx64 "), %s);\n",
+                        indent, key, keylen, *(uint64_t*)nbperf->seed, hash);
   }
 }
 
@@ -758,9 +849,28 @@ void
 Options::set_nbperf ()
 {
   _nbperf.hash_size = 3; // needed for chm3 and bdz
-  _nbperf.seed_hash = mi_vector_hash_seed_hash;
-  _nbperf.compute_hash = mi_vector_hash_compute;
-  _nbperf.print_hash = mi_vector_hash_print_hash;
+  if (_mph_hash_function == e_jenkins) {
+    _nbperf.seed_hash = small_seed;
+    _nbperf.compute_hash = mi_vector_hash_compute;
+    _nbperf.print_hash = mi_vector_hash_print;
+    _option_word |= PADDING;
+  } else if (_mph_hash_function == e_wyhash) {
+    _nbperf.seed_hash = wyhash_seed;
+    _nbperf.compute_hash = wyhash_compute;
+    _nbperf.print_hash = wyhash_print;
+  } else if (_mph_hash_function == e_fnv) {
+    _nbperf.seed_hash = large_seed;
+    _nbperf.compute_hash = fnv_compute;
+    _nbperf.print_hash = fnv_print;
+  } else if (_mph_hash_function == e_fnv3) {
+    _nbperf.seed_hash = large_seed;
+    _nbperf.compute_hash = fnv3_compute;
+    _nbperf.print_hash = fnv3_print;
+  } else if (_mph_hash_function == e_crc) {
+    _nbperf.seed_hash = large_seed;
+    _nbperf.compute_hash = crc_compute;
+    _nbperf.print_hash = crc_print;
+  }
   if (!(_option_word & RANDOM))
     _nbperf.predictable = 1;
   _option_word &= ~POSITIONS;
@@ -825,9 +935,10 @@ static const struct option long_options[] =
   { "chm", no_argument, NULL, CHAR_MAX + 6 },
   { "chm3", no_argument, NULL, CHAR_MAX + 7 },
   { "bpz", no_argument, NULL, CHAR_MAX + 8 },
+  { "mph-hash-function", required_argument, NULL, CHAR_MAX + 9 },
   { "utilisation", required_argument, NULL, 'u' },
   { "allow-hash-fudging", no_argument, NULL, 'f' },
-  { "no-padding", no_argument, NULL, CHAR_MAX + 9 },
+  { "no-padding", no_argument, NULL, CHAR_MAX + 10 },
   { "help", no_argument, NULL, 'h' },
   { "version", no_argument, NULL, 'v' },
   { "debug", no_argument, NULL, 'd' },
@@ -1233,7 +1344,7 @@ There is NO WARRANTY, to the extent permitted by law.\n\
                 fprintf(stderr, "--%s may not be used with -L KR-C.\n", "chm");
                 exit (1);
               }
-            _option_word |= CHM_ALGO|PADDING;
+            _option_word |= CHM_ALGO;
             if (_nbperf.c < 0.1f)
               _nbperf.c = 2.0f;
 	    set_nbperf ();
@@ -1252,7 +1363,7 @@ There is NO WARRANTY, to the extent permitted by law.\n\
                 fprintf(stderr, "--%s may not be used with -L KR-C.\n", "chm");
                 exit (1);
               }
-            _option_word |= CHM3_ALGO|PADDING;
+            _option_word |= CHM3_ALGO;
             if (_nbperf.c < 0.1f)
               _nbperf.c = 1.24f;
 	    set_nbperf ();
@@ -1271,13 +1382,46 @@ There is NO WARRANTY, to the extent permitted by law.\n\
                 fprintf(stderr, "--%s may not be used with -L KR-C.\n", "chm");
                 exit (1);
               }
-            _option_word |= BPZ_ALGO|PADDING;
+            _option_word |= BPZ_ALGO;
             if (_nbperf.c < 0.1f)
               _nbperf.c = 1.24f;
 	    set_nbperf ();
             break;
           }
-        case CHAR_MAX + 9:      /* --no-padding.  */
+        case CHAR_MAX + 9:      /* Sets mph-hash-function.  */
+          {
+            if (!(_option_word & (CHM_ALGO|CHM3_ALGO|BPZ_ALGO)))
+              {
+                fprintf (stderr, "--mph-hash-function only valid for MPH algorithms chm,chm3,bpz.\n");
+                short_usage (stderr);
+                exit (1);
+              }
+	    if (strcmp(optarg, "mi_vector_hash") &&
+		strcmp(optarg, "jenkins") && /* a valid alias */
+		strcmp(optarg, "wyhash") &&
+		strcmp(optarg, "crc") &&
+		strcmp(optarg, "fnv") &&
+		strcmp(optarg, "fnv3"))
+	      {
+                fprintf (stderr, "Invalid --mph-hash-function %s\n", optarg);
+                short_usage (stderr);
+                exit (1);
+	      }
+	    else if (strcmp(optarg, "mi_vector_hash") == 0 ||
+                     strcmp(optarg, "jenkins") == 0)
+              _mph_hash_function = e_jenkins;
+	    else if (strcmp(optarg, "wyhash") == 0)
+	      _mph_hash_function = e_wyhash;
+	    else if (strcmp(optarg, "fnv") == 0)
+	      _mph_hash_function = e_fnv;
+	    else if (strcmp(optarg, "fnv3") == 0)
+	      _mph_hash_function = e_fnv3;
+	    else
+	      _mph_hash_function = e_crc;
+	    set_nbperf ();
+            break;
+	  }
+        case CHAR_MAX + 10:      /* --no-padding.  */
           {
             option.unset(PADDING);
             break;
