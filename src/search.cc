@@ -1616,17 +1616,37 @@ Search::optimize ()
           KeywordExt *keyword = temp->first();
           const char *k = keyword->_allchars;
           const size_t len = keyword->_allchars_length;
-          // need 4 byte padding for faster hashing
-          if (len % 4 == 0) {
-            if ((keys[i] = strndup(k, len)) == NULL)
-              errx(1, "strndup failed");
-          }
-          else {
-            ssize_t padded_len = len + (4 - (len % 4));
-            if ((keys[i] = (char*)calloc(padded_len, 1)) == NULL)
-              errx(1, "calloc failed");
-            memcpy((char*)keys[i], k, len);
-          }
+          if (option[PADDING])
+            {
+              /* with mi_vector_hash we need 4 byte padding for faster hashing */
+              if (len % 4 == 0) {
+#ifdef HAVE_STRNDUP
+                if ((keys[i] = strndup(k, len)) == NULL)
+                  errx(1, "strndup failed");
+#else
+                if ((keys[i] = strdup(k)) == NULL)
+                  errx(1, "strdup failed");
+                keys[i][len] = '\0';
+#endif
+              }
+              else {
+                ssize_t padded_len = len + (4 - (len % 4));
+                if ((keys[i] = (char*)calloc(padded_len, 1)) == NULL)
+                  errx(1, "calloc failed");
+                memcpy((char*)keys[i], k, len);
+              }
+            }
+          else
+            {
+#ifdef HAVE_STRNDUP
+              if ((keys[i] = strndup(k, len)) == NULL)
+                errx(1, "strndup failed");
+#else
+              if ((keys[i] = strdup(k)) == NULL)
+                errx(1, "strdup failed");
+              keys[i][len] = '\0';
+#endif
+            }
           keylens[i] = len;
         }
       nbperf->n = _total_keys;
@@ -1635,44 +1655,44 @@ Search::optimize ()
       _total_duplicates = 0;
 
       if (option[CHM_ALGO])
-	{
-	  for (;;) {
-	    rv = chm_compute(nbperf);
-	    if (!rv)
-	      break;
-	    if (nbperf->has_duplicates)
-	      errx(1, "Duplicate keys forbidden");
-	    fputc('.', stderr);
-	    if (--max_iterations == 0)
-	      errx(1, "Iteration count reached");
-	  }
-	}
+        {
+          for (;;) {
+            rv = chm_compute(nbperf);
+            if (!rv)
+              break;
+            if (nbperf->has_duplicates)
+              errx(1, "Duplicate keys forbidden");
+            fputc('.', stderr);
+            if (--max_iterations == 0)
+              errx(1, "Iteration count reached");
+          }
+        }
       else if (option[CHM3_ALGO])
-	{
-	  for (;;) {
-	    rv = chm3_compute(nbperf);
-	    if (!rv)
-	      break;
-	    if (nbperf->has_duplicates)
-	      errx(1, "Duplicate keys forbidden");
-	    fputc('.', stderr);
-	    if (--max_iterations == 0)
-	      errx(1, "Iteration count reached");
-	  }
-	}
+        {
+          for (;;) {
+            rv = chm3_compute(nbperf);
+            if (!rv)
+              break;
+            if (nbperf->has_duplicates)
+              errx(1, "Duplicate keys forbidden");
+            fputc('.', stderr);
+            if (--max_iterations == 0)
+              errx(1, "Iteration count reached");
+          }
+        }
       else if (option[BPZ_ALGO])
-	{
-	  for (;;) {
-	    rv = bpz_compute(nbperf);
-	    if (!rv)
-	      break;
-	    if (nbperf->has_duplicates)
-	      errx(1, "Duplicate keys forbidden");
-	    fputc('.', stderr);
-	    if (--max_iterations == 0)
-	      errx(1, "Iteration count reached");
-	  }
-	}
+        {
+          for (;;) {
+            rv = bpz_compute(nbperf);
+            if (!rv)
+              break;
+            if (nbperf->has_duplicates)
+              errx(1, "Duplicate keys forbidden");
+            fputc('.', stderr);
+            if (--max_iterations == 0)
+              errx(1, "Iteration count reached");
+          }
+        }
       return;
     }
 
