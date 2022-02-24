@@ -603,6 +603,12 @@ Input::read_input ()
                 if (is_declaration (line, line_end, lineno, "omit-struct-type"))
                   option.set (NOTYPE);
                 else
+                if (is_declaration (line, line_end, lineno, "padding"))
+                  option.set (PADDING);
+                else
+                if (is_declaration (line, line_end, lineno, "no-padding"))
+                  option.unset (PADDING);
+                else
 
                 if (is_declaration (line, line_end, lineno, "chm"))
                   option.set (CHM_ALGO);

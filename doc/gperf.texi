@@ -17,7 +17,7 @@
 
 @c some day we should @include version.texi instead of defining
 @c these values at hand.
-@set UPDATED 21 February 2022
+@set UPDATED 24 February 2022
 @set EDITION 3.3-beta
 @set VERSION 3.3-beta
 @c ---------------------
@@ -681,6 +681,16 @@ trades size over speed.
 Uses the BPZ/BDZ algorithm to create slower non-order preserving,
 optimal minimal perfect hashes, which can efficiently deal with huge
 input, with best-known code sizes.
+
+@item %no-padding
+@cindex @samp{%no-padding}
+Only needed for MPH algorithms with mi_vector_hash.
+mi_vector_hash requires padding of the keyword lookup table entries to 4-byte,
+because it accesses each group of characters by 4, @i{*(uint32_t*)},
+for performance reasons.
+You can disable this padding with the declaration or option @samp{no-padding}.
+But in practice the padding is only needed with strict memory bounds checkers,
+like valgrind or -fsanitize=address.
 
 @item %omit-struct-type
 @cindex @samp{%omit-struct-type}
