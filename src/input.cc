@@ -522,7 +522,7 @@ Input::read_input ()
 
                 if (is_define_declaration (line, line_end, lineno,
                                            "lookup-function-name", &arg))
-                  option.set_function_name (arg);
+                  option.set_function_name (strcmp(arg, "NONE") ? arg : NULL);
                 else
 
                 if (is_define_declaration (line, line_end, lineno,
@@ -602,6 +602,9 @@ Input::read_input ()
 
                 if (is_declaration (line, line_end, lineno, "omit-struct-type"))
                   option.set (NOTYPE);
+                else
+                if (is_declaration (line, line_end, lineno, "omit-lookup-function"))
+                  option.set_function_name (NULL);
                 else
                 if (is_declaration (line, line_end, lineno, "padding"))
                   option.set (PADDING);
