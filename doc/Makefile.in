@@ -58,6 +58,10 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
 MKINSTALLDIRS = $(SHELL) $(srcdir)/../build-aux/mkinstalldirs
 
+SVG = run.svg gperf.svg size.svg
+PNG = run.png gperf.png size.png
+IMAGES = $(SVG)
+
 #### End of system configuration section. ####
 
 SHELL = /bin/sh
@@ -75,7 +79,7 @@ $(srcdir)/gperf.info : $(srcdir)/gperf.texi $(srcdir)/gpl-3.0.texi
 
 dvi : $(srcdir)/gperf.dvi
 
-$(srcdir)/gperf.dvi : $(srcdir)/gperf.texi $(srcdir)/gpl-3.0.texi
+$(srcdir)/gperf.dvi : $(srcdir)/gperf.texi $(srcdir)/gpl-3.0.texi $(IMAGES)
 	cd $(srcdir) && $(RM) gperf.aux gperf.toc gperf.cp gperf.fn gperf.ky gperf.pg gperf.tp gperf.vr gperf.log gperf.cps
 	cd $(srcdir) && $(TEXI2DVI) gperf.texi
 	cd $(srcdir) && $(RM) gperf.aux gperf.toc gperf.cp gperf.fn gperf.ky gperf.pg gperf.tp gperf.vr gperf.log gperf.cps
@@ -83,13 +87,13 @@ $(srcdir)/gperf.dvi : $(srcdir)/gperf.texi $(srcdir)/gpl-3.0.texi
 
 ps : $(srcdir)/gperf.ps
 
-$(srcdir)/gperf.ps : $(srcdir)/gperf.dvi
+$(srcdir)/gperf.ps : $(srcdir)/gperf.dvi $(IMAGES)
 	$(DVIPS) -o $@ $(srcdir)/gperf.dvi
 
 
 pdf : $(srcdir)/gperf.pdf
 
-$(srcdir)/gperf.pdf : $(srcdir)/gperf.texi $(srcdir)/gpl-3.0.texi
+$(srcdir)/gperf.pdf : $(srcdir)/gperf.texi $(srcdir)/gpl-3.0.texi $(IMAGES)
 	cd $(srcdir) && $(RM) gperf.aux gperf.toc gperf.cp gperf.fn gperf.ky gperf.pg gperf.tp gperf.vr gperf.log gperf.cps
 	cd $(srcdir) && $(TEXI2PDF) gperf.texi
 	cd $(srcdir) && $(RM) gperf.aux gperf.toc gperf.cp gperf.fn gperf.ky gperf.pg gperf.tp gperf.vr gperf.log gperf.cps
@@ -99,9 +103,11 @@ html : gperf.html gperf_toc.html
 
 # We still prefer texi2html over texi2any because it includes the titlepage.
 
-gperf.html : $(srcdir)/gperf.texi $(srcdir)/gpl-3.0.texi
+gperf.html : $(srcdir)/gperf.texi $(srcdir)/gpl-3.0.texi $(IMAGES)
 	cd $(srcdir) && $(TEXI2HTML) -number -monolithic gperf.texi
 #	cd $(srcdir) && $(TEXI2ANY) --html --no-headers --no-split gperf.texi
+	cd $(srcdir) && perl -pi -e's/\@image\{(\w+),\d+pt,,(.+),\.svg\}/<img src="\1.svg" alt="\2">/' \
+	  gperf.html gperf_6.html
 
 gperf_toc.html : $(srcdir)/gperf.texi $(srcdir)/gpl-3.0.texi
 	cd $(srcdir) && $(RM) gperf_*.html
