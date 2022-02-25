@@ -156,6 +156,7 @@ Invoking @code{gperf}
 * Output Details::              Fine tuning Details in the Output Code
 * Algorithmic Details::         Changing the Algorithms employed by @code{gperf}
 * Verbosity::                   Informative Output
+* Performance Details::         Graphs for the main options.
 
 @end detailmenu
 @end menu
@@ -1027,6 +1028,7 @@ complete list of options.
 * Output Details::              Fine tuning Details in the Output Code
 * Algorithmic Details::         Changing the Algorithms employed by @code{gperf}
 * Verbosity::                   Informative Output
+* Performance Details::         Graphs for the main options.
 @end menu
 
 @node Output File
@@ -1520,6 +1522,30 @@ options is actually speeding up the search for a solution.  Some useful
 information is dumped at the end of the program when the @samp{-d}
 option is enabled.
 @end table
+
+@node Performance Details
+@section Performance Graphs for the different options
+
+@noindent
+@image{run,580pt,,run-times,.svg}
+
+Run times are stable for the algorithms, with the default algorithm
+being the fastest for few keywords, and detoriating at 20k number of
+keywords. @samp{--bpz --mph-hash-function fnv3} can be extremely fast
+with few keywords, but is the slowest >2k.
+
+@noindent
+@image{size,580pt,,output sizes,.svg}
+
+Generated code sizes are stable for the algorithms, with the default algorithm
+detoriating at 1000 (number of keywords).
+
+@noindent
+@image{gperf,580pt,,gperf creation time,.svg}
+
+Compile times vary wildly, and can be improved with @samp{--random} or @samp{-f}.
+The MPH algorithms perform best overall, the non-MPH algorithms cannot
+create much more than 20k keywords.
 
 @node Bugs
 @chapter Known Bugs and Limitations with @code{gperf}

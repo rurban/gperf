@@ -78,6 +78,11 @@ check : check-c check-ada check-modula3 check-pascal check-lang-utf8	\
 extracheck : @CHECK_LANG_SYNTAX@
 	@true
 
+perf: perf.cc perf.h perf_test.c
+	$(CXX) $(CXXFLAGS) perf.cc -o perf
+run-perf: perf
+	./perf && ./perf_img.sh
+
 check-chm: check-c-chm check-languages-chm check-languages-chm3
 check-bpz: check-c-bpz check-languages-bpz
 
@@ -89,7 +94,7 @@ check-c: test.$(OBJEXT)
 	$(DIFF) $(srcdir)/c.exp c.out
 check-c-chm: test.$(OBJEXT)
 	$(GPERF) --chm -I < $(srcdir)/c.gperf > c2.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o cout2 c2.c test1.$(OBJEXT)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o cout2 c2.c test.$(OBJEXT)
 	@echo "testing languages with chm, all items should be found in the set"
 	./cout2 $(srcdir)/c.gperf
 check-c-bpz: test.$(OBJEXT)
