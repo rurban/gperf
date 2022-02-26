@@ -198,6 +198,9 @@ public:
   /* Sets the generated function name, if not already set.  */
   void                  set_function_name (const char *name);
 
+  /* Returns the selected MPH function name.  */
+  const enum Option_Mph_Hash_Function get_mph_hash_function () const;
+
   /* Returns the keyword key name.  */
   const char *          get_slot_name () const;
   /* Sets the keyword key name, if not already set.  */
