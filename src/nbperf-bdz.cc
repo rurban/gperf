@@ -1,7 +1,7 @@
 /*	$NetBSD: nbperf-bdz.c,v 1.10 2021/01/07 16:03:08 joerg Exp $	*/
 /*-
  * Copyright (c) 2009, 2012 The NetBSD Foundation, Inc.
- * Copyright (c) 2022 Reini Urban.
+ * Copyright (C) 2022 Free Software Foundation, Inc.
  * All rights reserved.
  *
  * This code is derived from software contributed to The NetBSD Foundation
