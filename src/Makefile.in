@@ -69,6 +69,8 @@ OBJECTS  = version.$(OBJEXT) positions.$(OBJEXT) options.$(OBJEXT)	\
            output.$(OBJEXT) main.$(OBJEXT) nbperf-chm.$(OBJEXT)		\
            nbperf-chm3.$(OBJEXT) nbperf-bdz.$(OBJEXT)			\
            graph2.$(OBJEXT) graph3.$(OBJEXT) mi_vector_hash.$(OBJEXT)
+# These need to be included into generated MPH .c code */
+HASHES   = mi_vector_hash.c wyhash3.h wyhash.h fnv3.h fnv.h crc3.h
 LIBS     = ../lib/libgp.a @GPERF_LIBM@
 CPPFLAGS = @CPPFLAGS@ -I. -I$(srcdir)/../lib -I$(srcdir)
 
@@ -136,10 +138,10 @@ mi_vector_hash.$(OBJEXT): mi_vector_hash.h mi_vector_hash.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $(srcdir)/mi_vector_hash.c
 main.$(OBJEXT): main.cc $(OPTIONS_H) $(INPUT_H) $(SEARCH_H) $(OUTPUT_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/main.cc
-output.ic: mi_vector_hash.c
+output.ic: $(HASHES)
 	echo "/* ex: set ro ft=c: -*- mode: c; buffer-read-only: t -*- */" >$@
-	echo "/* Generated from mi_vector_hash.c */" >>$@
-	$(XXD) -i mi_vector_hash.c >>$@
+	echo "/* C code of $(HASHES), generated via xxd */" >>$@
+	for h in $(HASHES); do $(XXD) -i $$h >>$@; done
 
 install : all force
 	$(MKINSTALLDIRS) $(DESTDIR)$(bindir)

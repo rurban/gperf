@@ -902,8 +902,35 @@ Output::output_asso_values_ref (int pos) const
 /* Emits the NetBSD mi_vector_hash.c code into the output asis.  */
 void Output::output_mph_hash () const
 {
-  for (unsigned int i=0; i < mi_vector_hash_c_len; i++) {
-    printf ("%c", mi_vector_hash_c[i]);
+
+  const enum Option_Mph_Hash_Function hf = option.get_mph_hash_function();
+
+  switch (hf) {
+  case e_jenkins:
+    for (unsigned int i=0; i < mi_vector_hash_c_len; i++) {
+      printf ("%c", mi_vector_hash_c[i]);
+    }
+    break;
+  case e_wyhash:
+    for (unsigned int i=0; i < wyhash_h_len; i++) {
+      printf ("%c", wyhash_h[i]);
+    }
+    break;
+  case e_fnv3:
+    for (unsigned int i=0; i < fnv3_h_len; i++) {
+      printf ("%c", fnv3_h[i]);
+    }
+    break;
+  case e_fnv:
+    for (unsigned int i=0; i < fnv_h_len; i++) {
+      printf ("%c", fnv_h[i]);
+    }
+    break;
+  case e_crc:
+    for (unsigned int i=0; i < crc3_h_len; i++) {
+      printf ("%c", crc3_h[i]);
+    }
+    break;
   }
   printf ("\n");
 }

@@ -127,6 +127,13 @@ Options::get_hash_name () const
   return _hash_name;
 }
 
+/* Returns the mph hash function.  */
+INLINE const enum Option_Mph_Hash_Function
+Options::get_mph_hash_function () const
+{
+  return _mph_hash_function;
+}
+
 /* Returns the hash table array name.  */
 INLINE const char *
 Options::get_wordlist_name () const

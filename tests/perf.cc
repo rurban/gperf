@@ -169,7 +169,6 @@ int main (int argc, char **argv)
          if (size > 40000 && !is_mph)
            {
              fprintf(comp, "%20zu %20ld\n", size, 0);
-             //fprintf(run, "%20zu %20ld\n", size, 0);
              printf("  skipped\n");
              continue;
            }

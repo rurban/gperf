@@ -90,5 +90,5 @@ if __name__ == "__main__":
     fig = plot_from_data(name_plot_hash, title)
     len = len(filename)
     basename = filename[:len - 4]
-    fig.write_image("%s.png" % basename, width=740, height=600)
-    fig.write_image("%s.svg" % basename, width=740, height=600)
+    fig.write_image("%s.png" % basename, width=740, height=650)
+    fig.write_image("%s.svg" % basename, width=740, height=650)
