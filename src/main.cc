@@ -25,7 +25,9 @@
 #include "input.h"
 #include "search.h"
 #include "output.h"
-
+#ifdef PERF
+#include "../tests/perf.h"
+#endif
 
 /* ------------------------------------------------------------------------- */
 
@@ -63,6 +65,9 @@ main (int argc, char *argv[])
         exit (1);
       }
 
+#ifdef PERF
+  uint64_t t0 = timer_start();
+#endif
   {
     /* Initialize the keyword list.  */
     KeywordExt_Factory factory;
@@ -132,6 +137,15 @@ main (int argc, char *argv[])
 	  fprintf (stderr, "error while writing output file\n");
 	  exitcode = 1;
 	}
+
+#ifdef PERF
+      {
+        uint64_t t1 = timer_end();
+        FILE *f = fopen ("gperf.log", "a");
+        fprintf(f, "%20zu %20ld\n", searcher._total_keys, (signed long)(t1 - t0));
+        fclose (f);
+      }
+#endif
 
       /* Here we run the Search and Output destructors.  */
     }

@@ -91,7 +91,7 @@ static inline void create_set (const size_t size) {
    else
      {
        snprintf(cmd, sizeof cmd, "head -n %zu " WORDS
-                " | grep -v \",\" | sort | uniq >%s", size, perf_in);
+                " | grep -v \",\" | sort | uniq >%s", size + 2, perf_in);
        system(cmd);
      }
  }
@@ -102,7 +102,7 @@ static inline void create_set (const size_t size) {
    char cmd[128];
    snprintf(cmd, sizeof cmd, "cc -O2 -I. %s perf_test.c -o %s",
             perf_c, perf_exe);
-   printf("%s\n", cmd);
+   printf("%s", cmd);
    return system(cmd);
  }
 static inline int run_result (const char *log, const uint32_t size) {
@@ -153,6 +153,7 @@ int main (int argc, char **argv)
      printf("--- %s ---\n", option.c_str());
      fprintf(comp, "option: %s\n", option.c_str());
      fprintf(run, "option: %s\n", option.c_str());
+     fclose(comp);
      fclose(run);
      fprintf(fsize, "option: %s\n", option.c_str());
 
@@ -161,37 +162,40 @@ int main (int argc, char **argv)
          char cmd[128];
          const uint32_t size = sizes[i];
          set_names (size);
-         snprintf(cmd, sizeof cmd, "../src/gperf -I %s %s >%s", option.c_str(),
+         snprintf(cmd, sizeof cmd, "../src/gperf_perf -I %s %s >%s", option.c_str(),
                   perf_in, perf_c);
          printf("size %zu: %s\n", size, cmd);
 
-         // timeout gperf with size>40000
-         if (size > 40000 && !is_mph)
+         // timeout gperf with size>20000 (several minutes)
+         if (size > 20000 && !is_mph)
            {
              fprintf(comp, "%20zu %20ld\n", size, 0);
              printf("  skipped\n");
              continue;
            }
-         uint64_t t0 = timer_start();
+#ifndef DUMMY
          run_gperf (cmd);
-         uint64_t t1 = timer_end() - t0;
-
-         fprintf(comp, "%20zu %20lu\n", size, t1);
-         printf("  gperf: %20zu %20lu\n", size, t1);
-         int ret = compile_result();
+#endif
+         printf("  gperf: %20zu\n", size);
+#ifndef DUMMY
+         const int ret = compile_result();
          printf("  => %d\n", ret);
-
+#else
+         const int ret = 0;
+#endif
          if (!ret) {
            struct stat st;
            stat (perf_exe, &st);
            printf("  %s (%lu) %s:\n", perf_exe, st.st_size,  perf_in);
            fprintf(fsize, "%20zu %20lu\n", size, st.st_size);
 
+#ifndef DUMMY
            run_result ("run.log", size);
-           //printf("  run: %20zu %20lu\n", size, t1 / size);
+#endif
          }
        }
      run = fopen("run.log", "a");
+     comp = fopen("gperf.log", "a");
    }
 #if 1
    for(int i=0; i<(sizeof sizes)/(sizeof *sizes); i++)

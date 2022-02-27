@@ -78,10 +78,13 @@ check : check-c check-ada check-modula3 check-pascal check-lang-utf8	\
 extracheck : @CHECK_LANG_SYNTAX@
 	@true
 
-perf: perf.cc perf.h perf_test.c
-	$(CXX) $(CXXFLAGS) perf.cc -o perf
-run-perf: perf
-	./perf && ./perf_img.sh
+../src/gperf_perf$(EXEEXT): ../src/main.cc
+	$(MAKE) -C ../src gperf_perf$(EXEEXT)
+
+perf$(EXEEXT): perf.cc perf.h perf_test.c ../src/gperf_perf
+	$(CXX) $(CXXFLAGS) perf.cc -o perf$(EXEEXT)
+run-perf: perf$(EXEEXT)
+	./perf$(EXEEXT) && ./perf_img.sh
 
 check-chm: check-c-chm check-languages-chm check-languages-chm3
 check-bpz: check-c-bpz check-languages-bpz
