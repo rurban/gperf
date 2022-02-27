@@ -10,7 +10,7 @@
 #     in a gnulib checkout, or
 #   - an internet connection.
 
-# Copyright (C) 2003-2021 Free Software Foundation, Inc.
+# Copyright (C) 2003-2022 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,18 +28,18 @@
 # Usage: ./autogen.sh
 
 GNULIB_REPO_URL="https://git.savannah.gnu.org/gitweb/?p=gnulib.git;a=blob_plain;hb=HEAD;f="
+FILES="build-aux/install-sh build-aux/mkinstalldirs \
+       build-aux/compile build-aux/ar-lib"
 
-for file in build-aux/install-sh build-aux/mkinstalldirs \
-            build-aux/compile build-aux/ar-lib; do
+for file in $FILES; do
   if test -n "$GNULIB_TOOL"; then
-    $GNULIB_TOOL --copy-file $file $file
+    $GNULIB_TOOL --copy-file "$file" "$file"
   else
-    wget -q --timeout=5 -O $file.tmp "${GNULIB_REPO_URL}$file" \
-      && mv $file.tmp $file
+    wget -q --timeout=5 -O "$file.tmp" "${GNULIB_REPO_URL}$file" \
+      && mv "$file.tmp" "$file"
   fi
 done
-chmod a+x build-aux/install-sh build-aux/mkinstalldirs \
-          build-aux/compile build-aux/ar-lib
+chmod a+x $FILES
 
 make -f Makefile.devel totally-clean all || exit $?
 

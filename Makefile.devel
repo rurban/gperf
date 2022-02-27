@@ -6,30 +6,18 @@ MAKE = make
 
 all : configures src/config.h.in
 
-CONFIGURES = configure lib/configure src/configure tests/configure doc/configure
+CONFIGURES = configure
 
 configures : $(CONFIGURES)
 
 configure : configure.ac aclocal.m4
 	autoconf -I . && rm -rf autom4te.cache
 
-lib/configure : lib/configure.ac aclocal.m4
-	cd lib && autoconf -I .. && rm -rf autom4te.cache
-
-src/configure : src/configure.ac aclocal.m4
-	cd src && autoconf -I .. && rm -rf autom4te.cache
-
-tests/configure : tests/configure.ac aclocal.m4
-	cd tests && autoconf -I .. && rm -rf autom4te.cache
-
-doc/configure : doc/configure.ac aclocal.m4
-	cd doc && autoconf -I .. && rm -rf autom4te.cache
-
 check-configures : $(CONFIGURES)
 	set -e; for f in $(CONFIGURES); do bash -x -n $$f; done
 
-src/config.h.in : src/configure.ac aclocal.m4
-	cd src && autoheader -I .. && rm -rf autom4te.cache
+src/config.h.in : configure.ac aclocal.m4
+	autoheader -I . && rm -rf autom4te.cache
 
 totally-clean : force
 	rm -f $(CONFIGURES)

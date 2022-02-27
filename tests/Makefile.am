@@ -1,8 +1,9 @@
 # Makefile for gperf/tests
 
-# Copyright (C) 1989, 1992-1993, 1995, 1998, 2000, 2002-2004, 2007-2009, 2012, 2016, 2018 Free Software Foundation, Inc.
+# Copyright (C) 1989, 1992-1993, 1995, 1998, 2000, 2002-2004, 2007-2009, 2012, 2016, 2018, 2022 Free Software Foundation, Inc.
 # Written by Douglas C. Schmidt <schmidt@ics.uci.edu>
 # and Bruno Haible <bruno@clisp.org>.
+# Refactored by Reini Urban, 2022
 #
 # This file is part of GNU GPERF.
 #
@@ -21,54 +22,18 @@
 
 #### Start of system configuration section. ####
 
-# Directories used by "make":
-srcdir = @srcdir@
-
-# Programs used by "make":
-# C compiler
-CC = @CC@
-CFLAGS = @CFLAGS@
-CPP = @CPP@
-# C++ compiler
-CXX = @CXX@
-CXXFLAGS = @CXXFLAGS@
-CXXCPP = @CXXCPP@
-# Both C and C++ compiler
-CPPFLAGS = @CPPFLAGS@
-LDFLAGS = @LDFLAGS@
-OBJEXT = @OBJEXT@
-EXEEXT = @EXEEXT@
-# Other
-MV = mv
-LN = ln
-RM = rm -f
-# The 2nd hunk only if GPERF is set
-ifneq (${GPERF},)
-DIFF = diff -I 'code produced by gperf version' -I'Command-line:'
-else
-DIFF = diff -I 'code produced by gperf version'
-endif
-@SET_MAKE@
+DIFF=@DIFF@
+# The 2nd hunk only if GPERF is set. for testing an external gperf
+# if EXT_GPERF
+# RUN_DIFF = $(DIFF) -I 'code produced by gperf version' -I'Command-line:'
+# RUN_GPERF = $(GPERF)
+# else
+RUN_DIFF = $(DIFF) -I 'code produced by gperf version'
+RUN_GPERF = ../src/gperf$(EXXEXT)
+# endif
 
 #### End of system configuration section. ####
 
-SHELL = /bin/sh
-
-VPATH = $(srcdir)
-
-GPERF = ../src/gperf
-#GPERF = valgrind --num-callers=20 --leak-check=yes --leak-resolution=high --show-reachable=yes ../src/gperf
-
-all : Makefile
-
-install : all
-
-installdirs :
-
-uninstall :
-
-Makefile: Makefile.in
-	./config.status Makefile
 
 check : check-c check-ada check-modula3 check-pascal check-lang-utf8	\
 	check-lang-ucs2 check-smtp check-test check-languages		\
@@ -91,85 +56,85 @@ check-bpz: check-c-bpz check-languages-bpz
 
 check-c: test.$(OBJEXT)
 	@echo "testing ANSI C reserved words, all items should be found in the set"
-	$(GPERF) -c -l -S1 -I -o $(srcdir)/c.gperf > cinset.c
+	$(RUN_GPERF) -c -l -S1 -I -o $(srcdir)/c.gperf > cinset.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o cout cinset.c test.$(OBJEXT)
 	./cout -v < $(srcdir)/c.gperf | LC_ALL=C tr -d '\r' > c.out
-	$(DIFF) $(srcdir)/c.exp c.out
+	$(RUN_DIFF) $(srcdir)/c.exp c.out
 check-c-chm: test.$(OBJEXT)
-	$(GPERF) --chm -I < $(srcdir)/c.gperf > c2.c
+	$(RUN_GPERF) --chm -I < $(srcdir)/c.gperf > c2.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o cout2 c2.c test.$(OBJEXT)
 	@echo "testing languages with chm, all items should be found in the set"
 	./cout2 $(srcdir)/c.gperf
 check-c-bpz: test.$(OBJEXT)
-	$(GPERF) --bpz -I < $(srcdir)/c.gperf > c4.c
+	$(RUN_GPERF) --bpz -I < $(srcdir)/c.gperf > c4.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o cout4 c4.c test.$(OBJEXT)
 	@echo "testing languages with bpz, all items should be found in the set"
 	./cout4 $(srcdir)/c.gperf
 
 check-ada: test.$(OBJEXT)
-	$(GPERF) -k1,4,'$$' -I $(srcdir)/ada.gperf > adainset.c
+	$(RUN_GPERF) -k1,4,'$$' -I $(srcdir)/ada.gperf > adainset.c
 # double '$$' is only there since make gets confused; program wants only 1 '$'
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o aout adainset.c test.$(OBJEXT)
 	@echo "testing Ada reserved words, all items should be found in the set"
 	./aout -v < $(srcdir)/ada.gperf | LC_ALL=C tr -d '\r' > ada-res.out
-	$(DIFF) $(srcdir)/ada-res.exp ada-res.out
-	$(GPERF) -D -k1,'$$' -s 2 -I -o $(srcdir)/adadefs.gperf > preinset.c
+	$(RUN_DIFF) $(srcdir)/ada-res.exp ada-res.out
+	$(RUN_GPERF) -D -k1,'$$' -s 2 -I -o $(srcdir)/adadefs.gperf > preinset.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o preout preinset.c test.$(OBJEXT)
 	@echo "testing Ada predefined words, all items should be found in the set"
 	./preout -v < $(srcdir)/adadefs.gperf | LC_ALL=C tr -d '\r' > ada-pred.out
-	$(DIFF) $(srcdir)/ada-pred.exp ada-pred.out
+	$(RUN_DIFF) $(srcdir)/ada-pred.exp ada-pred.out
 
 check-modula3: test.$(OBJEXT)
-	$(GPERF) -k1,2,'$$' -I -o $(srcdir)/modula3.gperf > m3inset.c
+	$(RUN_GPERF) -k1,2,'$$' -I -o $(srcdir)/modula3.gperf > m3inset.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o m3out m3inset.c test.$(OBJEXT)
 	@echo "testing Modula3 reserved words, all items should be found in the set"
 	./m3out -v < $(srcdir)/modula3.gperf | LC_ALL=C tr -d '\r' > modula.out
-	$(DIFF) $(srcdir)/modula.exp modula.out
+	$(RUN_DIFF) $(srcdir)/modula.exp modula.out
 
 check-pascal: test.$(OBJEXT)
-	$(GPERF) -o -S2 -I < $(srcdir)/pascal.gperf > pinset.c
+	$(RUN_GPERF) -o -S2 -I < $(srcdir)/pascal.gperf > pinset.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o pout pinset.c test.$(OBJEXT)
 	@echo "testing Pascal reserved words, all items should be found in the set"
 	./pout -v < $(srcdir)/pascal.gperf | LC_ALL=C tr -d '\r' > pascal.out
-	$(DIFF) $(srcdir)/pascal.exp pascal.out
+	$(RUN_DIFF) $(srcdir)/pascal.exp pascal.out
 
 check-languages: test1.$(OBJEXT)
-	$(GPERF) -I < $(srcdir)/languages.gperf > languages0.c
+	$(RUN_GPERF) -I < $(srcdir)/languages.gperf > languages0.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o lout0 languages0.c test1.$(OBJEXT)
 	@echo "testing 685 languages, all items should be found in the set"
 	./lout0 $(srcdir)/languages.gperf
 
 check-languages-S: test1.$(OBJEXT)
-	$(GPERF) -S 2 -I < $(srcdir)/languages.gperf > languages1.c
+	$(RUN_GPERF) -S 2 -I < $(srcdir)/languages.gperf > languages1.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o lout1 languages1.c test1.$(OBJEXT)
 	@echo "testing languages with --switch 2, all items should be found in the set"
 	./lout1 $(srcdir)/languages.gperf
 
 check-languages-chm: test1.$(OBJEXT)
-	$(GPERF) --chm -I < $(srcdir)/languages.gperf > languages2.c
+	$(RUN_GPERF) --chm -I < $(srcdir)/languages.gperf > languages2.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o lout2 languages2.c test1.$(OBJEXT)
 	@echo "testing languages with chm, all items should be found in the set"
 	./lout2 $(srcdir)/languages.gperf
 
 check-languages-chm3: test1.$(OBJEXT)
-	$(GPERF) --chm3 -I < $(srcdir)/languages.gperf > languages3.c
+	$(RUN_GPERF) --chm3 -I < $(srcdir)/languages.gperf > languages3.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o lout3 languages3.c test1.$(OBJEXT)
 	@echo "testing languages with chm3, all items should be found in the set"
 	./lout3 $(srcdir)/languages.gperf
 
 check-languages-bpz: test.$(OBJEXT)
-	$(GPERF) --bpz -I < $(srcdir)/languages.gperf > languages4.c
+	$(RUN_GPERF) --bpz -I < $(srcdir)/languages.gperf > languages4.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o lout4 languages4.c test1.$(OBJEXT)
 	@echo "testing languages with bpz, all items should be found in the set"
 	./lout4 $(srcdir)/languages.gperf
 
 # check for 8-bit cleanliness
 check-lang-utf8: test1.$(OBJEXT)
-	$(GPERF) -k1 -t -I -K foreign_name < $(srcdir)/lang-utf8.gperf > lu8inset.c
+	$(RUN_GPERF) -k1 -t -I -K foreign_name < $(srcdir)/lang-utf8.gperf > lu8inset.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o lu8out lu8inset.c test1.$(OBJEXT)
 	@echo "testing UTF-8 encoded languages, all items should be found in the set"
 	./lu8out -v $(srcdir)/lang-utf8.gperf | LC_ALL=C tr -d '\r' > lang-utf8.out
-	$(DIFF) $(srcdir)/lang-utf8.exp lang-utf8.out
+	$(RUN_DIFF) $(srcdir)/lang-utf8.exp lang-utf8.out
 
 test.$(OBJEXT) : $(srcdir)/test.c
 	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(srcdir)/test.c
@@ -179,11 +144,11 @@ test1.$(OBJEXT) : $(srcdir)/test1.c
 
 # check for binary keywords with NUL bytes
 check-lang-ucs2: test2.$(OBJEXT)
-	$(GPERF) -k4 -t -l -I -K foreign_name < $(srcdir)/lang-ucs2.gperf > lu2inset.c
+	$(RUN_GPERF) -k4 -t -l -I -K foreign_name < $(srcdir)/lang-ucs2.gperf > lu2inset.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o lu2out lu2inset.c test2.$(OBJEXT)
 	@echo "testing UCS-2 encoded languages, all items should be found in the set"
 	./lu2out -v < $(srcdir)/lang-ucs2.in | LC_ALL=C tr -d '\r' > lang-ucs2.out
-	$(DIFF) $(srcdir)/lang-ucs2.exp lang-ucs2.out
+	$(RUN_DIFF) $(srcdir)/lang-ucs2.exp lang-ucs2.out
 
 test2.$(OBJEXT) : $(srcdir)/test2.c
 	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(srcdir)/test2.c
@@ -191,60 +156,62 @@ test2.$(OBJEXT) : $(srcdir)/test2.c
 # check case-insensitive lookup
 check-smtp:
 	@echo "testing SMTP keywords, case-insensitive"
-	$(GPERF) --struct-type --readonly-table --enum --global -K field_name -N header_entry --ignore-case $(srcdir)/smtp.gperf > smtp.c
+	$(RUN_GPERF) --struct-type --readonly-table --enum --global -K field_name -N header_entry --ignore-case $(srcdir)/smtp.gperf > smtp.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o smtp smtp.c
 	./smtp
-	$(GPERF) --struct-type --readonly-table --enum --global -K field_name -N header_entry --ignore-case --compare-strncmp $(srcdir)/smtp.gperf > smtp.c
+	$(RUN_GPERF) --struct-type --readonly-table --enum --global -K field_name -N header_entry --ignore-case --compare-strncmp $(srcdir)/smtp.gperf > smtp.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o smtp smtp.c
 	./smtp
-	$(GPERF) --struct-type --readonly-table --enum --global -K field_name -N header_entry --ignore-case --compare-lengths $(srcdir)/smtp.gperf > smtp.c
+	$(RUN_GPERF) --struct-type --readonly-table --enum --global -K field_name -N header_entry --ignore-case --compare-lengths $(srcdir)/smtp.gperf > smtp.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o smtp smtp.c
 	./smtp
 
 # these next 5 are demos that show off the generated code
 POSTPROCESS_FOR_MINGW = LC_ALL=C tr -d '\r' | LC_ALL=C sed -e 's|[^ ]*[/\\][\\]*src[/\\][\\]*gperf[^ ]*|../src/gperf|'
 check-test: check-ada
-	$(GPERF) -L C -F ', 0, 0' -j1 -i 1 -g -o -t -G -N is_reserved_word -k1,3,'$$' < $(srcdir)/c-parse.gperf | $(POSTPROCESS_FOR_MINGW) > c-parse.out
-	$(DIFF) $(srcdir)/c-parse.exp c-parse.out
-	$(GPERF) -j1 -i 1 -g -o -t -N is_reserved_word -k1,3,'$$' < $(srcdir)/objc.gperf | $(POSTPROCESS_FOR_MINGW) > objc.out
-	$(DIFF) $(srcdir)/objc.exp objc.out
-	$(GPERF) -L C -F ', 0, 0, 0' -D -E -S1 -j1 -i 1 -g -o -t -k'*' < $(srcdir)/chill.gperf | $(POSTPROCESS_FOR_MINGW) > chill.out
-	$(DIFF) $(srcdir)/chill.exp chill.out
-	$(GPERF) -L C -F ', 0, 0' -j1 -g -o -t -N is_reserved_word -k1,4,7,'$$' < $(srcdir)/cplusplus.gperf | $(POSTPROCESS_FOR_MINGW) > cplusplus.out
-	$(DIFF) $(srcdir)/cplusplus.exp cplusplus.out
-	$(GPERF) -L C -F ', 0' -t -j1 -i 1 -g -o -N java_keyword -k1,3,'$$' < $(srcdir)/java.gperf | $(POSTPROCESS_FOR_MINGW) > java.out
-	$(DIFF) $(srcdir)/java.exp java.out
-	$(GPERF) -n -k1-8 -l < $(srcdir)/modula2.gperf | $(POSTPROCESS_FOR_MINGW) > modula2.out
-	$(DIFF) $(srcdir)/modula2.exp modula2.out
-	$(GPERF) -D -t -k1,'$$' < $(srcdir)/c-parse.gperf | $(POSTPROCESS_FOR_MINGW) > test-4.out
-	$(DIFF) $(srcdir)/test-4.exp test-4.out
-	$(GPERF) -g -o -j1 -t -N is_reserved_word < $(srcdir)/gpc.gperf | $(POSTPROCESS_FOR_MINGW) > gpc.out
-	$(DIFF) $(srcdir)/gpc.exp gpc.out
-	$(GPERF) -m5 < $(srcdir)/permut2.gperf | $(POSTPROCESS_FOR_MINGW) > permut2.out
-	$(DIFF) $(srcdir)/permut2.exp permut2.out
-	$(GPERF) -m5 < $(srcdir)/permut3.gperf | $(POSTPROCESS_FOR_MINGW) > permut3.out
-	$(DIFF) $(srcdir)/permut3.exp permut3.out
-	$(GPERF) -m5 --ignore-case < $(srcdir)/permutc2.gperf | $(POSTPROCESS_FOR_MINGW) > permutc2.out
-	$(DIFF) $(srcdir)/permutc2.exp permutc2.out
-	$(GPERF) -C -E -G -I -t < $(srcdir)/charsets.gperf | $(POSTPROCESS_FOR_MINGW) > charsets.out
-	$(DIFF) $(srcdir)/charsets.exp charsets.out
-	$(GPERF) -C -E -G -I -t < $(srcdir)/languages.gperf | $(POSTPROCESS_FOR_MINGW) > languages.out
-	$(DIFF) $(srcdir)/languages.exp languages.out
-	$(GPERF) -t < $(srcdir)/incomplete.gperf | $(POSTPROCESS_FOR_MINGW) > incomplete.out
-	$(DIFF) $(srcdir)/incomplete.exp incomplete.out
+	$(RUN_GPERF) -L C -F ', 0, 0' -j1 -i 1 -g -o -t -G -N is_reserved_word -k1,3,'$$' < $(srcdir)/c-parse.gperf | $(POSTPROCESS_FOR_MINGW) > c-parse.out
+	$(RUN_DIFF) $(srcdir)/c-parse.exp c-parse.out
+	$(RUN_GPERF) -j1 -i 1 -g -o -t -N is_reserved_word -k1,3,'$$' < $(srcdir)/objc.gperf | $(POSTPROCESS_FOR_MINGW) > objc.out
+	$(RUN_DIFF) $(srcdir)/objc.exp objc.out
+	$(RUN_GPERF) -L C -F ', 0, 0, 0' -D -E -S1 -j1 -i 1 -g -o -t -k'*' < $(srcdir)/chill.gperf | $(POSTPROCESS_FOR_MINGW) > chill.out
+	$(RUN_DIFF) $(srcdir)/chill.exp chill.out
+	$(RUN_GPERF) -L C -F ', 0, 0' -j1 -g -o -t -N is_reserved_word -k1,4,7,'$$' < $(srcdir)/cplusplus.gperf | $(POSTPROCESS_FOR_MINGW) > cplusplus.out
+	$(RUN_DIFF) $(srcdir)/cplusplus.exp cplusplus.out
+	$(RUN_GPERF) -L C -F ', 0' -t -j1 -i 1 -g -o -N java_keyword -k1,3,'$$' < $(srcdir)/java.gperf | $(POSTPROCESS_FOR_MINGW) > java.out
+	$(RUN_DIFF) $(srcdir)/java.exp java.out
+	$(RUN_GPERF) -n -k1-8 -l < $(srcdir)/modula2.gperf | $(POSTPROCESS_FOR_MINGW) > modula2.out
+	$(RUN_DIFF) $(srcdir)/modula2.exp modula2.out
+	$(RUN_GPERF) -D -t -k1,'$$' < $(srcdir)/c-parse.gperf | $(POSTPROCESS_FOR_MINGW) > test-4.out
+	$(RUN_DIFF) $(srcdir)/test-4.exp test-4.out
+	$(RUN_GPERF) -g -o -j1 -t -N is_reserved_word < $(srcdir)/gpc.gperf | $(POSTPROCESS_FOR_MINGW) > gpc.out
+	$(RUN_DIFF) $(srcdir)/gpc.exp gpc.out
+	$(RUN_GPERF) -m5 < $(srcdir)/permut2.gperf | $(POSTPROCESS_FOR_MINGW) > permut2.out
+	$(RUN_DIFF) $(srcdir)/permut2.exp permut2.out
+	$(RUN_GPERF) -m5 < $(srcdir)/permut3.gperf | $(POSTPROCESS_FOR_MINGW) > permut3.out
+	$(RUN_DIFF) $(srcdir)/permut3.exp permut3.out
+	$(RUN_GPERF) -m5 --ignore-case < $(srcdir)/permutc2.gperf | $(POSTPROCESS_FOR_MINGW) > permutc2.out
+	$(RUN_DIFF) $(srcdir)/permutc2.exp permutc2.out
+	$(RUN_GPERF) -C -E -G -I -t < $(srcdir)/charsets.gperf | $(POSTPROCESS_FOR_MINGW) > charsets.out
+	$(RUN_DIFF) $(srcdir)/charsets.exp charsets.out
+	$(RUN_GPERF) -C -E -G -I -t < $(srcdir)/languages.gperf | $(POSTPROCESS_FOR_MINGW) > languages.out
+	$(RUN_DIFF) $(srcdir)/languages.exp languages.out
+	$(RUN_GPERF) -t < $(srcdir)/incomplete.gperf | $(POSTPROCESS_FOR_MINGW) > incomplete.out
+	$(RUN_DIFF) $(srcdir)/incomplete.exp incomplete.out
 # prints out the help message
-	-$(GPERF) -h | $(POSTPROCESS_FOR_MINGW) > test-6.out
-	$(DIFF) $(srcdir)/test-6.exp test-6.out
+	-$(RUN_GPERF) -h | $(POSTPROCESS_FOR_MINGW) > test-6.out
+	$(RUN_DIFF) $(srcdir)/test-6.exp test-6.out
 	@echo "only if, do, for, case, goto, else, while, and return should be found "
 	./aout -v < $(srcdir)/c.gperf | $(POSTPROCESS_FOR_MINGW) > test-7.out
-	$(DIFF) $(srcdir)/test-7.exp test-7.out
+	$(RUN_DIFF) $(srcdir)/test-7.exp test-7.out
 
 # The following validates valid language syntax with different parameters.
 # Works only with gcc and g++, and only on platforms where "gcc -ansi" is
 # usable. (There are still platforms where gcc-2.8.0's fixincludes does not
 # work well enough.)
 
-VALIDATE = CC='$(CC)' CFLAGS='$(CFLAGS)' CXX='$(CXX)' CXXFLAGS='$(CXXFLAGS)' CPPFLAGS='$(CPPFLAGS)' GPERF='$(GPERF)' $(srcdir)/validate
+VALIDATE = CC='$(CC)' CFLAGS='$(CFLAGS)' CXX='$(CXX)' CXXFLAGS='$(CXXFLAGS)' CPPFLAGS='$(CPPFLAGS)' GPERF='$(RUN_GPERF)' $(srcdir)/validate
+
+force:
 
 check-lang-syntax : force
 	$(VALIDATE) KR-C,C,ANSI-C,C++ -k1,2 $(srcdir)/jstest1.gperf
@@ -403,10 +370,7 @@ check-lang-syntax : force
 	sed -e 's,stringpool,auxstrings,g' < $(srcdir)/jstest4.gperf > tmp-jstest4.gperf && \
 	$(VALIDATE) C,ANSI-C,C++ -k1,2 tmp-jstest4.gperf -t -P -Q auxstrings -S 10
 
-mostlyclean : clean
-
-clean : force
-	$(RM) *.$(OBJEXT) core *inset.c output.* *.out \
+CLEANFILES = *.$(OBJEXT) core *inset.c output.* *.out \
 	      lout*$(EXEEXT) languages*.c c2.c c4.c cout*$(EXEEXT) \
 	      aout$(EXEEXT) aout$(EXEEXT).manifest \
 	      cout$(EXEEXT) cout$(EXEEXT).manifest \
@@ -417,16 +381,12 @@ clean : force
 	      preout$(EXEEXT) preout$(EXEEXT).manifest \
 	      smtp.c smtp$(EXEEXT) smtp$(EXEEXT).manifest \
 	      tmp-* valitest*
-	$(RM) -r *.dSYM
-
-distclean : clean
-	$(RM) config.status config.log config.cache Makefile
-
-maintainer-clean : distclean
+clean-local:
+	rm -rf *.dSYM
 
 # List of source files.
 SOURCE_FILES = \
-  configure.ac Makefile.in \
+  configure.ac Makefile.am \
   test.c \
   c.gperf c.exp \
   ada.gperf ada-res.exp adadefs.gperf ada-pred.exp \
@@ -465,13 +425,4 @@ GENERATED_FILES = \
 # List of distributed files generated by "make".
 DISTRIBUTED_BUILT_FILES =
 # List of distributed files.
-DISTFILES = $(SOURCE_FILES) $(IMPORTED_FILES) $(GENERATED_FILES) $(DISTRIBUTED_BUILT_FILES)
-
-distdir : $(DISTFILES)
-	for file in $(DISTFILES); do \
-	  if test -f $$file; then dir='.'; else dir='$(srcdir)'; fi; \
-	  cp -p $$dir/$$file '$(distdir)'/$$file || exit 1; \
-	done
-
-force :
-
+EXTRA_DIST = $(SOURCE_FILES) $(IMPORTED_FILES) $(GENERATED_FILES) $(DISTRIBUTED_BUILT_FILES)
