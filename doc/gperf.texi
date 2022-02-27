@@ -15,12 +15,7 @@
 @c @setchapternewpage odd
 @c %**end of header
 
-@c some day we should @include version.texi instead of defining
-@c these values at hand.
-@set UPDATED 24 February 2022
-@set EDITION 3.3-beta
-@set VERSION 3.3-beta
-@c ---------------------
+@include version.texi
 
 @c remove the black boxes generated in the GPL appendix.
 @finalout
