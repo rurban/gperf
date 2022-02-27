@@ -29,7 +29,8 @@
 
 GNULIB_REPO_URL="https://git.savannah.gnu.org/gitweb/?p=gnulib.git;a=blob_plain;hb=HEAD;f="
 FILES="build-aux/install-sh build-aux/mkinstalldirs \
-       build-aux/compile build-aux/ar-lib"
+       build-aux/compile build-aux/ar-lib \
+       build-aux/git-version-gen"
 
 for file in $FILES; do
   if test -n "$GNULIB_TOOL"; then

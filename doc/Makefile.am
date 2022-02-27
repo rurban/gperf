@@ -26,7 +26,7 @@ IMAGES = $(SVG)
 EXTRA_DIST = $(IMAGES)
 
 info_TEXINFOS = gperf.texi
-TEXINFOS_SOURCES = gperf.texi gpl-3.0.texi version.texi
+TEXINFOS_SOURCES = gperf.texi gpl-3.0.texi $(IMAGES)
 
 CLEANFILES = gperf.pdf gperf.info gperf.info*
 
@@ -34,7 +34,7 @@ html-local : gperf.html gperf_toc.html
 
 # We still prefer texi2html over texi2any because it includes the titlepage.
 
-gperf.html : $(srcdir)/gperf.texi $(srcdir)/gpl-3.0.texi $(IMAGES)
+gperf.html-local : $(srcdir)/gperf.texi $(srcdir)/gpl-3.0.texi $(IMAGES)
 	cd $(srcdir) && $(TEXI2HTML) -number -monolithic gperf.texi
 #	cd $(srcdir) && $(TEXI2ANY) --html --no-headers --no-split gperf.texi
 	cd $(srcdir) && perl -pi -e's/\@image\{(\w+),\d+pt,,(.+),\.svg\}/<img src="\1.svg" alt="\2">/' \
