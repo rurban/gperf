@@ -139,9 +139,10 @@ mi_vector_hash.$(OBJEXT): mi_vector_hash.h mi_vector_hash.c
 main.$(OBJEXT): main.cc $(OPTIONS_H) $(INPUT_H) $(SEARCH_H) $(OUTPUT_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/main.cc
 output.ic: $(HASHES)
-	echo "/* ex: set ro ft=c: -*- mode: c; buffer-read-only: t -*- */" >$@
-	echo "/* C code of $(HASHES), generated via xxd */" >>$@
-	for h in $(HASHES); do $(XXD) -i $$h >>$@; done
+	$(XXD) --version && ( \
+	echo "/* ex: set ro ft=c: -*- mode: c; buffer-read-only: t -*- */" >$@; \
+	echo "/* C code of $(HASHES), generated via xxd */" >>$@; \
+	for h in $(HASHES); do $(XXD) -i $$h >>$@; done )
 
 main_perf.$(OBJEXT): main.cc $(OPTIONS_H) $(INPUT_H) $(SEARCH_H) $(OUTPUT_H)
 	$(CXX) $(CXXFLAGS) -DPERF $(CPPFLAGS) -c $(srcdir)/main.cc -o $@
