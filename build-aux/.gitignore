@@ -1,6 +1,12 @@
 # Files brought in by gnulib-tool:
-/install-sh
-/mkinstalldirs
-/compile
 /ar-lib
-
+/compile
+/config.guess
+/config.sub
+/depcomp
+/git-version-gen
+/install-sh
+/mdate-sh
+/missing
+/mkinstalldirs
+/texinfo.tex
