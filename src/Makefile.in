@@ -63,10 +63,10 @@ SHELL = /bin/sh
 
 VPATH = $(srcdir)
 
-OBJECTS  = version.$(OBJEXT) positions.$(OBJEXT) options.$(OBJEXT)	\
-           keyword.$(OBJEXT) keyword-list.$(OBJEXT) input.$(OBJEXT)	\
-           bool-array.$(OBJEXT) hash-table.$(OBJEXT) search.$(OBJEXT)	\
-           output.$(OBJEXT) main.$(OBJEXT) nbperf-chm.$(OBJEXT)		\
+OBJECTS =  main.$(OBJEXT) version.$(OBJEXT) positions.$(OBJEXT)		\
+           options.$(OBJEXT) keyword.$(OBJEXT) keyword-list.$(OBJEXT)	\
+           input.$(OBJEXT) bool-array.$(OBJEXT) hash-table.$(OBJEXT)	\
+           search.$(OBJEXT) output.$(OBJEXT) nbperf-chm.$(OBJEXT)	\
            nbperf-chm3.$(OBJEXT) nbperf-bdz.$(OBJEXT)			\
            graph2.$(OBJEXT) graph3.$(OBJEXT) mi_vector_hash.$(OBJEXT)
 # These need to be included into generated MPH .c code */
@@ -143,6 +143,12 @@ output.ic: $(HASHES)
 	echo "/* C code of $(HASHES), generated via xxd */" >>$@
 	for h in $(HASHES); do $(XXD) -i $$h >>$@; done
 
+main_perf.$(OBJEXT): main.cc $(OPTIONS_H) $(INPUT_H) $(SEARCH_H) $(OUTPUT_H)
+	$(CXX) $(CXXFLAGS) -DPERF $(CPPFLAGS) -c $(srcdir)/main.cc -o $@
+gperf_perf$(EXEEXT): main_perf.$(OBJEXT) $(OBJECTS) Makefile
+	$(CXX) -DPERF $(CXXFLAGS) $(LDFLAGS) -o $@ main_perf.$(OBJEXT) \
+	  $(filter-out main.$(OBJEXT),$(OBJECTS)) $(LIBS)
+
 install : all force
 	$(MKINSTALLDIRS) $(DESTDIR)$(bindir)
 	$(INSTALL_PROGRAM) $(TARGETPROG) $(DESTDIR)$(bindir)/$(TARGETPROG)
@@ -161,7 +167,8 @@ check : all
 mostlyclean : clean
 
 clean : force
-	$(RM) *~ *.s *.$(OBJEXT) *.a $(TARGETPROG) $(TARGETPROG).manifest core
+	$(RM) *~ *.s *.$(OBJEXT) *.a $(TARGETPROG) $(TARGETPROG).manifest core \
+	  gperf_perf$(EXEEXT)
 
 distclean : clean
 	$(RM) config.status config.log config.cache Makefile config.h
