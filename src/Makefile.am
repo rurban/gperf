@@ -11,6 +11,11 @@ HASHES   = mi_vector_hash.c wyhash3.h wyhash.h fnv3.h fnv.h crc3.h
 gperf_SOURCES = $(SOURCES)
 gperf_perf_SOURCES = $(SOURCES) perf.h
 gperf_perf_CXXFLAGS = -DPERF $(CXXFLAGS) $(AM_CXXFLAGS)
+EXTRA_DIST = $(HASHES) nbperf.h output.ic output.icc bool-array.icc	\
+       keyword.icc keyword-list.icc options.icc output.icc		\
+       positions.icc bool-array.h hash-table.h keyword.h options.h	\
+       search.h config.h input.h keyword-list.h output.h version.h	\
+       positions.h
 
 bin_PROGRAMS  = gperf
 EXTRA_PROGRAMS  = gperf_perf

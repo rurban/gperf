@@ -47,9 +47,11 @@ dist-hook:
 
 EXTRA_DIST = $(SOURCE_FILES) $(IMPORTED_FILES) $(GENERATED_FILES) $(DISTRIBUTED_BUILT_FILES)
 
-.PHONY: extracheck
+.PHONY: extracheck man
 extracheck:
 	$(MAKE) -C tests $@
+man:
+	$(MAKE) -C doc $@
 
 LIBTOOL_DISTCLEAN_FILES = \
 	build-aux/compile \
