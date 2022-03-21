@@ -26,7 +26,7 @@ INLINE
 Keyword::Keyword (const char *allchars, int allchars_length,
                   const char *rest, unsigned int lineno)
   : _allchars (allchars), _allchars_length (allchars_length),
-    _rest (rest), _lineno (lineno)
+    _number (0), _rest (rest), _lineno (lineno)
 {
 }
 

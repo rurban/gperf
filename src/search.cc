@@ -129,23 +129,63 @@ Search::Search (KeywordExt_List *list)
 void
 Search::prepare ()
 {
-  /* Compute the total number of keywords.  */
+  bool maybe_hex = true;
+  bool maybe_int = true;
+  /* Compute the total number of keywords, and
+     the minimum and maximum keyword length.
+     Also check if all keywords are integers or hex.  */
   _total_keys = 0;
-  for (KeywordExt_List *temp = _head; temp; temp = temp->rest())
-    _total_keys++;
-
-  /* Compute the minimum and maximum keyword length.  */
   _max_key_len = INT_MIN;
   _min_key_len = INT_MAX;
+
   for (KeywordExt_List *temp = _head; temp; temp = temp->rest())
     {
       KeywordExt *keyword = temp->first();
+      char *endp;
+      _total_keys++;
 
       if (_max_key_len < keyword->_allchars_length)
         _max_key_len = keyword->_allchars_length;
       if (_min_key_len > keyword->_allchars_length)
         _min_key_len = keyword->_allchars_length;
+      if (!maybe_hex ||
+          keyword->_allchars_length < 2 || strncmp(keyword->_allchars, "0x", 2))
+        {
+          maybe_hex = false;
+        }
+      else
+        {
+          if (strspn (&keyword->_allchars[2], "0123456789ABCDEF") !=
+              (size_t)(keyword->_allchars_length - 2))
+            {
+              maybe_hex = false;
+            }
+          else
+            {
+              keyword->_number = strtol (&keyword->_allchars[2], &endp, 16);
+              if (endp != &keyword->_allchars[keyword->_allchars_length])
+                {
+                  maybe_hex = false;
+                }
+            }
+        }
+      if (!maybe_int ||
+          strspn (keyword->_allchars, "0123456789") != (size_t)keyword->_allchars_length)
+        {
+          maybe_int = false;
+        }
+      else if (!maybe_hex)
+        {
+          keyword->_number = strtol (keyword->_allchars, &endp, 10);
+          if (endp != &keyword->_allchars[keyword->_allchars_length])
+            {
+              maybe_int = false;
+            }
+        }
     }
+
+  if (maybe_int || maybe_hex)
+    _intkeys = true;
 
   /* Exit program if an empty string is used as keyword, since the comparison
      expressions don't work correctly for looking up an empty string.  */
@@ -159,7 +199,7 @@ Search::prepare ()
 
   /* Exit program if the characters in the keywords are not in the required
      range.  */
-  if (option[SEVENBIT])
+  if (!_intkeys && option[SEVENBIT])
     {
       for (KeywordExt_List *temp = _head; temp; temp = temp->rest())
         {

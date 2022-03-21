@@ -113,6 +113,9 @@ public:
   /* Minimum length of the shortest keyword.  */
   int                   _min_key_len;
 
+  /* All numeric keys.  */
+  bool                  _intkeys;
+
   /* Whether the hash function includes the length.  */
   bool                  _hash_includes_len;
 

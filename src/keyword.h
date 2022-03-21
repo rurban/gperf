@@ -39,6 +39,8 @@ struct Keyword
   /* The keyword as a string, possibly containing NUL bytes.  */
   const char *const     _allchars;
   int const             _allchars_length;
+  /* But it can also be a number.  */
+  long                  _number;
   /* Additional stuff seen on the same line of the input file.  */
   const char *const     _rest;
   /* Line number of this keyword in the input file.  */
