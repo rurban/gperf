@@ -35,6 +35,14 @@ Options::set (Option_Type option)
   _option_word |= option;
 }
 
+/* Clears a given boolean option.  */
+INLINE void
+Options::unset (Option_Type option)
+{
+  unsigned ival = (unsigned)option;
+  _option_word &= ~ival;
+}
+
 /* Returns the input file name.  */
 INLINE const char *
 Options::get_input_file_name () const

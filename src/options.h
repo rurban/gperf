@@ -135,6 +135,8 @@ public:
   bool                  operator[] (Option_Type option) const;
   /* Sets a given boolean option.  */
   void                  set (Option_Type option);
+  /* Clear a given boolean option.  */
+  void                  unset (Option_Type option);
 
   /* Returns the input file name.  */
   const char *          get_input_file_name () const;
