@@ -378,6 +378,7 @@ SOURCE_FILES = \
   jstest2.gperf \
   jstest3.gperf \
   jstest4.gperf \
+  confusables.gperf \
   c++.gperf irc.gperf jscript.gperf makeinfo.gperf
 # List of distributed files imported from other packages.
 IMPORTED_FILES =
