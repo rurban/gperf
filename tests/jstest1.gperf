@@ -54,7 +54,7 @@ with
 %%
 #include <stdlib.h>
 #include <string.h>
-static const char* testdata[] = {
+static char* testdata[] = {
   "bogus",
   "abstract",
   "boolean",
@@ -112,13 +112,13 @@ static const char* testdata[] = {
 };
 int main ()
 {
-  int i;
+  unsigned i;
   for (i = 0; i < sizeof(testdata)/sizeof(testdata[0]); i++)
     {
 #ifdef CPLUSPLUS_TEST
-      const char * resword = Perfect_Hash::in_word_set(testdata[i],strlen(testdata[i]));
+      char * resword = (char*)Perfect_Hash::in_word_set(testdata[i],strlen(testdata[i]));
 #else
-      const char * resword = in_word_set(testdata[i],strlen(testdata[i]));
+      char * resword = (char*)in_word_set(testdata[i],strlen(testdata[i]));
 #endif
       if (i > 0)
         {

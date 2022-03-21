@@ -47,7 +47,8 @@ for lang in `echo $languages | sed -e 's/,/ /g'`; do
       ${GPERF} -I -L ANSI-C "$@" > valitest.c
       verbose ${CC} ${CFLAGS} ${CPPFLAGS} -ansi -pedantic -pedantic-errors valitest.c -o valitest
       ./valitest
-      verbose ${CXX} ${CXXFLAGS} ${CPPFLAGS} -ansi -pedantic -pedantic-errors valitest.c -o valitest
+      # latest g++ are incompatible to gcc with -pedantic
+      verbose ${CXX} ${CXXFLAGS} ${CPPFLAGS} -ansi valitest.c -o valitest
       ./valitest
       ;;
     "C++" )

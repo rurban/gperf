@@ -35,6 +35,7 @@ main (int argc, char *argv[])
   int  verbose = argc > 1 ? 1 : 0;
   char buf[2*MAX_LEN];
   int buflen;
+  (void)argv;
 
   /* We need to read stdin in binary mode. */
   SET_BINARY (0);

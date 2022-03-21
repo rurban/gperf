@@ -106,7 +106,7 @@ check-lang-utf8: test.$(OBJEXT)
 	$(GPERF) -k1 -t -I -K foreign_name < $(srcdir)/lang-utf8.gperf > lu8inset.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o lu8out lu8inset.c test.$(OBJEXT)
 	@echo "testing UTF-8 encoded languages, all items should be found in the set"
-	sed -e '1,6d' -e 's/,.*//' < $(srcdir)/lang-utf8.gperf | ./lu8out -v | LC_ALL=C tr -d '\r' > lang-utf8.out
+	sed -e '1,7d' -e 's/,.*//' < $(srcdir)/lang-utf8.gperf | ./lu8out -v | LC_ALL=C tr -d '\r' > lang-utf8.out
 	diff $(srcdir)/lang-utf8.exp lang-utf8.out
 
 test.$(OBJEXT) : $(srcdir)/test.c

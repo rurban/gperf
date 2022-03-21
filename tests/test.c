@@ -16,6 +16,7 @@ main (int argc, char *argv[])
 {
   int  verbose = argc > 1 ? 1 : 0;
   char buf[MAX_LEN];
+  (void)argv;
 
   while (fgets (buf, MAX_LEN, stdin))
     {
