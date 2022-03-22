@@ -110,7 +110,10 @@ main (int argc, char *argv[])
                           searcher._alpha_inc,
                           searcher._total_duplicates,
                           searcher._alpha_size,
-                          searcher._asso_values);
+                          searcher._asso_values,
+			  searcher._intkeys,
+			  searcher._min_intkey, searcher._max_intkey,
+			  searcher._density, searcher._distance);
         outputter.output ();
 
         /* Check for write error on stdout.  */

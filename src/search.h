@@ -55,6 +55,15 @@ private:
   /* Count the duplicate keywords that occur with a given set of positions.  */
   unsigned int          count_duplicates_tuple (const Positions& positions, const unsigned int *alpha_unify) const;
 
+  /* Find min and max values, and compute the density.  */
+  void                  compute_intkey_stats ();
+  /* Find easy special-cases:
+     If the distance is constant in 95%, return 1 and sets _distance.
+     e.g. for [0,2,4,6,8,10] _distance is 2, and the hash is (n - 0) / 2;
+     for [5,6,7,8,9,10] _distance is 1, and the hash is (n - _min_value)
+  */
+  int                   intkey_constant_distance ();
+
   /* Find good key positions.  */
   void                  find_positions ();
 
@@ -98,6 +107,8 @@ private:
 
   /* Sorts the keyword list by hash value.  */
   void                  sort ();
+  /* Sorts the keyword list by intkey.  */
+  void                  sort_number ();
 
 public:
 
@@ -145,6 +156,14 @@ public:
   int *                 _occurrences;
   /* Value associated with each character. */
   int *                 _asso_values;
+  /* Minimal found intkey.  */
+  long                   _min_intkey;
+  /* Maximal found intkey.  */
+  long                   _max_intkey;
+  /* intkey density.  */
+  float                  _density;
+  /* 95% of intkeys have a constant distance.  */
+  long                   _distance;
 
 private:
 
