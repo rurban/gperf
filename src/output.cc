@@ -26,6 +26,7 @@
 #include <ctype.h>  /* declares isprint() */
 #include <assert.h> /* defines assert() */
 #include <limits.h> /* defines SCHAR_MAX etc. */
+#include <cstdint>  /* defines UINT16_MAX etc. */
 #include "options.h"
 #include "version.h"
 #include "config.h"
@@ -134,6 +135,19 @@ Output::Output (KeywordExt_List *head, const char *struct_decl,
     _min_intkey (min_intkey), _max_intkey (max_intkey),
     _density (density), _distance (distance)
 {
+  if (intkeys)
+    {
+      if (_max_intkey > UINT32_MAX)
+	_key_type = _min_intkey < 0 ? "int64_t" : "uint64_t";
+      else if (_max_intkey > UINT16_MAX)
+	_key_type = _min_intkey < 0 ? "int32_t" : "uint32_t";
+      else if (_max_intkey > UINT8_MAX)
+	_key_type = _min_intkey < 0 ? "int16_t" : "uint16_t";
+      else
+	_key_type = _min_intkey < 0 ? "int8_t" : "uint8_t";
+    }
+  else
+    _key_type = "char *";
 }
 
 /* ------------------------------------------------------------------------- */
@@ -863,7 +877,10 @@ Output::output_hash_function () const
   if (option[CPLUSPLUS])
     printf ("%s::", option.get_class_name ());
   printf ("%s ", option.get_hash_name ());
-  printf (option[KRC] ?
+  if (_intkeys)
+    printf ("(%sconst %s key)\n", register_scs, _key_type);
+  else
+    printf (option[KRC] ?
                  "(str, len)\n"
             "     %schar *str;\n"
             "     %ssize_t len;\n" :
@@ -912,7 +929,16 @@ Output::output_hash_function () const
               "    };\n");
     }
 
-  if (_key_positions.get_size() == 0)
+  if (_intkeys)
+    {
+      if (_distance > 1)
+	printf ("  return (unsigned int)((key - %ld) / %ld);\n",
+		_min_intkey, _distance);
+      else
+	printf ("  return (unsigned int)(key - %ld);\n",
+		_min_intkey);
+    }
+  else if (_key_positions.get_size() == 0)
     {
       /* Trivial case: No key positions at all.  */
       printf ("  return %s;\n",
@@ -1103,7 +1129,7 @@ Output::output_keylength_table () const
 /* ------------------------------------------------------------------------- */
 
 /* Prints out the string pool, containing the strings of the keyword table.
-   Only called if option[SHAREDLIB].  */
+   Only called if option[SHAREDLIB], never with intkeys.  */
 
 void
 Output::output_string_pool () const
@@ -1206,14 +1232,17 @@ Output::output_string_pool () const
 /* ------------------------------------------------------------------------- */
 
 static void
-output_keyword_entry (KeywordExt *temp, int stringpool_index, const char *indent, bool is_duplicate)
+output_keyword_entry (KeywordExt *temp, int stringpool_index, const char *indent,
+		      bool is_duplicate, bool is_intkey)
 {
   if (option[TYPE])
     output_line_directive (temp->_lineno);
   printf ("%s    ", indent);
   if (option[TYPE])
     printf ("{");
-  if (option[SHAREDLIB])
+  if (is_intkey)
+    printf ("%ld", temp->_number);
+  else if (option[SHAREDLIB])
     /* How to determine a certain offset in stringpool at compile time?
        - The standard way would be to use the 'offsetof' macro.  But it is only
          defined in <stddef.h>, and <stddef.h> is not among the prerequisite
@@ -1330,14 +1359,17 @@ Output::output_keyword_table () const
       if (index < keyword->_hash_value && !option[SWITCH] && !option[DUP])
         {
           /* Some blank entries.  */
-          output_keyword_blank_entries (keyword->_hash_value - index, indent);
+	  if (_intkeys)
+	    printf ("%s    0", indent);
+	  else
+	    output_keyword_blank_entries (keyword->_hash_value - index, indent);
           printf (",\n");
           index = keyword->_hash_value;
         }
 
       keyword->_final_index = index;
 
-      output_keyword_entry (keyword, index, indent, false);
+      output_keyword_entry (keyword, index, indent, false, _intkeys);
 
       /* Deal with duplicates specially.  */
       if (keyword->_duplicate_link) // implies option[DUP]
@@ -1351,7 +1383,7 @@ Output::output_keyword_table () const
                           keyword->_allchars_length) == 0
                ? keyword->_final_index
                : links->_final_index);
-            output_keyword_entry (links, stringpool_index, indent, true);
+            output_keyword_entry (links, stringpool_index, indent, true, _intkeys);
           }
 
       index++;
@@ -1365,7 +1397,9 @@ Output::output_keyword_table () const
 /* ------------------------------------------------------------------------- */
 
 /* Generates the large, sparse table that maps hash values into
-   the smaller, contiguous range of the keyword table.  */
+   the smaller, contiguous range of the keyword table.
+   Only with duplicates.
+*/
 
 void
 Output::output_lookup_array () const
@@ -1514,7 +1548,9 @@ Output::output_lookup_array () const
 
 /* ------------------------------------------------------------------------- */
 
-/* Generate all pools needed for the lookup function.  */
+/* Generate all pools needed for the lookup function.
+   Never with intkeys.
+ */
 
 void
 Output::output_lookup_pools () const
@@ -1549,7 +1585,7 @@ Output::output_lookup_tables () const
       if (option[LENTABLE])
         output_keylength_table ();
       output_keyword_table ();
-      output_lookup_array ();
+      output_lookup_array (); // for duplicates only
     }
 }
 
@@ -1703,11 +1739,18 @@ output_switches (KeywordExt_List *list, int num_switches, int size, int min_hash
 void
 Output::output_lookup_function_body (const Output_Compare& comparison) const
 {
-  printf ("  if (len <= %sMAX_WORD_LENGTH && len >= %sMIN_WORD_LENGTH)\n"
-          "    {\n"
-          "      %sunsigned int key = %s (str, len);\n\n",
-          option.get_constants_prefix (), option.get_constants_prefix (),
-          register_scs, option.get_hash_name ());
+  if (_intkeys)
+    printf ("  if (num >= %sMIN_INTKEY && num <= %sMAX_INTKEY)\n"
+	    "    {\n"
+	    "      %sunsigned int key = %s (num);\n\n",
+	    option.get_constants_prefix (), option.get_constants_prefix (),
+	    register_scs, option.get_hash_name ());
+  else
+    printf ("  if (len <= %sMAX_WORD_LENGTH && len >= %sMIN_WORD_LENGTH)\n"
+	    "    {\n"
+	    "      %sunsigned int key = %s (str, len);\n\n",
+	    option.get_constants_prefix (), option.get_constants_prefix (),
+	    register_scs, option.get_hash_name ());
 
   if (option[SWITCH])
     {
@@ -1824,8 +1867,9 @@ Output::output_lookup_function_body (const Output_Compare& comparison) const
     }
   else
     {
-      printf ("      if (key <= %sMAX_HASH_VALUE)\n",
-              option.get_constants_prefix ());
+      if (!_intkeys)
+	printf ("      if (key <= %sMAX_HASH_VALUE)\n",
+		option.get_constants_prefix ());
 
       if (option[DUP])
         {
@@ -2036,7 +2080,10 @@ Output::output_lookup_function () const
   if (option[CPLUSPLUS])
     printf ("%s::", option.get_class_name ());
   printf ("%s ", option.get_function_name ());
-  printf (option[KRC] ?
+  if (_intkeys)
+    printf ("(%sconst %s num)\n", register_scs, _key_type);
+  else
+    printf (option[KRC] ?
                  "(str, len)\n"
             "     %schar *str;\n"
             "     %ssize_t len;\n" :
@@ -2046,8 +2093,7 @@ Output::output_lookup_function () const
             "     %ssize_t len;\n" :
           option[ANSIC] | option[CPLUSPLUS] ?
                  "(%sconst char *str, %ssize_t len)\n" :
-          "",
-          register_scs, register_scs);
+          "", register_scs, register_scs);
 
   /* Output the function's body.  */
   printf ("{\n");
@@ -2058,10 +2104,13 @@ Output::output_lookup_function () const
       output_constants (style);
     }
 
-  if (option[SHAREDLIB] && !(option[GLOBAL] || option[TYPE]))
-    output_lookup_pools ();
-  if (!option[GLOBAL])
-    output_lookup_tables ();
+  if (!_intkeys)
+    {
+      if (option[SHAREDLIB] && !(option[GLOBAL] || option[TYPE]))
+	output_lookup_pools ();
+      if (!option[GLOBAL])
+	output_lookup_tables ();
+    }
 
   if (option[LENTABLE])
     output_lookup_function_body (Output_Compare_Memcmp ());
@@ -2108,8 +2157,10 @@ Output::output ()
 
   if (!option[TYPE])
     {
-      _return_type = (const_always[0] ? "const char *" : "char *");
-      _struct_tag = (const_always[0] ? "const char *" : "char *");
+      if (_intkeys)
+	_struct_tag = _return_type = _key_type;
+      else
+	_struct_tag = _return_type = (const_always[0] ? "const char *" : "char *");
     }
 
   _wordlist_eltype = (option[SHAREDLIB] && !option[TYPE] ? "int" : _struct_tag);
@@ -2126,7 +2177,7 @@ Output::output ()
   printf (" code produced by gperf version %s */\n", version_string);
   option.print_options ();
   printf ("\n");
-  if (!option[POSITIONS])
+  if (!option[POSITIONS] && !_intkeys)
     {
       printf ("/* Computed positions: -k'");
       _key_positions.print();
@@ -2134,7 +2185,7 @@ Output::output ()
     }
   printf ("\n");
 
-  if (_charset_dependent
+  if (!_intkeys && _charset_dependent
       && (_key_positions.get_size() > 0 || option[UPPERLOWER]))
     {
       /* The generated tables assume that the execution character set is
@@ -2196,7 +2247,7 @@ Output::output ()
 
   printf ("/* maximum key range = %d, duplicates = %d */\n",
           _max_hash_value - _min_hash_value + 1, _total_duplicates);
-  if (_intkeys)
+  if (_intkeys && _distance)
     printf ("/* int-keys density = %f, distance = %ld */\n", _density, _distance);
   printf ("\n");
 

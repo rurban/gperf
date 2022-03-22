@@ -144,6 +144,8 @@ private:
   int const             _min_key_len;
   /* Whether the hash function includes the length.  */
   bool                  _hash_includes_len;
+  /* Key type for lookup function. */
+  const char *          _key_type;
   /* Key positions.  */
   Positions const       _key_positions;
   /* Adjustments to add to bytes add specific key positions.  */
