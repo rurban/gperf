@@ -110,7 +110,10 @@ Output::Output (KeywordExt_List *head, const char *struct_decl,
                 int total_keys, int max_key_len, int min_key_len,
                 bool hash_includes_len, const Positions& positions,
                 const unsigned int *alpha_inc, int total_duplicates,
-                unsigned int alpha_size, const int *asso_values)
+                unsigned int alpha_size, const int *asso_values,
+		const bool intkeys,
+		const long min_intkey, const long max_intkey,
+		const float density, const long distance)
   : _head (head), _struct_decl (struct_decl),
     _struct_decl_lineno (struct_decl_lineno), _return_type (return_type),
     _struct_tag (struct_tag),
@@ -126,7 +129,10 @@ Output::Output (KeywordExt_List *head, const char *struct_decl,
     _hash_includes_len (hash_includes_len),
     _key_positions (positions), _alpha_inc (alpha_inc),
     _total_duplicates (total_duplicates), _alpha_size (alpha_size),
-    _asso_values (asso_values)
+    _asso_values (asso_values),
+    _intkeys (intkeys),
+    _min_intkey (min_intkey), _max_intkey (max_intkey),
+    _density (density), _distance (distance)
 {
 }
 
@@ -183,6 +189,7 @@ struct Output_Defines : public Output_Constants
 {
   virtual void          output_start ();
   virtual void          output_item (const char *name, int value);
+  virtual void          output_item (const char *name, const long value);
   virtual void          output_end ();
                         Output_Defines () {}
   virtual               ~Output_Defines () {}
@@ -196,6 +203,11 @@ void Output_Defines::output_start ()
 void Output_Defines::output_item (const char *name, int value)
 {
   printf ("#define %s %d\n", name, value);
+}
+
+void Output_Defines::output_item (const char *name, const long value)
+{
+  printf ("#define %s %ld\n", name, value);
 }
 
 void Output_Defines::output_end ()
@@ -253,6 +265,17 @@ output_constant (struct Output_Constants& style, const char *name, int value)
   FREE_DYNAMIC_ARRAY (combined_name);
 }
 
+static void
+output_constant (struct Output_Constants& style, const char *name, const long value)
+{
+  const char *prefix = option.get_constants_prefix ();
+  DYNAMIC_ARRAY (combined_name, char, strlen (prefix) + strlen (name) + 1);
+  strcpy (combined_name, prefix);
+  strcpy (combined_name + strlen (prefix), name);
+  style.output_item (combined_name, value);
+  FREE_DYNAMIC_ARRAY (combined_name);
+}
+
 /* Outputs the maximum and minimum hash values etc.  */
 
 void
@@ -260,10 +283,20 @@ Output::output_constants (struct Output_Constants& style) const
 {
   style.output_start ();
   output_constant (style, "TOTAL_KEYWORDS", _total_keys);
-  output_constant (style, "MIN_WORD_LENGTH", _min_key_len);
-  output_constant (style, "MAX_WORD_LENGTH", _max_key_len);
-  output_constant (style, "MIN_HASH_VALUE", _min_hash_value);
-  output_constant (style, "MAX_HASH_VALUE", _max_hash_value);
+  if (!_intkeys)
+    {
+      output_constant (style, "MIN_WORD_LENGTH", _min_key_len);
+      output_constant (style, "MAX_WORD_LENGTH", _max_key_len);
+      output_constant (style, "MIN_HASH_VALUE", _min_hash_value);
+      output_constant (style, "MAX_HASH_VALUE", _max_hash_value);
+    }
+  else
+    {
+      output_constant (style, "MIN_INTKEY", _min_intkey);
+      output_constant (style, "MAX_INTKEY", _max_intkey);
+      //output_constant (style, "INTKEY_DENSITY", (int)(_density * 100.0f));
+      //output_constant (style, "INTKEY_DISTANCE", _distance);
+    }
   style.output_end ();
 }
 
@@ -2161,8 +2194,11 @@ Output::output ()
       output_constants (style);
     }
 
-  printf ("/* maximum key range = %d, duplicates = %d */\n\n",
+  printf ("/* maximum key range = %d, duplicates = %d */\n",
           _max_hash_value - _min_hash_value + 1, _total_duplicates);
+  if (_intkeys)
+    printf ("/* int-keys density = %f, distance = %ld */\n", _density, _distance);
+  printf ("\n");
 
   if (option[UPPERLOWER])
     {

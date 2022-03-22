@@ -1,7 +1,7 @@
 /* Search algorithm.
-   Copyright (C) 1989-1998, 2000, 2002-2003, 2009, 2016 Free Software Foundation, Inc.
-   Written by Douglas C. Schmidt <schmidt@ics.uci.edu>
-   and Bruno Haible <bruno@clisp.org>.
+   Copyright (C) 1989-1998, 2000, 2002-2003, 2009, 2016, 2022 Free Software Foundation, Inc.
+   Written by Douglas C. Schmidt <schmidt@ics.uci.edu>,
+   Bruno Haible <bruno@clisp.org> and Reini Urban <rurban@cpan.org>
 
    This file is part of GNU GPERF.
 
@@ -119,6 +119,24 @@
    keyword[i] doesn't change  alpha_unify[keyword[i] + alpha_inc[i]].
  */
 
+/* Better theories are finding perfect hash functions via graph search,
+   which is needed for >10K keys.
+   Then we can find even minimal perfect hashes.
+
+   But first let's approach integer keys, which are e.g. needed for
+   compiler's switch tables, which are currently only implemented with
+   jump-tables, which only work for dense tables and elseif
+   chains. This approach is linear, and extremely costly for large
+   sparse tables, such as e.g. most unicode tables. perfect hash
+   tables do allow constant lookup for sparse tables. See
+   <https://programming.sirrida.de/hashsuper.pdf> for a basic
+   introduction into the problem. We start with ad-hoc, gperf like,
+   strategies, searching for a reversible hash function, by analyzing
+   the data, if it follows a common pattern. If not we need to use
+   MPH's, like CHM or BDZ.
+ */
+
+
 /* ==================== Initialization and Preparation ===================== */
 
 Search::Search (KeywordExt_List *list)
@@ -131,12 +149,16 @@ Search::prepare ()
 {
   bool maybe_hex = true;
   bool maybe_int = true;
+
   /* Compute the total number of keywords, and
      the minimum and maximum keyword length.
      Also check if all keywords are integers or hex.  */
   _total_keys = 0;
   _max_key_len = INT_MIN;
   _min_key_len = INT_MAX;
+  _max_intkey = LONG_MIN;
+  _min_intkey = LONG_MAX;
+  _distance   = 0;
 
   for (KeywordExt_List *temp = _head; temp; temp = temp->rest())
     {
@@ -149,19 +171,21 @@ Search::prepare ()
       if (_min_key_len > keyword->_allchars_length)
         _min_key_len = keyword->_allchars_length;
       if (!maybe_hex ||
-          keyword->_allchars_length < 2 || strncmp(keyword->_allchars, "0x", 2))
+          keyword->_allchars_length < 2 ||
+          strncmp(keyword->_allchars, "0x", 2))
         {
           maybe_hex = false;
         }
       else
         {
-          if (strspn (&keyword->_allchars[2], "0123456789ABCDEF") !=
+          if (strspn (&keyword->_allchars[2], "0123456789ABCDEFabcdef") !=
               (size_t)(keyword->_allchars_length - 2))
             {
               maybe_hex = false;
             }
           else
             {
+	      // Convert from HEX
               keyword->_number = strtol (&keyword->_allchars[2], &endp, 16);
               if (endp != &keyword->_allchars[keyword->_allchars_length])
                 {
@@ -170,12 +194,14 @@ Search::prepare ()
             }
         }
       if (!maybe_int ||
-          strspn (keyword->_allchars, "0123456789") != (size_t)keyword->_allchars_length)
+          strspn (keyword->_allchars, "0123456789")
+	    != (size_t)keyword->_allchars_length)
         {
           maybe_int = false;
         }
       else if (!maybe_hex)
         {
+	  // Convert from LONG
           keyword->_number = strtol (keyword->_allchars, &endp, 10);
           if (endp != &keyword->_allchars[keyword->_allchars_length])
             {
@@ -185,7 +211,7 @@ Search::prepare ()
     }
 
   if (maybe_int || maybe_hex)
-    _intkeys = true;
+    _intkeys = true; // for intkeys we need some more statistics.
 
   /* Exit program if an empty string is used as keyword, since the comparison
      expressions don't work correctly for looking up an empty string.  */
@@ -222,7 +248,60 @@ Search::prepare ()
   _hash_includes_len = !(option[NOLENGTH] || (_min_key_len == _max_key_len));
 }
 
+/* Find min and max values, and compute the density.  */
+void
+Search::compute_intkey_stats ()
+{
+  for (KeywordExt_List *temp = _head; temp; temp = temp->rest())
+    {
+      KeywordExt *keyword = temp->first();
+      if (keyword->_number > _max_intkey)
+	_max_intkey = keyword->_number;
+      if (keyword->_number < _min_intkey)
+	_min_intkey = keyword->_number;
+    }
+  if (_max_intkey != _min_intkey &&
+      _max_intkey != LONG_MIN &&
+      _min_intkey != LONG_MAX)
+    _density = _total_keys / (float)(_max_intkey - _min_intkey);
+}
+
 /* ====================== Finding good byte positions ====================== */
+
+/* Find possible special-cases:
+   Check if the distance is constant.
+   e.g. [0,2,4,6,8,10] or [5,6,7,8,9,10]
+*/
+int
+Search::intkey_constant_distance ()
+{
+  long prev = LONG_MIN;
+  long dist = 0, olddist = 0, same_dist = 0, good_dist = 0;
+  for (KeywordExt_List *temp = _head; temp; temp = temp->rest())
+    {
+      KeywordExt *keyword = temp->first();
+      if (prev != LONG_MIN)
+	{
+	  dist = keyword->_number - prev;
+	  if (olddist == dist) {
+	    same_dist++;
+	    if (same_dist > 2)
+	      good_dist = dist;
+	  }
+	  olddist = dist;
+	}
+      prev = keyword->_number;
+    }
+  /* if more than 80% have the same distance, set _distance and return
+     success.
+   */
+  if ((((float)same_dist / _total_keys) >= 0.80f) && good_dist)
+    {
+      _distance = good_dist;
+      return 1;
+    }
+  return 0;
+}
 
 /* Computes the upper bound on the indices passed to asso_values[],
    assuming no alpha_increments.  */
@@ -1622,6 +1701,12 @@ less_by_hash_value (KeywordExt *keyword1, KeywordExt *keyword2)
   return keyword1->_hash_value < keyword2->_hash_value;
 }
 
+static bool
+less_by_number (KeywordExt *keyword1, KeywordExt *keyword2)
+{
+  return keyword1->_number < keyword2->_number;
+}
+
 /* Sorts the keyword list by hash value.  */
 
 void
@@ -1631,11 +1716,32 @@ Search::sort ()
 }
 
 void
+Search::sort_number ()
+{
+  _head = mergesort_list (_head, less_by_number);
+}
+
+void
 Search::optimize ()
 {
   /* Preparations.  */
   prepare ();
 
+  if (_intkeys)
+    {
+      compute_intkey_stats ();
+      sort_number ();
+      if (intkey_constant_distance ())
+	{
+	  // done
+	}
+      else
+	{
+	  // use an MPH
+	}
+      return;
+    }
+  
   /* Step 1: Finding good byte positions.  */
   find_positions ();
 

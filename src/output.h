@@ -54,7 +54,12 @@ public:
                                 const unsigned int *alpha_inc,
                                 int total_duplicates,
                                 unsigned int alpha_size,
-                                const int *asso_values);
+                                const int *asso_values,
+				const bool intkeys,
+				const long min_intkey,	const long max_intkey,
+				const float density,
+				const long distance
+);
 
   /* Generates the hash function and the key word recognizer function.  */
   void                  output ();
@@ -153,6 +158,17 @@ private:
   unsigned int const    _alpha_size;
   /* Value associated with each character. */
   const int * const     _asso_values;
+
+  /* All numeric keys.  */
+  bool const             _intkeys;
+  /* Minimal found intkey.  */
+  long const             _min_intkey;
+  /* Maximal found intkey.  */
+  long const             _max_intkey;
+  /* intkey density.  */
+  float const            _density;
+  /* 95% of intkeys have a constant distance.  */
+  long const             _distance;
 };
 
 #endif
