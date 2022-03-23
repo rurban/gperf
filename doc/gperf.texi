@@ -17,9 +17,9 @@
 
 @c some day we should @include version.texi instead of defining
 @c these values at hand.
-@set UPDATED 5 January 2022
-@set EDITION 3.2
-@set VERSION 3.2
+@set UPDATED 23 March 2022
+@set EDITION 3.2.1
+@set VERSION 3.2.1
 @c ---------------------
 
 @c remove the black boxes generated in the GPL appendix.
@@ -40,7 +40,7 @@
 This file documents the features of the GNU Perfect Hash Function
 Generator @value{VERSION}.
 
-Copyright @copyright{} 1989-2018 Free Software Foundation, Inc.
+Copyright @copyright{} 1989-2022 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
@@ -75,10 +75,11 @@ Software Foundation instead of in the original English.
 @subtitle Edition @value{EDITION}, @value{UPDATED}
 @author Douglas C. Schmidt
 @author Bruno Haible
+@author Reini Urban
 
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1989-2018 Free Software Foundation, Inc.
+Copyright @copyright{} 1989-2022 Free Software Foundation, Inc.
 
 
 Permission is granted to make and distribute verbatim copies of
@@ -193,6 +194,11 @@ that greatly helped improve the quality and functionality of @code{gperf}.
 Bruno Haible enhanced and optimized the search algorithm.  He also rewrote
 the input routines and the output routines for better reliability, and
 added a testsuite.
+
+@item
+Reini Urban added the integer and MPH algorithms, loosely based on
+NetBSD nbperf C code by Jörg Sonnenberger and the PostgresQL
+PerfectHash.pm perl module.
 @end itemize
 
 @node Motivation
@@ -216,6 +222,9 @@ available from @code{https://ftp.gnu.org/pub/gnu/gperf/}.
 A paper describing @code{gperf}'s design and implementation in greater
 detail is available in the Second USENIX C++ Conference proceedings
 or from @code{http://www.cs.wustl.edu/~schmidt/resume.html}.
+
+@code{gperf} can now also generate perfect hashes for integer keysets,
+such as e.g. needed for sparse unicode tables.
 
 @node Search Structures
 @chapter Static search structures and GNU @code{gperf}
@@ -265,8 +274,8 @@ For most applications it is far easier to generate @emph{perfect} hash
 functions than @emph{minimal perfect} hash functions.  Moreover,
 non-minimal perfect hash functions frequently execute faster than
 minimal ones in practice.  This phenomena occurs since searching a
-sparse keyword table increases the probability of locating a ``null''
-entry, thereby reducing string comparisons.  @code{gperf}'s default
+sparse keyword table increases the probability of locating an empty
+entry, thereby reducing comparisons.  @code{gperf}'s default
 behavior generates @emph{near-minimal} perfect hash functions for
 keyword sets.  However, @code{gperf} provides many options that permit
 user control over the degree of minimality and perfection.
@@ -281,7 +290,7 @@ search structures by hand.  It has proven a useful and practical tool
 for serious programming projects.  Output from @code{gperf} is currently
 used in several production and research compilers, including GNU C, GNU
 C++, GNU Java, GNU Pascal, and GNU Modula 3.  The latter two compilers are
-not yet part of the official GNU distribution.  Each compiler utilizes
+not part of the official GNU distribution.  Each compiler utilizes
 @code{gperf} to automatically generate static search structures that
 efficiently identify their respective reserved keywords.
 
@@ -320,7 +329,8 @@ In general, @code{gperf} assigns values to the bytes it is using
 for hashing until some set of values gives each keyword a unique value.
 A helpful heuristic is that the larger the hash value range, the easier
 it is for @code{gperf} to find and generate a perfect hash function.
-Experimentation is the key to getting the most from @code{gperf}.
+Whilst the goal for @code{gperf} is to find the best result automatically,
+but still experimentation is the key to getting the most from @code{gperf}.
 
 @node Input Format
 @section Input Format to @code{gperf}
@@ -386,13 +396,16 @@ act like command-line options, as well as for providing a user-supplied
 @node User-supplied Struct
 @subsubsection User-supplied @code{struct}
 
-If the @samp{-t} option (or, equivalently, the @samp{%struct-type} declaration)
-@emph{is} enabled, you @emph{must} provide a C @code{struct} as the last
-component in the declaration section from the input file.  The first
-field in this struct must be of type @code{char *} or @code{const char *}
-if the @samp{-P} option is not given, or of type @code{int} if the option
-@samp{-P} (or, equivalently, the @samp{%pic} declaration) is enabled.
-This first field must be called @samp{name}, although it is possible to modify
+If the @samp{-t} option (or, equivalently, the @samp{%struct-type}
+declaration) @emph{is} enabled, you @emph{must} provide a C
+@code{struct} as the last component in the declaration section from
+the input file.  The first field in this struct must be with string
+keywords of type @code{char *} or @code{const char *} if the @samp{-P}
+option is not given, or of type @code{int} if the option @samp{-P}
+(or, equivalently, the @samp{%pic} declaration) is enabled, or with
+integer keywords the smallest standard type of the keywords. This
+first field must be called @samp{name} with string keywords, or
+@samp{key} with integer keywords, although it is possible to modify
 its name with the @samp{-K} option (or, equivalently, the
 @samp{%define slot-name} declaration) described below.
 
@@ -415,6 +428,27 @@ september, 9, 30, 30
 october,  10, 31, 31
 november, 11, 30, 30
 december, 12, 31, 31
+@end group
+@end example
+
+Here is an example with a language declaration, numeric keys as hex,
+using comments, @code{const uint32_t} as key type, and a const string
+as 2nd struct member.
+
+@example
+@group
+%language=ANSI-C
+struct confusables @{ const uint32_t key; const char *u8confus; @};
+%%
+0x00022,	"''"
+#-- % -> º/₀
+0x00025,	"\302\272/\342\202\200"
+#-- 0 -> O
+0x00030,	"O"
+#-- 1 -> l
+0x00031,	"l"
+#-- I -> l
+0x00049,	"l"
 @end group
 @end example
 
@@ -508,12 +542,13 @@ The default is ANSI-C.
 
 @item %define slot-name @var{name}
 @cindex @samp{%define slot-name}
-This declaration is only useful when option @samp{-t} (or, equivalently, the
-@samp{%struct-type} declaration) has been given.
-By default, the program assumes the structure component identifier for
-the keyword is @samp{name}.  This option allows an arbitrary choice of
-identifier for this component, although it still must occur as the first
-field in your supplied @code{struct}.
+This declaration is only useful when option @samp{-t} (or,
+equivalently, the @samp{%struct-type} declaration) has been given.  By
+default, the program assumes the structure component identifier for
+the keyword is @samp{name} or @samp{key} for integer keys.  This
+option allows an arbitrary choice of identifier for this component,
+although it still must occur as the first field in your supplied
+@code{struct}.
 
 @item %define initializer-suffix @var{initializers}
 @cindex @samp{%define initializer-suffix}
@@ -548,9 +583,10 @@ allows you to specify the name of generated C++ class.  Default name is
 This option specifies that all strings that will be passed as arguments
 to the generated hash function and the generated lookup function will
 solely consist of 7-bit ASCII characters (bytes in the range 0..127).
-(Note that the ANSI C functions @code{isalnum} and @code{isgraph} do
+Note that the ANSI C functions @code{isalnum} and @code{isgraph} do
 @emph{not} guarantee that a byte is in this range.  Only an explicit
-test like @samp{c >= 'A' && c <= 'Z'} guarantees this.)
+test like @samp{c >= 'A' && c <= 'Z'} guarantees this.
+This option is illegal for integer keys.
 
 @item %compare-lengths
 @cindex @samp{%compare-lengths}
@@ -562,11 +598,13 @@ However, using @samp{%compare-lengths} might greatly increase the size of the
 generated C code if the lookup table range is large (which implies that
 the switch option @samp{-S} or @samp{%switch} is not enabled), since the length
 table contains as many elements as there are entries in the lookup table.
+This option is illegal for integer keys.
 
 @item %compare-strncmp
 @cindex @samp{%compare-strncmp}
 Generates C code that uses the @code{strncmp} function to perform
 string comparisons.  The default action is to use @code{strcmp}.
+This option is illegal for integer keys.
 
 @item %readonly-tables
 @cindex @samp{%readonly-tables}
@@ -603,6 +641,7 @@ it will contain offsets into the string pool instead of actual strings.
 To convert such an offset to a string, you can use the expression
 @samp{stringpool + @var{o}}, where @var{o} is the offset.  The string pool
 name can be changed through the @samp{%define string-pool-name} declaration.
+This option is illegal for integer keys.
 
 @item %define string-pool-name @var{name}
 @cindex @samp{%define string-pool-name}
@@ -612,6 +651,7 @@ The default name is @samp{stringpool}.  This declaration permits the use of
 two hash tables in the same file, with @samp{%pic} and even when the
 @samp{%global-table} declaration (or, equivalently, the option @samp{-G})
 is given.
+This option is illegal for integer keys.
 
 @item %null-strings
 @cindex @samp{%null-strings}
@@ -619,6 +659,7 @@ Use NULL strings instead of empty strings for empty keyword table entries.
 This reduces the startup time of programs using a shared library containing
 the generated code (but not as much as the declaration @samp{%pic}), at the
 expense of one more test-and-branch instruction at run time.
+This option is illegal for integer keys.
 
 @item %define constants-prefix @var{prefix}
 @cindex @samp{%define constants-prefix}
@@ -642,6 +683,7 @@ Allows you to specify the name for the generated array containing the
 length table.  Default name is @samp{lengthtable}.  This option permits the
 use of two length tables in the same file, even when the option @samp{-G}
 (or, equivalently, the @samp{%global-table} declaration) is given.
+This option is illegal for integer keys.
 
 @item %switch=@var{count}
 @cindex @samp{%switch}
@@ -700,10 +742,21 @@ beginning with @samp{%} in the first column is an option declaration and
 must not occur within the keywords section.
 
 The first field of each non-comment line is always the keyword itself.  It
-can be given in two ways: as a simple name, i.e., without surrounding
-string quotation marks, or as a string enclosed in double-quotes, in
-C syntax, possibly with backslash escapes like @code{\"} or @code{\234}
-or @code{\xa8}.  In either case, it must start right at the beginning
+can be given in four ways:
+
+@enumerate
+@item
+as a simple name, i.e., without surrounding string quotation marks, or
+@item
+as a string enclosed in double-quotes, in C syntax, possibly
+with backslash escapes like @code{\"} or @code{\234} or @code{\xa8},
+@item
+a hexadecimal number starting with @code{0x}, or
+@item
+a positive integer number without a minus @code{-}.
+@end enumerate
+
+In either case, it must start right at the beginning
 of the line, without leading whitespace.
 In this context, a ``field'' is considered to extend up to, but
 not include, the first blank, comma, or newline.  Here is a simple
@@ -861,11 +914,12 @@ set characteristics.
 @section Use of NUL bytes
 @cindex NUL
 
-By default, the code generated by @code{gperf} operates on zero
-terminated strings, the usual representation of strings in C.  This means
-that the keywords in the input file must not contain NUL bytes,
-and the @var{str} argument passed to @code{hash} or @code{in_word_set}
-must be NUL terminated and have exactly length @var{len}.
+With string keys, the code generated by @code{gperf} operates on
+zero terminated strings, the usual representation of strings in C.
+This means that the keywords in the input file must not contain NUL
+bytes, and the @var{str} argument passed to @code{hash} or
+@code{in_word_set} must be NUL terminated and have exactly length
+@var{len}.
 
 If option @samp{-c} (or, equivalently, the @samp{%compare-strncmp}
 declaration) is used, then the @var{str} argument does not need
@@ -881,6 +935,8 @@ written in string syntax as @code{\000} or @code{\x00}, and the code
 generated by @code{gperf} will treat NUL like any other byte.
 Also, in this case the @samp{-c} option (or, equivalently, the
 @samp{%compare-strncmp} declaration) is ignored.
+
+With integer keys the options @samp{-c} or @samp{-l} are illegal.
 
 @node Controlling Identifiers
 @section Controlling Identifiers
@@ -1375,13 +1431,29 @@ The following are some limitations with the current release of
 
 @itemize @bullet
 @item
-The @code{gperf} utility is tuned to execute quickly, and works quickly
-for small to medium size data sets (around 1000 keywords).  It is
-extremely useful for maintaining perfect hash functions for compiler
-keyword sets.  Several recent enhancements now enable @code{gperf} to
-work efficiently on much larger keyword sets (over 15,000 keywords).
-When processing large keyword sets it helps greatly to have over 8 megs
-of RAM.
+The @code{gperf} utility is tuned to execute quickly, and works
+quickly for small to medium size data sets (around 1000 keywords).  It
+is extremely useful for maintaining perfect hash functions for
+compiler keyword sets.  Several recent enhancements now enable
+@code{gperf} to work efficiently on much larger keyword sets (over
+15,000 keywords).  When processing large keyword sets it helps greatly
+to have over 8 megs of RAM. With over 15,000 keywords you'd need to
+use another perfect hash tool though, such as cmph, nbperf, mph or
+similar. Work is ongoing to extend gperf to efficiently generate MPH
+with the CHM or BDZ algorithms for such large keysets.
+
+@item
+Initially @code{gperf} was written for string keywords only, and only
+recently support for integer keysets was being added. Integer keyset
+support is rather limited though, the keysets must follow a specific
+repeated equi-distant pattern to be recognized. If more than 80% of
+the keys have the same distance a perfect hash can be generated.  For
+generic numeric keysets we need to wait for proper MPH functionality,
+with the CHM or BDZ algorithms.  I.e. we currently detect
+[0,2,4,6,8,10,12,14,16,18,19] or [5,6,7,8,9,10,...] or
+[100,200,300,400,500,...] properly and create efficient hash functions for
+these.
+See Sigrid J. Neumann's @url{https://programming.sirrida.de/hashing.html}.
 
 @item 
 The size of the generate static keyword array can get @emph{extremely}
@@ -1414,15 +1486,45 @@ worthwhile improvements include:
 @item 
 Another useful extension involves modifying the program to generate
 ``minimal'' perfect hash functions (under certain circumstances, the
-current version can be rather extravagant in the generated table size).
-This is mostly of theoretical interest, since a sparse table
-often produces faster lookups, and use of the @samp{-S} @code{switch}
-option can minimize the data size, at the expense of slightly longer
-lookups (note that the gcc compiler generally produces good code for
-@code{switch} statements, reducing the need for more complex schemes).
+current version can be rather extravagant in the generated table
+size).  This is mostly of interest for very large keysets only, since
+a sparse table often produces faster lookups, and use of the @samp{-S}
+@code{switch} option can minimize the data size, at the expense of
+slightly longer lookups (note that the gcc compiler generally produces
+good code for dense @code{switch} statements, reducing the need for
+more complex schemes). But large sparse keysets are not yet optimized
+to perfect hashes with constant lookups in production compilers. They
+use either jump tables with extravagant sizes or elseif chains with
+linear lookup time. Conversion of switches to perfect hashes would
+guarantee optimal size and constant lookup time.
 
 @item
-In addition to improving the algorithm, it would also be useful to
+Add the CHM algorithm to create order-preserving optimal minimal
+perfect hashes, which can efficiently deal with huge input, using 2
+nested table lookups. These hashes can even afford to exclude the
+keyset from the function, and use an external keyset instead.
+Order-preservation also allows to implement fast paging, as in B-Trees
+used in databases.
+
+@item
+Add the CHM3 variant which uses 3 table lookups with much smaller
+tables, thus trades size over speed.
+
+@item
+Add the BDZ algorithm to create slower non-order preserving,
+optimal minimal perfect hashes, which can efficiently deal with huge
+input, with best-known code sizes.
+
+@item
+With the CHM variants add support for @samp{-N NONE} or
+@samp{%omit-lookup-function} or @samp{%lookup-function-name NONE},
+which might be useful if you are sure that you only lookup known
+keywords (no false-positives) or do the false-positive verification
+by yourself. With CHM the returned hash is the index into the keyword
+array.
+
+@item
+In addition to improving the algorithms, it would also be useful to
 generate an Ada package as the code output, in addition to the current
 C and C++ routines.
 @end itemize
