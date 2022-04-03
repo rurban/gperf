@@ -191,7 +191,7 @@ Output::num_hash_values () const
 struct Output_Constants
 {
   virtual void          output_start () = 0;
-  virtual void          output_item (const char *name, int value) = 0;
+  virtual void          output_item (const char *name, const int value) = 0;
   virtual void          output_end () = 0;
                         Output_Constants () {}
   virtual               ~Output_Constants () {}
@@ -202,7 +202,7 @@ struct Output_Constants
 struct Output_Defines : public Output_Constants
 {
   virtual void          output_start ();
-  virtual void          output_item (const char *name, int value);
+  virtual void          output_item (const char *name, const int value);
   virtual void          output_item (const char *name, const long value);
   virtual void          output_end ();
                         Output_Defines () {}
@@ -214,7 +214,7 @@ void Output_Defines::output_start ()
   printf ("\n");
 }
 
-void Output_Defines::output_item (const char *name, int value)
+void Output_Defines::output_item (const char *name, const int value)
 {
   printf ("#define %s %d\n", name, value);
 }
@@ -233,7 +233,7 @@ void Output_Defines::output_end ()
 struct Output_Enum : public Output_Constants
 {
   virtual void          output_start ();
-  virtual void          output_item (const char *name, int value);
+  virtual void          output_item (const char *name, const int value);
   virtual void          output_end ();
                         Output_Enum (const char *indent)
                           : _indentation (indent) {}
@@ -251,7 +251,7 @@ void Output_Enum::output_start ()
   _pending_comma = false;
 }
 
-void Output_Enum::output_item (const char *name, int value)
+void Output_Enum::output_item (const char *name,  const int value)
 {
   if (_pending_comma)
     printf (",\n");
@@ -269,12 +269,16 @@ void Output_Enum::output_end ()
 /* Outputs a constant in the given style.  */
 
 static void
-output_constant (struct Output_Constants& style, const char *name, int value)
+output_constant (struct Output_Constants& style, const char *name, const int value)
 {
   const char *prefix = option.get_constants_prefix ();
-  DYNAMIC_ARRAY (combined_name, char, strlen (prefix) + strlen (name) + 1);
-  strcpy (combined_name, prefix);
-  strcpy (combined_name + strlen (prefix), name);
+  const size_t sz = strlen (prefix);
+  DYNAMIC_ARRAY (combined_name, char, sz + strlen (name) + 1);
+  if (!combined_name)
+      return;
+  if (sz)
+      strcpy (combined_name, prefix);
+  strcpy (combined_name + sz, name);
   style.output_item (combined_name, value);
   FREE_DYNAMIC_ARRAY (combined_name);
 }
@@ -283,9 +287,13 @@ static void
 output_constant (struct Output_Constants& style, const char *name, const long value)
 {
   const char *prefix = option.get_constants_prefix ();
-  DYNAMIC_ARRAY (combined_name, char, strlen (prefix) + strlen (name) + 1);
-  strcpy (combined_name, prefix);
-  strcpy (combined_name + strlen (prefix), name);
+  const size_t sz = strlen (prefix);
+  DYNAMIC_ARRAY (combined_name, char, sz + strlen (name) + 1);
+  if (!combined_name)
+      return;
+  if (sz)
+      strcpy (combined_name, prefix);
+  strcpy (combined_name + sz, name);
   style.output_item (combined_name, value);
   FREE_DYNAMIC_ARRAY (combined_name);
 }
