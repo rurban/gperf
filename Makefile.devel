@@ -33,6 +33,7 @@ src/config.h.in : src/configure.ac aclocal.m4
 
 totally-clean : force
 	rm -f $(CONFIGURES)
+	rm -f {,src,lib,doc,tests}/Makefile
 	rm -f src/config.h.in
 
 force :
