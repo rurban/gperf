@@ -156,6 +156,7 @@ Search::prepare ()
   _total_keys = 0;
   _max_key_len = INT_MIN;
   _min_key_len = INT_MAX;
+  _intkeys = false;
   _max_intkey = LONG_MIN;
   _min_intkey = LONG_MAX;
   _distance   = 0;
@@ -170,6 +171,8 @@ Search::prepare ()
         _max_key_len = keyword->_allchars_length;
       if (_min_key_len > keyword->_allchars_length)
         _min_key_len = keyword->_allchars_length;
+      if (!maybe_hex && !maybe_int)
+        continue;
       if (!maybe_hex ||
           keyword->_allchars_length < 2 ||
           strncmp(keyword->_allchars, "0x", 2))
@@ -211,7 +214,9 @@ Search::prepare ()
     }
 
   if (maybe_int || maybe_hex)
-    _intkeys = true; // for intkeys we need some more statistics.
+    {
+      _intkeys = true; // for intkeys we need some more statistics.
+    }
 
   /* Exit program if an empty string is used as keyword, since the comparison
      expressions don't work correctly for looking up an empty string.  */
@@ -225,7 +230,7 @@ Search::prepare ()
 
   /* Exit program if the characters in the keywords are not in the required
      range.  */
-  if (!_intkeys && option[SEVENBIT])
+  if (_intkeys == false && option[SEVENBIT])
     {
       for (KeywordExt_List *temp = _head; temp; temp = temp->rest())
         {
@@ -892,7 +897,8 @@ Search::prepare_asso_values ()
             _total_duplicates++;
             _list_len--;
             /* Remove keyword from the main list.  */
-            prev->rest() = temp->rest();
+            if (prev)
+              prev->rest() = temp->rest();
             garbage = temp;
             /* And insert it on other_keyword's duplicate list.  */
             keyword->_duplicate_link = other_keyword->_duplicate_link;

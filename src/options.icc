@@ -25,7 +25,7 @@
 INLINE bool
 Options::operator[] (Option_Type option) const
 {
-  return _option_word & option;
+  return (_option_word & option) == option;
 }
 
 /* Sets a given boolean option.  */

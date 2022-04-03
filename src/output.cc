@@ -272,9 +272,11 @@ static void
 output_constant (struct Output_Constants& style, const char *name, int value)
 {
   const char *prefix = option.get_constants_prefix ();
-  DYNAMIC_ARRAY (combined_name, char, strlen (prefix) + strlen (name) + 1);
-  strcpy (combined_name, prefix);
-  strcpy (combined_name + strlen (prefix), name);
+  const size_t sz = strlen (prefix);
+  DYNAMIC_ARRAY (combined_name, char, sz + strlen (name) + 1);
+  if (sz)
+      strcpy (combined_name, prefix);
+  strcpy (combined_name + sz, name);
   style.output_item (combined_name, value);
   FREE_DYNAMIC_ARRAY (combined_name);
 }
@@ -283,9 +285,11 @@ static void
 output_constant (struct Output_Constants& style, const char *name, const long value)
 {
   const char *prefix = option.get_constants_prefix ();
-  DYNAMIC_ARRAY (combined_name, char, strlen (prefix) + strlen (name) + 1);
-  strcpy (combined_name, prefix);
-  strcpy (combined_name + strlen (prefix), name);
+  const size_t sz = strlen (prefix);
+  DYNAMIC_ARRAY (combined_name, char, sz + strlen (name) + 1);
+  if (sz)
+      strcpy (combined_name, prefix);
+  strcpy (combined_name + sz, name);
   style.output_item (combined_name, value);
   FREE_DYNAMIC_ARRAY (combined_name);
 }
