@@ -49,7 +49,7 @@ TEXI2DVI = texi2dvi
 DVIPS = dvips -D600
 TEXI2PDF = texi2pdf
 MAKEINFO = LANG= LC_MESSAGES= LC_ALL= LANGUAGE= makeinfo
-TEXI2HTML = perl $(srcdir)/texi2html
+TEXI2HTML = perl texi2html
 TEXI2ANY = texi2any
 
 # Programs used by "make install":
