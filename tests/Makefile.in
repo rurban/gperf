@@ -142,6 +142,21 @@ check-smtp:
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o smtp smtp.c
 	./smtp
 
+# check for intkeys, first the easy ones without duplicates
+check-intkeys: test.$(OBJEXT)
+	$(GPERF) < $(srcdir)/int1.gperf > int1.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o int1 int1.c test.$(OBJEXT)
+	sed -e '1,3d' < $(srcdir)/int1.gperf | ./int1 -v | LC_ALL=C tr -d '\r' > int1.out
+	$(DIFF) $(srcdir)/int1.exp int1.out
+	$(GPERF) < $(srcdir)/int2.gperf > int2.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o int2 int2.c test.$(OBJEXT)
+	sed -e '1,3d' < $(srcdir)/int2.gperf | ./int2 -v | LC_ALL=C tr -d '\r' > int2.out
+	$(DIFF) $(srcdir)/int2.exp int2.out
+	$(GPERF) < $(srcdir)/hex1.gperf > hex1.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o hex1 hex1.c test.$(OBJEXT)
+	sed -e '1,3d' < $(srcdir)/hex1.gperf | ./hex1 -v | LC_ALL=C tr -d '\r' > hex1.out
+	$(DIFF) $(srcdir)/hex1.exp hex1.out
+
 # these next 5 are demos that show off the generated code
 POSTPROCESS_FOR_MINGW = LC_ALL=C tr -d '\r' | LC_ALL=C sed -e 's|[^ ]*[/\\][\\]*src[/\\][\\]*gperf[^ ]*|../src/gperf|'
 check-test: check-ada
@@ -384,6 +399,9 @@ SOURCE_FILES = \
   jstest2.gperf \
   jstest3.gperf \
   jstest4.gperf \
+  int1.gperf \
+  int2.gperf \
+  hex1.gperf \
   confusables.gperf \
   verilog.gperf \
   c++.gperf irc.gperf jscript.gperf makeinfo.gperf
