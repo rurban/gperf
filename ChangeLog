@@ -1,3 +1,14 @@
+2022-07-05  Bruno Haible  <bruno@clisp.org>
+
+	Add support for reproducible builds.
+	Suggested by Richard Purdie <richard.purdie@linuxfoundation.org> in
+	<https://lists.gnu.org/archive/html/bug-gperf/2022-07/msg00000.html>.
+	* autogen.sh: Import also lib/filename.h.
+	* Makefile.in (IMPORTED_FILES): Add lib/filename.h.
+	* src/options.cc: Include filename.h.
+	(Options::print_options): Print only the base name of the program name.
+	* tests/*.exp: Update.
+
 2022-05-22  Bruno Haible  <bruno@clisp.org>
 
 	Add GNU Project notice.

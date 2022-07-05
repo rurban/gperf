@@ -26,6 +26,7 @@
 #include <string.h> /* declares strcmp() */
 #include <ctype.h>  /* declares isdigit() */
 #include <limits.h> /* defines CHAR_MAX */
+#include "filename.h"
 #include "getopt.h"
 #include "version.h"
 
@@ -279,6 +280,16 @@ Options::print_options () const
   for (int i = 0; i < _argument_count; i++)
     {
       const char *arg = _argument_vector[i];
+
+      if (i == 0)
+        {
+          /* _argument_vector[0] is the program name.  Print only its base name.
+             This is useful for reproducible builds.  */
+          const char *p = arg + strlen (arg);
+          while (p > arg && ! ISSLASH (p[-1]))
+            p--;
+          arg = p;
+        }
 
       /* Escape arg if it contains shell metacharacters.  */
       if (*arg == '-')
