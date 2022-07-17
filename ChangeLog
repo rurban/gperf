@@ -1,3 +1,10 @@
+2022-07-17  Bruno Haible  <bruno@clisp.org>
+
+	Split autogen.sh into autopull.sh and autogen.sh.
+	* autopull.sh: New file, based on autogen.sh.
+	* autogen.sh: Remove code that was moved to autopull.sh.
+	* Makefile.in (SOURCE_FILES): Add autogen.sh.
+
 2022-07-05  Bruno Haible  <bruno@clisp.org>
 
 	Add support for reproducible builds.
