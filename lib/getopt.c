@@ -3,7 +3,7 @@
    "Keep this file name-space clean" means, talk to drepper@gnu.org
    before changing it!
 
-   Copyright (C) 1987-1998, 2009, 2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-1998, 2009, 2016, 2022 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -194,7 +194,6 @@ static char *posixly_correct;
    whose names are inconsistent.  */
 
 extern char *getenv ();
-extern int strncmp ();
 
 static char *
 my_index (const char *str, int chr)
@@ -209,6 +208,7 @@ my_index (const char *str, int chr)
 }
 
 extern int strcmp (const char *, const char *);
+extern int strncmp (const char *, const char *, size_t);
 extern size_t strlen (const char *);
 
 #endif /* not __GNU_LIBRARY__ */

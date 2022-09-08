@@ -1,3 +1,9 @@
+2022-09-08  Bruno Haible  <bruno@clisp.org>
+
+	Fix a warning regarding strncmp.
+	Reported by Sam James in <https://savannah.gnu.org/bugs/?63031>.
+	* lib/getopt.c (strncmp): Declare with a prototype.
+
 2022-07-17  Bruno Haible  <bruno@clisp.org>
 
 	Split autogen.sh into autopull.sh and autogen.sh.
