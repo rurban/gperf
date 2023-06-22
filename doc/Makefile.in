@@ -48,7 +48,7 @@ TEX = tex
 TEXI2DVI = texi2dvi
 DVIPS = dvips -D600
 TEXI2PDF = texi2pdf
-MAKEINFO = LANG= LC_MESSAGES= LC_ALL= LANGUAGE= makeinfo
+MAKEINFO = LANG= LC_MESSAGES= LC_ALL= LANGUAGE= makeinfo -c CHECK_NORMAL_MENU_STRUCTURE=1
 TEXI2HTML = perl $(srcdir)/texi2html
 TEXI2ANY = texi2any
 
