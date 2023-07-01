@@ -1,3 +1,13 @@
+2023-07-01  Bruno Haible  <bruno@clisp.org>
+
+	doc: Tweaks.
+	Reported by Laurent Lyaudet <laurent.lyaudet@gmail.com> in
+	<https://lists.gnu.org/archive/html/bug-gperf/2023-06/msg00000.html>.
+	* doc/gperf.texi: Update copyright year. Fix some typos.
+	(Bugs): Don't use the term "recent enhancements", since that's over
+	20 years ago. Don't mention RAM requirements, since the execution time
+	is the bigger inconvenience nowadays.
+
 2023-06-29  Bruno Haible  <bruno@clisp.org>
 
 	Update the installation instructions for Windows.

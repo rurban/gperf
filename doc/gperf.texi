@@ -17,7 +17,7 @@
 
 @c some day we should @include version.texi instead of defining
 @c these values at hand.
-@set UPDATED 5 January 2022
+@set UPDATED 1 July 2023
 @set EDITION 3.2
 @set VERSION 3.2
 @c ---------------------
@@ -40,7 +40,7 @@
 This file documents the features of the GNU Perfect Hash Function
 Generator @value{VERSION}.
 
-Copyright @copyright{} 1989-2018 Free Software Foundation, Inc.
+Copyright @copyright{} 1989-2023 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
@@ -78,7 +78,7 @@ Software Foundation instead of in the original English.
 
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1989-2018 Free Software Foundation, Inc.
+Copyright @copyright{} 1989-2023 Free Software Foundation, Inc.
 
 
 Permission is granted to make and distribute verbatim copies of
@@ -915,7 +915,7 @@ You control its name through the option @samp{-Z} (or, equivalently, the
 Allowing multiple @code{gperf} generated codes in a single compilation unit.
 
 Assume you invoke @code{gperf} multiple times, with different input files,
-and want the generated code to included from the same source file.  In this
+and want the generated code to be included from the same source file.  In this
 case, you have to customize not only the exported identifiers, but also the
 names of functions with @samp{static} scope, types, and constants.
 
@@ -955,7 +955,7 @@ On the other hand, the output produced by @code{gperf} contains
 essentially all of the input file.  Therefore the output is a
 ``derivative work'' of the input (in the sense of U.S.@: copyright law);
 and its copyright status depends on the copyright of the input.  For most
-software licenses, the result is that the the output is under the same
+software licenses, the result is that the output is under the same
 license, with the same copyright holder, as the input that was passed to
 @code{gperf}.
 
@@ -1337,9 +1337,9 @@ associated value influences the static array table size, and a larger
 table should decrease the time required for an unsuccessful search, at
 the expense of extra table space.
 
-The default value is 1, thus the default maximum associated value about
-the same size as the number of keywords (for efficiency, the maximum
-associated value is always rounded up to a power of 2).  The actual
+The default value is 1, thus the default maximum associated value is about
+the same size as the number of keywords.  (For efficiency, the maximum
+associated value is always rounded up to a power of 2.)  The actual
 table size may vary somewhat, since this technique is essentially a
 heuristic.
 @end table
@@ -1378,10 +1378,8 @@ The following are some limitations with the current release of
 The @code{gperf} utility is tuned to execute quickly, and works quickly
 for small to medium size data sets (around 1000 keywords).  It is
 extremely useful for maintaining perfect hash functions for compiler
-keyword sets.  Several recent enhancements now enable @code{gperf} to
-work efficiently on much larger keyword sets (over 15,000 keywords).
-When processing large keyword sets it helps greatly to have over 8 megs
-of RAM.
+keyword sets.  Since version 3.0, @code{gperf} also works
+efficiently on much larger keyword sets (over 15,000 keywords).
 
 @item 
 The size of the generate static keyword array can get @emph{extremely}
@@ -1389,7 +1387,7 @@ large if the input keyword file is large or if the keywords are quite
 similar.  This tends to slow down the compilation of the generated C
 code, and @emph{greatly} inflates the object code size.  If this
 situation occurs, consider using the @samp{-S} option to reduce data
-size, potentially increasing keyword recognition time a negligible
+size, potentially increasing the keyword recognition time by a negligible
 amount.  Since many C compilers cannot correctly generate code for
 large switch statements it is important to qualify the @var{-S} option
 with an appropriate numerical argument that controls the number of
