@@ -1,3 +1,15 @@
+2023-07-08  Bruno Haible  <bruno@clisp.org>
+
+	Avoid "gcc -Wunused-parameter" warnings on the generated hash function.
+	Reported by Vinícius dos Santos Oliveira <vini.ipsmaker@gmail.com> in
+	<https://savannah.gnu.org/bugs/index.php?64393>.
+	* src/output.cc (Output::output_hash_function): If str is not used, emit
+	a cast from str to void. If len is not used, emit a cast from len to
+	void.
+	* tests/permut2.exp: Update.
+	* tests/permut3.exp: Likewise.
+	* tests/permutc2.exp: Likewise.
+
 2023-07-01  Bruno Haible  <bruno@clisp.org>
 
 	doc: Tweaks.

@@ -1,5 +1,5 @@
 /* Output routines.
-   Copyright (C) 1989-1998, 2000, 2002-2004, 2006-2007, 2009, 2011-2012, 2016, 2018, 2021 Free Software Foundation, Inc.
+   Copyright (C) 1989-1998, 2000, 2002-2004, 2006-2007, 2009, 2011-2012, 2016, 2018, 2021, 2023 Free Software Foundation, Inc.
    Written by Douglas C. Schmidt <schmidt@ics.uci.edu>
    and Bruno Haible <bruno@clisp.org>.
 
@@ -815,12 +815,15 @@ Output::output_hash_function () const
             "#endif\n"
             "#endif\n");
 
-  if (/* The function does not use the 'str' argument?  */
-      _key_positions.get_size() == 0
-      || /* The function uses 'str', but not the 'len' argument?  */
-         (!_hash_includes_len
-          && _key_positions[0] < _min_key_len
-          && _key_positions[_key_positions.get_size() - 1] != Positions::LASTCHAR))
+  /* Does the function use the 'str' argument?  */
+  bool uses_str = (_key_positions.get_size() > 0);
+  /* Does the function use the 'len' argument?  */
+  bool uses_len =
+     (_hash_includes_len
+      || (_key_positions.get_size() > 0
+          && (_key_positions[0] >= _min_key_len
+              || _key_positions[_key_positions.get_size() - 1] == Positions::LASTCHAR)));
+  if (!uses_str || !uses_len)
     /* Pacify lint.  */
     printf ("/*ARGSUSED*/\n");
 
@@ -830,6 +833,9 @@ Output::output_hash_function () const
   if (option[CPLUSPLUS])
     printf ("%s::", option.get_class_name ());
   printf ("%s ", option.get_hash_name ());
+  /* We better not use [[__maybe_unused__]] or __attribute__ ((__unused__))
+     because support for these syntaxes in the compilers is constantly
+     changing.  */
   printf (option[KRC] ?
                  "(str, len)\n"
             "     %schar *str;\n"
@@ -878,6 +884,15 @@ Output::output_hash_function () const
       printf ("\n"
               "    };\n");
     }
+
+  if (!uses_str)
+    /* The function does not use the 'str' argument.
+       Silence "gcc -Wunused-parameter".  */
+    printf ("  (void) str;\n");
+  if (!uses_len)
+    /* The function does not use the 'len' argument.
+       Silence "gcc -Wunused-parameter".  */
+    printf ("  (void) len;\n");
 
   if (_key_positions.get_size() == 0)
     {
