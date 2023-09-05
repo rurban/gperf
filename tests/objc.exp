@@ -101,6 +101,10 @@ hash (register const char *str, register size_t len)
 struct resword *
 is_reserved_word (register const char *str, register size_t len)
 {
+#if (defined __GNUC__ && __GNUC__ + (__GNUC_MINOR__ >= 6) > 4) || (defined __clang__ && __clang_major__ >= 3)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif
   static struct resword wordlist[] =
     {
       {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""},
@@ -174,6 +178,9 @@ is_reserved_word (register const char *str, register size_t len)
       {""}, {""}, {""}, {""}, {""},
       {"void", TYPESPEC, RID_VOID}
     };
+#if (defined __GNUC__ && __GNUC__ + (__GNUC_MINOR__ >= 6) > 4) || (defined __clang__ && __clang_major__ >= 3)
+#pragma GCC diagnostic pop
+#endif
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
     {

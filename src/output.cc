@@ -1282,9 +1282,23 @@ output_keyword_blank_entries (int count, const char *indent)
 void
 Output::output_keyword_table () const
 {
-  const char *indent  = option[GLOBAL] ? "" : "  ";
+  const char *indent = option[GLOBAL] ? "" : "  ";
   int index;
   KeywordExt_List *temp;
+
+  /* Avoid compiler warnings "warning: missing initializer for field ..."
+     for each of the blank entries.  */
+  bool silence_missing_initializer_warning =
+    option[TYPE] && !option.has_initializer_suffix();
+  const char *preprocessor_condition =
+    "(defined __GNUC__ && __GNUC__ + (__GNUC_MINOR__ >= 6) > 4) || (defined __clang__ && __clang_major__ >= 3)";
+  if (silence_missing_initializer_warning)
+    {
+      printf ("#if %s\n", preprocessor_condition);
+      printf ("#pragma GCC diagnostic push\n");
+      printf ("#pragma GCC diagnostic ignored \"-Wmissing-field-initializers\"\n");
+      printf ("#endif\n");
+    }
 
   printf ("%sstatic ",
           indent);
@@ -1341,7 +1355,15 @@ Output::output_keyword_table () const
   if (index > 0)
     printf ("\n");
 
-  printf ("%s  };\n\n", indent);
+  printf ("%s  };\n", indent);
+
+  if (silence_missing_initializer_warning)
+    {
+      printf ("#if %s\n", preprocessor_condition);
+      printf ("#pragma GCC diagnostic pop\n");
+      printf ("#endif\n");
+    }
+  printf ("\n");
 }
 
 /* ------------------------------------------------------------------------- */

@@ -1,5 +1,5 @@
 /* Handles parsing the Options provided to the user.
-   Copyright (C) 1989-1998, 2000, 2002-2004, 2006-2009, 2011, 2016-2018, 2022 Free Software Foundation, Inc.
+   Copyright (C) 1989-1998, 2000, 2002-2004, 2006-2009, 2011, 2016-2018, 2022-2023 Free Software Foundation, Inc.
    Written by Douglas C. Schmidt <schmidt@ics.uci.edu>
    and Bruno Haible <bruno@clisp.org>.
 
@@ -625,6 +625,13 @@ Options::set_slot_name (const char *name)
 {
   if (_slot_name == DEFAULT_SLOT_NAME)
     _slot_name = name;
+}
+
+/* Returns true if the struct initializer suffix has been set.  */
+bool
+Options::has_initializer_suffix () const
+{
+  return _initializer_suffix != DEFAULT_INITIALIZER_SUFFIX;
 }
 
 /* Sets the struct initializer suffix, if not already set.  */

@@ -1,3 +1,19 @@
+2023-09-05  Bruno Haible  <bruno@clisp.org>
+
+	Avoid "gcc -Wmissing-field-initializers" warnings on the generated code.
+	* src/options.h (Options::has_initializer_suffix): New declaration.
+	* src/options.cc (Options::has_initializer_suffix): New function.
+	* src/output.cc (Output::output_keyword_table): If option -t is
+	specified and option -F is not specified, emit '#pragma GCC diagnostic'
+	lines, to silence -Wmissing-field-initializers warnings from gcc or
+	clang.
+	* tests/charsets.exp: Update.
+	* tests/gpc.exp: Likewise.
+	* tests/incomplete.exp: Likewise.
+	* tests/languages.exp: Likewise.
+	* tests/objc.exp: Likewise.
+	* tests/test-4.exp: Likewise.
+
 2023-07-08  Bruno Haible  <bruno@clisp.org>
 
 	Avoid "gcc -Wunused-parameter" warnings on the generated hash function.

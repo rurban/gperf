@@ -2,7 +2,7 @@
 
 /* Handles parsing the Options provided to the user.
 
-   Copyright (C) 1989-1998, 2000, 2002-2004, 2011 Free Software Foundation, Inc.
+   Copyright (C) 1989-1998, 2000, 2002-2004, 2011, 2023 Free Software Foundation, Inc.
    Written by Douglas C. Schmidt <schmidt@ics.uci.edu>
    and Bruno Haible <bruno@clisp.org>.
 
@@ -174,6 +174,8 @@ public:
 
   /* Returns the struct initializer suffix.  */
   const char *          get_initializer_suffix () const;
+  /* Returns true if the struct initializer suffix has been set.  */
+  bool                  has_initializer_suffix () const;
   /* Sets the struct initializer suffix, if not already set.  */
   void                  set_initializer_suffix (const char *initializers);
 
