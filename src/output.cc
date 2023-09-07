@@ -953,9 +953,9 @@ Output::output_hash_function () const
           /* Pseudo-statement or comment that avoids a compiler warning or
              lint warning.  */
           const char * const fallthrough_marker =
-            "#if defined __cplusplus && (__cplusplus >= 201703L || (__cplusplus >= 201103L && defined __clang_major__ && defined __clang_minor__ && __clang_major__ + (__clang_minor__ >= 9) > 3))\n"
+            "#if (defined __cplusplus && (__cplusplus >= 201703L || (__cplusplus >= 201103L && defined __clang__ && __clang_major__ + (__clang_minor__ >= 9) > 3))) || (__STDC_VERSION__ >= 202000L && ((defined __GNUC__ && __GNUC__ >= 10) || (defined __clang__ && __clang_major__ >= 9)))\n"
             "      [[fallthrough]];\n"
-            "#elif defined __GNUC__ && __GNUC__ >= 7\n"
+            "#elif (defined __GNUC__ && __GNUC__ >= 7) || (defined __clang__ && __clang_major__ >= 10)\n"
             "      __attribute__ ((__fallthrough__));\n"
             "#endif\n"
             "      /*FALLTHROUGH*/\n";

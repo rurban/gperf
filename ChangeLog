@@ -1,3 +1,10 @@
+2023-09-07  Bruno Haible  <bruno@clisp.org>
+
+	Avoid "clang -Wimplicit-fallthrough" warnings also in C mode.
+	* src/output.cc (Output::output_hash_function): Enhance the fallthrough
+	marker, to include clang >= 10 in C mode.
+	* tests/*.exp: Update.
+
 2023-09-05  Bruno Haible  <bruno@clisp.org>
 
 	Avoid "gcc -Wmissing-field-initializers" warnings on the generated code.
