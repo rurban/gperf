@@ -1,5 +1,11 @@
 2023-09-07  Bruno Haible  <bruno@clisp.org>
 
+	Fix "make extracheck" failure (regression 2016-11-27).
+	* tests/validate (KR-C): Remove the test against ' const ', since the
+	input files jstest*.gperf now contain 'const' keywords.
+
+2023-09-07  Bruno Haible  <bruno@clisp.org>
+
 	Avoid "clang -Wimplicit-fallthrough" warnings also in C mode.
 	* src/output.cc (Output::output_hash_function): Enhance the fallthrough
 	marker, to include clang >= 10 in C mode.

@@ -24,7 +24,6 @@ for lang in `echo $languages | sed -e 's/,/ /g'`; do
     KR-C )
       echo "${GPERF} -I -L KR-C $@ > valitest.c"
       ${GPERF} -I -L KR-C "$@" > valitest.c
-      grep -n ' const ' valitest.c /dev/null && exit 1
       if test $use_traditional = true; then
         verbose ${CC} ${CFLAGS} ${CPPFLAGS} -traditional valitest.c -o valitest
         ./valitest
