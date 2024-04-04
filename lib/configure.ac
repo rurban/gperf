@@ -1,6 +1,6 @@
 dnl autoconf configuration for gperf/lib
 
-dnl Copyright (C) 1998-2020 Free Software Foundation, Inc.
+dnl Copyright (C) 1998-2024 Free Software Foundation, Inc.
 dnl Written by Douglas C. Schmidt <schmidt@ics.uci.edu>
 dnl and Bruno Haible <bruno@clisp.org>.
 dnl
@@ -38,7 +38,7 @@ AC_CHECK_TOOL([AR], [ar])
                       dnl sets variable AR
 AC_PROG_RANLIB
                       dnl sets variable RANLIB
-CL_PROG_INSTALL
+AC_PROG_INSTALL
                       dnl sets variables INSTALL, INSTALL_DATA, INSTALL_PROGRAM
 dnl
 dnl           That's it.

@@ -1,6 +1,6 @@
 dnl autoconf configuration for gperf/doc
 
-dnl Copyright (C) 1998-2020 Free Software Foundation, Inc.
+dnl Copyright (C) 1998-2024 Free Software Foundation, Inc.
 dnl Written by Douglas C. Schmidt <schmidt@ics.uci.edu>
 dnl and Bruno Haible <bruno@clisp.org>.
 dnl
@@ -28,7 +28,7 @@ AC_PROG_MAKE_SET
 dnl
 dnl           checks for programs
 dnl
-CL_PROG_INSTALL
+AC_PROG_INSTALL
                       dnl sets variables INSTALL, INSTALL_DATA, INSTALL_PROGRAM
 dnl
 dnl           That's it.

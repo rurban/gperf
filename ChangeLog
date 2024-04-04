@@ -1,3 +1,11 @@
+2024-04-04  Bruno Haible  <bruno@clisp.org>
+
+	Remove outdated Autoconf macro.
+	* aclocal.m4 (CL_PROG_INSTALL): Remove macro.
+	* doc/configure.ac: Invoke AC_PROG_INSTALL instead of CL_PROG_INSTALL.
+	* lib/configure.ac: Likewise.
+	* src/configure.ac: Likewise.
+
 2023-12-30  Bruno Haible  <bruno@clisp.org>
 
 	Mark autoconf 2.72 as supported.
