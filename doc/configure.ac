@@ -22,6 +22,7 @@ dnl along with this program.  If not, see <https://www.gnu.org/licenses/>.
 AC_PREREQ([2.64])
 AC_INIT
 AC_CONFIG_SRCDIR([gperf.texi])
+AC_CONFIG_AUX_DIR([../build-aux])
 PACKAGE=gperf
 AC_SUBST([PACKAGE])
 AC_PROG_MAKE_SET
