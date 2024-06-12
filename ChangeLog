@@ -1,3 +1,8 @@
+2024-06-12  Collin Funk  <collin.funk1@gmail.com>
+
+	doc: Make the detailed menu title appear as intended.
+	* doc/gperf.texi (Top): Add a line break after @detailmenu.
+
 2024-06-05  Bruno Haible  <bruno@clisp.org>
 
 	Fix build (regression 2024-04-04).

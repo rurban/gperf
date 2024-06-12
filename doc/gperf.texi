@@ -126,7 +126,8 @@ bugs.
 
 * Concept Index::               
 
-@detailmenu --- The Detailed Node Listing ---
+@detailmenu
+--- The Detailed Node Listing ---
 
 High-Level Description of GNU @code{gperf}
 
