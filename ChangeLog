@@ -1,5 +1,12 @@
 2024-07-21  Bruno Haible  <bruno@clisp.org>
 
+	build: Fix VPATH builds.
+	* doc/Makefile.in (TEXINFO): Look up texi2html in the current directory.
+	(gperf.1): Look up help2man in the source directory. Generate gperf.1 in
+	the source directory.
+
+2024-07-21  Bruno Haible  <bruno@clisp.org>
+
 	build: Fix use of perl on Guix, FreeBSD, NetBSD.
 	* doc/help2man: Search for perl in $PATH.
 

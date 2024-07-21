@@ -49,7 +49,7 @@ TEXI2DVI = texi2dvi
 DVIPS = dvips -D600
 TEXI2PDF = texi2pdf
 MAKEINFO = LANG= LC_MESSAGES= LC_ALL= LANGUAGE= makeinfo -c CHECK_NORMAL_MENU_STRUCTURE=1
-TEXI2HTML = perl $(srcdir)/texi2html
+TEXI2HTML = perl texi2html
 TEXI2ANY = texi2any
 
 # Programs used by "make install":
@@ -114,7 +114,7 @@ gperf_0.html : $(srcdir)/gperf.texi $(srcdir)/gpl-3.0.texi
 man : gperf.1
 
 gperf.1 gperf.1-update :
-	./help2man --name='generate a perfect hash function from a key set' --section=1 ../src/gperf > gperf.1
+	$(srcdir)/help2man --name='generate a perfect hash function from a key set' --section=1 ../src/gperf > $(srcdir)/gperf.1
 
 gperf.1-update : force
 
