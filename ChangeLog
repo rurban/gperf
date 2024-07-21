@@ -1,5 +1,11 @@
 2024-07-21  Bruno Haible  <bruno@clisp.org>
 
+	build: Don't leave an empty gperf.1 on disk if help2man fails.
+	* doc/Makefile.in (gperf.1): Use a temporary file.
+	(clean): Remove this temporary file.
+
+2024-07-21  Bruno Haible  <bruno@clisp.org>
+
 	build: Fix VPATH builds.
 	* doc/Makefile.in (TEXINFO): Look up texi2html in the current directory.
 	(gperf.1): Look up help2man in the source directory. Generate gperf.1 in

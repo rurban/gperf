@@ -114,7 +114,8 @@ gperf_0.html : $(srcdir)/gperf.texi $(srcdir)/gpl-3.0.texi
 man : gperf.1
 
 gperf.1 gperf.1-update :
-	$(srcdir)/help2man --name='generate a perfect hash function from a key set' --section=1 ../src/gperf > $(srcdir)/gperf.1
+	$(srcdir)/help2man --name='generate a perfect hash function from a key set' --section=1 ../src/gperf > gperf.1-t \
+	&& mv gperf.1-t $(srcdir)/gperf.1
 
 gperf.1-update : force
 
@@ -154,7 +155,7 @@ check : all
 mostlyclean : clean
 
 clean : force
-	$(RM) *~ *.aux *.toc *.cp *.fn *.ky *.pg *.tp *.vr *.my *.log *.cps core
+	$(RM) *~ *.aux *.toc *.cp *.fn *.ky *.pg *.tp *.vr *.my *.log *.cps gperf.1-t core
 
 distclean : clean
 	$(RM) config.status config.log config.cache Makefile
