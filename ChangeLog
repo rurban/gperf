@@ -1,5 +1,16 @@
 2024-07-21  Bruno Haible  <bruno@clisp.org>
 
+	build: Fix failure of "./configure; make dist".
+	* Makefile.in (srcdir, VPATH): New variables.
+	(VERSION): Refer to src/version.cc in $(srcdir).
+	(dist): Depend on doc/gperf.1.
+	(doc/gperf.1): New rule.
+	* doc/Makefile.in (DISTRIBUTED_BUILT_FILES): Remove wildcard patterns.
+	(DISTRIBUTED_BUILT_FILES_EXTRA_PATTERNS): New variable.
+	(distdir): Handle the files from DISTRIBUTED_BUILT_FILES_EXTRA_PATTERNS.
+
+2024-07-21  Bruno Haible  <bruno@clisp.org>
+
 	build: Don't leave an empty gperf.1 on disk if help2man fails.
 	* doc/Makefile.in (gperf.1): Use a temporary file.
 	(clean): Remove this temporary file.

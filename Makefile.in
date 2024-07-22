@@ -1,6 +1,6 @@
 # Makefile for gperf
 
-# Copyright (C) 1989, 1992-1993, 1998, 2012, 2016, 2018, 2020, 2022 Free Software Foundation, Inc.
+# Copyright (C) 1989, 1992-1993, 1998, 2012, 2016, 2018, 2020, 2022, 2024 Free Software Foundation, Inc.
 # Written by Douglas C. Schmidt <schmidt@ics.uci.edu>
 # and Bruno Haible <bruno@clisp.org>.
 #
@@ -21,6 +21,9 @@
 
 #### Start of system configuration section. ####
 
+# Directories used by "make":
+srcdir = @srcdir@
+
 # Programs used by "make":
 RM = rm -f
 @SET_MAKE@
@@ -28,6 +31,8 @@ RM = rm -f
 #### End of system configuration section. ####
 
 SHELL = /bin/sh
+
+VPATH = $(srcdir)
 
 all : force
 	cd @subdir@; $(MAKE) all
@@ -87,7 +92,7 @@ distdir : $(DISTFILES)
 
 # Creating a distribution tarball.
 PACKAGE = gperf
-VERSION = `sed -n -e 's/.*version_string = "\(.*\)".*/\1/p' < src/version.cc`
+VERSION = `sed -n -e 's/.*version_string = "\(.*\)".*/\1/p' < $(srcdir)/src/version.cc`
 TAR = tar
 GZIP = gzip
 
@@ -100,6 +105,13 @@ dist : force
 	  && $(TAR) chof $$tmpdistdir.tar --owner=root --group=root $$tmpdistdir \
 	  && $(GZIP) -9 $$tmpdistdir.tar \
 	  && rm -rf $$tmpdistdir
+
+# Ensure that the manual page is up-to-date when "make dist" runs.
+dist : doc/gperf.1
+doc/gperf.1: $(srcdir)/src/options.cc
+	(cd lib && $(MAKE)) \
+	  && (cd src && $(MAKE) gperf$(EXEEXT)) \
+	  && (cd doc && $(MAKE) gperf.1)
 
 force :
 
