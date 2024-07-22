@@ -109,9 +109,9 @@ dist : force
 # Ensure that the manual page is up-to-date when "make dist" runs.
 dist : doc/gperf.1
 doc/gperf.1: $(srcdir)/src/options.cc
-	(cd lib && $(MAKE)) \
-	  && (cd src && $(MAKE) gperf$(EXEEXT)) \
-	  && (cd doc && $(MAKE) gperf.1)
+	cd lib && $(MAKE)
+	cd src && $(MAKE) gperf$(EXEEXT)
+	cd doc && $(MAKE) gperf.1
 
 force :
 
