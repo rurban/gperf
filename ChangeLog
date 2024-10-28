@@ -1,3 +1,11 @@
+2024-10-28  Bruno Haible  <bruno@clisp.org>
+
+	doc: Improve text rendering in PDF output.
+	Suggested by Collin Funk <collin.funk1@gmail.com> in
+	<https://lists.gnu.org/archive/html/bug-gperf/2024-10/msg00000.html>.
+	* doc/texinfo.tex: Update from the texinfo-7.1 release.
+	* doc/gperf.texi: Override the colour for interactive links. Bump date.
+
 2024-09-01  Bruno Haible  <bruno@clisp.org>
 
 	Replace FSF snail-mail addresses with URLs.

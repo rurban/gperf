@@ -15,15 +15,22 @@
 @c @setchapternewpage odd
 @c %**end of header
 
-@c some day we should @include version.texi instead of defining
+@c Some day we should @include version.texi instead of defining
 @c these values at hand.
-@set UPDATED 1 July 2023
+@set UPDATED 28 October 2024
 @set EDITION 3.2
 @set VERSION 3.2
 @c ---------------------
 
-@c remove the black boxes generated in the GPL appendix.
+@c Remove the black boxes generated in the GPL appendix.
 @finalout
+
+@c Use a brown colour for interactive links, like it was before commit
+@c https://git.savannah.gnu.org/gitweb/?p=texinfo.git;a=commitdiff;h=b4f50b9f4c083327e81ec5c7cde9b87234a19646
+@tex
+\global\def\linkcolor{\rgbDarkRed}
+\global\def\urlcolor{\rgbDarkRed}
+@end tex
 
 @c Merge functions into the concept index
 @syncodeindex fn cp
@@ -40,7 +47,7 @@
 This file documents the features of the GNU Perfect Hash Function
 Generator @value{VERSION}.
 
-Copyright @copyright{} 1989-2023 Free Software Foundation, Inc.
+Copyright @copyright{} 1989-2024 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
@@ -78,7 +85,7 @@ Software Foundation instead of in the original English.
 
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1989-2023 Free Software Foundation, Inc.
+Copyright @copyright{} 1989-2024 Free Software Foundation, Inc.
 
 
 Permission is granted to make and distribute verbatim copies of
