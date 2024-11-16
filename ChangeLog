@@ -1,3 +1,16 @@
+2024-11-16  Bruno Haible  <bruno@clisp.org>
+
+	Avoid "-Wzero-as-null-pointer-constant" warnings on the generated code.
+	Reported in
+	<https://lists.gnu.org/archive/html/bug-gnulib/2024-11/msg00123.html>.
+	* src/output.cc (Output::output_lookup_function_body): To denote a null
+	pointer, emit a cast expression instead of plain "0".
+	* tests/c-parse.exp, tests/charsets.exp, tests/chill.exp,
+	tests/cplusplus.exp, tests/gpc.exp, tests/incomplete.exp,
+	tests/java.exp, tests/languages.exp, tests/modula2.exp, tests/objc.exp,
+	tests/permut2.exp, tests/permut3.exp, tests/permutc2.exp,
+	tests/test-4.exp: Update.
+
 2024-10-28  Bruno Haible  <bruno@clisp.org>
 
 	doc: Improve text rendering in PDF output.

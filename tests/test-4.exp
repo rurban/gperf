@@ -230,5 +230,5 @@ in_word_set (register const char *str, register size_t len)
             }
         }
     }
-  return 0;
+  return (struct resword *) 0;
 }

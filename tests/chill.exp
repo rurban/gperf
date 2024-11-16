@@ -1550,7 +1550,7 @@ in_word_set (str, len)
                 resword = &wordlist[299];
                 goto compare;
             }
-          return 0;
+          return (struct resword *) 0;
         compare:
           {
             register const char *s = resword->name;
@@ -1560,5 +1560,5 @@ in_word_set (str, len)
           }
         }
     }
-  return 0;
+  return (struct resword *) 0;
 }

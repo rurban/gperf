@@ -153,5 +153,5 @@ in_word_set (register const char *str, register size_t len)
             return s;
         }
     }
-  return 0;
+  return (const char *) 0;
 }

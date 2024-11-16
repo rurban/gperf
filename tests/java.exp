@@ -199,5 +199,5 @@ java_keyword (str, len)
             return &wordlist[key];
         }
     }
-  return 0;
+  return (struct java_keyword *) 0;
 }

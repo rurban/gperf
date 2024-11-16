@@ -194,5 +194,5 @@ is_reserved_word (register const char *str, register size_t len)
             return &wordlist[key];
         }
     }
-  return 0;
+  return (struct resword *) 0;
 }

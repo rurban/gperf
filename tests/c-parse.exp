@@ -219,5 +219,5 @@ is_reserved_word (str, len)
             return &wordlist[key];
         }
     }
-  return 0;
+  return (struct resword *) 0;
 }
