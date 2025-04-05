@@ -1,5 +1,11 @@
 2025-04-05  Bruno Haible  <bruno@clisp.org>
 
+	Release gperf-3.2.
+	* src/options.cc (Options::parse_options): Bump copyright year.
+	* NEWS: Mention a few more changes.
+
+2025-04-05  Bruno Haible  <bruno@clisp.org>
+
 	Remove all occurrences of reinterpret_cast<>.
 	* src/keyword-list.h (Keyword_List): Add template parameter list <KT>.
 	(KeywordExt_List): Define as a typedef, not as a subclass.
