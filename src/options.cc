@@ -1,5 +1,5 @@
 /* Handles parsing the Options provided to the user.
-   Copyright (C) 1989-1998, 2000, 2002-2004, 2006-2009, 2011, 2016-2018, 2022-2023 Free Software Foundation, Inc.
+   Copyright (C) 1989-1998, 2000, 2002-2004, 2006-2009, 2011, 2016-2018, 2022-2023, 2025 Free Software Foundation, Inc.
    Written by Douglas C. Schmidt <schmidt@ics.uci.edu>
    and Bruno Haible <bruno@clisp.org>.
 
@@ -279,16 +279,28 @@ Options::print_options () const
 
   for (int i = 0; i < _argument_count; i++)
     {
-      const char *arg = _argument_vector[i];
+      char *arg = _argument_vector[i];
 
       if (i == 0)
         {
-          /* _argument_vector[0] is the program name.  Print only its base name.
+          /* _argument_vector[0] is the program name.  Print only its base name,
+             and also drop its ".exe" suffix on native Windows.
              This is useful for reproducible builds.  */
-          const char *p = arg + strlen (arg);
-          while (p > arg && ! ISSLASH (p[-1]))
-            p--;
-          arg = p;
+          {
+            char *p = arg + strlen (arg);
+            while (p > arg && ! ISSLASH (p[-1]))
+              p--;
+            arg = p;
+          }
+          {
+            char *p = arg + strlen (arg);
+            if (p - arg > 4
+                && p[-4] == '.'
+                && (p[-3] == 'E' || p[-3] == 'e')
+                && (p[-2] == 'X' || p[-2] == 'x')
+                && (p[-1] == 'E' || p[-1] == 'e'))
+              p[-4] = '\0';
+          }
         }
 
       /* Escape arg if it contains shell metacharacters.  */

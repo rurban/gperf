@@ -1,3 +1,9 @@
+2025-04-05  Bruno Haible  <bruno@clisp.org>
+
+	Make output on Windows identical to output on Unix.
+	* src/options.cc (Options::print_options): Drop a ".exe" suffix from the
+	program name before printing it.
+
 2024-11-16  Bruno Haible  <bruno@clisp.org>
 
 	Avoid "-Wzero-as-null-pointer-constant" warnings on the generated code.
