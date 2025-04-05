@@ -2,7 +2,7 @@
 
 /* Input routines.
 
-   Copyright (C) 1989-1998, 2002-2003 Free Software Foundation, Inc.
+   Copyright (C) 1989-1998, 2002-2003, 2025 Free Software Foundation, Inc.
    Written by Douglas C. Schmidt <schmidt@ics.uci.edu>
    and Bruno Haible <bruno@clisp.org>.
 
@@ -27,41 +27,42 @@
 #include <stdio.h>
 #include "keyword-list.h"
 
-class Input
-{
-public:
-                        Input (FILE *stream, Keyword_Factory *keyword_factory);
-                        ~Input ();
-  void                  read_input ();
-private:
-  /* Input stream.  */
-  FILE *                _stream;
-  /* Creates the keywords.  */
-  Keyword_Factory * const _factory;
-public:
-  /* Memory block containing the entire input.  */
-  char *                _input;
-  char *                _input_end;
-  /* The C code from the declarations section.  */
-  const char *          _verbatim_declarations;
-  const char *          _verbatim_declarations_end;
-  unsigned int          _verbatim_declarations_lineno;
-  /* The C code from the end of the file.  */
-  const char *          _verbatim_code;
-  const char *          _verbatim_code_end;
-  unsigned int          _verbatim_code_lineno;
-  /* Declaration of struct type for a keyword and its attributes.  */
-  const char *          _struct_decl;
-  unsigned int          _struct_decl_lineno;
-  /* Return type of the lookup function.  */
-  const char *          _return_type;
-  /* Shorthand for user-defined struct tag type.  */
-  const char *          _struct_tag;
-  /* List of all keywords.  */
-  Keyword_List *        _head;
-  /* Whether the keyword chars would have different values in a different
-     character set.  */
-  bool                  _charset_dependent;
-};
+template <class KT>
+  class Input
+  {
+  public:
+                          Input (FILE *stream, Keyword_Factory<KT> *keyword_factory);
+                          ~Input ();
+    void                  read_input ();
+  private:
+    /* Input stream.  */
+    FILE *                _stream;
+    /* Creates the keywords.  */
+    Keyword_Factory<KT> * const _factory;
+  public:
+    /* Memory block containing the entire input.  */
+    char *                _input;
+    char *                _input_end;
+    /* The C code from the declarations section.  */
+    const char *          _verbatim_declarations;
+    const char *          _verbatim_declarations_end;
+    unsigned int          _verbatim_declarations_lineno;
+    /* The C code from the end of the file.  */
+    const char *          _verbatim_code;
+    const char *          _verbatim_code_end;
+    unsigned int          _verbatim_code_lineno;
+    /* Declaration of struct type for a keyword and its attributes.  */
+    const char *          _struct_decl;
+    unsigned int          _struct_decl_lineno;
+    /* Return type of the lookup function.  */
+    const char *          _return_type;
+    /* Shorthand for user-defined struct tag type.  */
+    const char *          _struct_tag;
+    /* List of all keywords.  */
+    Keyword_List<KT> *    _head;
+    /* Whether the keyword chars would have different values in a different
+       character set.  */
+    bool                  _charset_dependent;
+  };
 
 #endif

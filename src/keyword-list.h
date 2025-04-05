@@ -2,7 +2,7 @@
 
 /* Keyword list.
 
-   Copyright (C) 2002-2003 Free Software Foundation, Inc.
+   Copyright (C) 2002-2003, 2025 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>.
 
    This file is part of GNU GPERF.
@@ -25,52 +25,42 @@
 
 #include "keyword.h"
 
-/* List node of a linear list of Keyword.  */
-class Keyword_List
-{
-public:
-  /* Constructor.  */
-                        Keyword_List (Keyword *car);
+/* List node of a linear list of KT, where KT is a subclass of Keyword.  */
+template <class KT>
+  class Keyword_List
+  {
+  public:
+    /* Constructor.  */
+                          Keyword_List (KT *car);
 
-  /* Access to first element of list.  */
-  Keyword *             first () const;
-  /* Access to next element of list.  */
-  Keyword_List *&       rest ();
+    /* Access to first element of list.  */
+    KT *                  first () const;
+    /* Access to next element of list.  */
+    Keyword_List<KT> *&   rest ();
 
-protected:
-  Keyword_List *        _cdr;
-  Keyword * const       _car;
-};
+  protected:
+    Keyword_List<KT> *    _cdr;
+    KT * const            _car;
+  };
 
 /* List node of a linear list of KeywordExt.  */
-class KeywordExt_List : public Keyword_List
-{
-public:
-  /* Constructor.  */
-                        KeywordExt_List (KeywordExt *car);
-
-  /* Access to first element of list.  */
-  KeywordExt *          first () const;
-  /* Access to next element of list.  */
-  KeywordExt_List *&    rest ();
-};
+typedef Keyword_List<KeywordExt> KeywordExt_List;
 
 /* Copies a linear list, sharing the list elements.  */
-extern Keyword_List * copy_list (Keyword_List *list);
-extern KeywordExt_List * copy_list (KeywordExt_List *list);
+template <class KT>
+  extern Keyword_List<KT> * copy_list (Keyword_List<KT> *list);
 
 /* Deletes a linear list, keeping the list elements in memory.  */
-extern void delete_list (Keyword_List *list);
+template <class KT>
+  extern void delete_list (Keyword_List<KT> *list);
 
 /* Sorts a linear list, given a comparison function.
    Note: This uses a variant of mergesort that is *not* a stable sorting
    algorithm.  */
-extern Keyword_List * mergesort_list (Keyword_List *list,
-                                      bool (*less) (Keyword *keyword1,
-                                                    Keyword *keyword2));
-extern KeywordExt_List * mergesort_list (KeywordExt_List *list,
-                                         bool (*less) (KeywordExt *keyword1,
-                                                       KeywordExt *keyword2));
+template <class KT>
+  extern Keyword_List<KT> * mergesort_list (Keyword_List<KT> *list,
+                                            bool (*less) (KT *keyword1,
+                                                          KT *keyword2));
 
 #ifdef __OPTIMIZE__
 

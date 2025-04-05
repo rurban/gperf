@@ -1,5 +1,25 @@
 2025-04-05  Bruno Haible  <bruno@clisp.org>
 
+	Remove all occurrences of reinterpret_cast<>.
+	* src/keyword-list.h (Keyword_List): Add template parameter list <KT>.
+	(KeywordExt_List): Define as a typedef, not as a subclass.
+	(copy_list, delete_list, mergesort_list): Templatize accordingly.
+	* src/keyword-list.icc (Keyword_List): Add template parameter list <KT>.
+	(KeywordExt_List): Remove method definitions.
+	* src/keyword-list.cc (Keyword_List): Add template parameter list <KT>.
+	(copy_list, mergesort_list): Remove definitions on subclass.
+	Add explicit template instantiation.
+	* src/keyword.h (Keyword_Factory): Add template parameter list <KT>.
+	* src/keyword.cc (Keyword_Factory): Likewise.
+	Add explicit template instantiation.
+	* src/input.h (Input): Add template parameter list <KT>.
+	* src/input.cc (Input): Likewise. Add explicit template instantiation.
+	* src/main.cc (KeywordExt_Factory): Define as a typedef, not as a
+	subclass.
+	(main): Update.
+
+2025-04-05  Bruno Haible  <bruno@clisp.org>
+
 	Make output on Windows identical to output on Unix.
 	* src/options.cc (Options::print_options): Drop a ".exe" suffix from the
 	program name before printing it.

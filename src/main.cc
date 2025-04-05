@@ -1,5 +1,5 @@
 /* Driver program for the hash function generator
-   Copyright (C) 1989-1998, 2000, 2002-2003, 2009, 2017 Free Software Foundation, Inc.
+   Copyright (C) 1989-1998, 2000, 2002-2003, 2009, 2017, 2025 Free Software Foundation, Inc.
    Written by Douglas C. Schmidt <schmidt@ics.uci.edu>
    and Bruno Haible <bruno@clisp.org>.
 
@@ -31,15 +31,12 @@
 
 /* This Keyword factory produces KeywordExt instances.  */
 
-class KeywordExt_Factory : public Keyword_Factory
-{
-virtual Keyword *       create_keyword (const char *allchars, int allchars_length,
-                                        const char *rest, unsigned int lineno);
-};
+typedef Keyword_Factory<KeywordExt> KeywordExt_Factory;
 
-Keyword *
-KeywordExt_Factory::create_keyword (const char *allchars, int allchars_length,
-                                    const char *rest, unsigned int lineno)
+template <>
+KeywordExt *
+Keyword_Factory<KeywordExt>::create_keyword (const char *allchars, int allchars_length,
+                                             const char *rest, unsigned int lineno)
 {
   return new KeywordExt (allchars, allchars_length, rest, lineno);
 }
@@ -66,11 +63,11 @@ main (int argc, char *argv[])
   {
     /* Initialize the keyword list.  */
     KeywordExt_Factory factory;
-    Input inputter (stdin, &factory);
+    Input<KeywordExt> inputter (stdin, &factory);
     inputter.read_input ();
     /* We can cast the keyword list to KeywordExt_List* because its list
        elements were created by KeywordExt_Factory.  */
-    KeywordExt_List* list = static_cast<KeywordExt_List*>(inputter._head);
+    KeywordExt_List* list = inputter._head;
 
     {
       /* Search for a good hash function.  */

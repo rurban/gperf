@@ -1,6 +1,6 @@
 /* Inline Functions for keyword-list.{h,cc}.
 
-   Copyright (C) 2002-2003 Free Software Foundation, Inc.
+   Copyright (C) 2002-2003, 2025 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>.
 
    This file is part of GNU GPERF.
@@ -18,34 +18,20 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
-/* -------------------------- Keyword_List class --------------------------- */
+/* ------------------------ Keyword_List<KT> class ------------------------- */
 
 /* Access to first element of list.  */
-INLINE Keyword *
-Keyword_List::first () const
-{
-  return _car;
-}
+template <class KT>
+  INLINE KT *
+  Keyword_List<KT>::first () const
+  {
+    return _car;
+  }
 
 /* Access to next element of list.  */
-INLINE Keyword_List *&
-Keyword_List::rest ()
-{
-  return _cdr;
-}
-
-/* ------------------------- KeywordExt_List class ------------------------- */
-
-/* Access to first element of list.  */
-INLINE KeywordExt *
-KeywordExt_List::first () const
-{
-  return static_cast<KeywordExt*>(_car);
-}
-
-/* Access to next element of list.  */
-INLINE KeywordExt_List *&
-KeywordExt_List::rest ()
-{
-  return *reinterpret_cast<KeywordExt_List**>(&_cdr);
-}
+template <class KT>
+  INLINE Keyword_List<KT> *&
+  Keyword_List<KT>::rest ()
+  {
+    return _cdr;
+  }

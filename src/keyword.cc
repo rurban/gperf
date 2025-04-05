@@ -1,5 +1,5 @@
 /* Keyword data.
-   Copyright (C) 1989-1998, 2000, 2002-2003 Free Software Foundation, Inc.
+   Copyright (C) 1989-1998, 2000, 2002-2003, 2025 Free Software Foundation, Inc.
    Written by Douglas C. Schmidt <schmidt@ics.uci.edu>
    and Bruno Haible <bruno@clisp.org>.
 
@@ -136,13 +136,15 @@ KeywordExt::delete_selchars ()
 
 /* ------------------------- Keyword_Factory class ------------------------- */
 
-Keyword_Factory::Keyword_Factory ()
-{
-}
+template <class KT>
+  Keyword_Factory<KT>::Keyword_Factory ()
+  {
+  }
 
-Keyword_Factory::~Keyword_Factory ()
-{
-}
+template <class KT>
+  Keyword_Factory<KT>::~Keyword_Factory ()
+  {
+  }
 
 
 /* ------------------------------------------------------------------------- */
@@ -157,3 +159,19 @@ char empty_string[1] = "";
 #undef INLINE
 
 #endif /* not defined __OPTIMIZE__ */
+
+/* ------------------------------------------------------------------------- */
+
+/* Explicit template instantiations.  Needed to avoid link-time errors.
+
+   C++ is just misdesigned:  The most important aspect in building large
+   software packages is information hiding.  (That's the point of having the
+   implementation of a .h file in a .cc file, isn't it?  And of having
+   classes with private fields and methods, isn't it?)  The fact that we
+   need the instantiation of the Keyword_Factory<KT> class only for
+   KT = KeywordExt comes from the code in main.cc.  It is ugly that
+   implementation details of main.cc have an influence into this file here.  */
+
+template class Keyword_Factory<KeywordExt>;
+
+/* ------------------------------------------------------------------------- */
