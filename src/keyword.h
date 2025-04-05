@@ -82,7 +82,7 @@ private:
   unsigned int *        init_selchars_low (const Positions& positions, const unsigned int *alpha_unify, const unsigned int *alpha_inc);
 };
 
-/* An abstract factory for creating Keyword instances.
+/* A factory for creating Keyword instances.
    This factory is used to make the Input class independent of the concrete
    class KeywordExt.  */
 
@@ -96,8 +96,7 @@ template <class KT>
     virtual               ~Keyword_Factory ();
 
     /* Creates a new Keyword.  */
-    virtual /*abstract*/ KT *
-                          create_keyword (const char *allchars, int allchars_length,
+    virtual KT *          create_keyword (const char *allchars, int allchars_length,
                                           const char *rest, unsigned int lineno);
   };
 
