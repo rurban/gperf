@@ -124,9 +124,7 @@ Xref
 #include <ctype.h>
 
 static int
-my_case_strcmp (s1, s2)
-     register const char *s1;
-     register const char *s2;
+my_case_strcmp (const char *s1, const char *s2)
 {
   for (;;)
     {
@@ -143,9 +141,7 @@ my_case_strcmp (s1, s2)
 }
 
 int
-main (argc, argv)
-     int argc;
-     char *argv[];
+main (int argc, char *argv[])
 {
   int i, j, k, n, exitcode;
   size_t len;
