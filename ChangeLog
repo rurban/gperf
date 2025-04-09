@@ -1,3 +1,15 @@
+2025-04-09  Bruno Haible  <bruno@clisp.org>
+
+	Avoid "-Wundef" warnings in C++ mode on the generated code.
+	Reported by Heiko Becker <mail@heiko-becker.de> in
+	<https://lists.gnu.org/archive/html/bug-gperf/2025-04/msg00001.html>
+	and by Thomas Klausner <wiz@netbsd.org>.
+	* src/output.cc (Output::output_hash_function): Emit a
+	'defined __STDC_VERSION__' before the test of __STDC_VERSION__.
+	* tests/c-parse.exp, tests/charsets.exp, tests/chill.exp,
+	tests/cplusplus.exp, tests/java.exp, tests/languages.exp,
+	tests/modula2.exp, tests/objc.exp: Update.
+
 2025-04-05  Bruno Haible  <bruno@clisp.org>
 
 	Release gperf-3.2.
