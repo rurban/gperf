@@ -1,3 +1,10 @@
+2025-04-13  Bruno Haible  <bruno@clisp.org>
+
+	Release gperf-3.2.1.
+	* src/version.cc (version_string): Bump.
+	* tests/*.exp: Update.
+	* NEWS: Mention the changes.
+
 2025-04-09  Bruno Haible  <bruno@clisp.org>
 
 	Fix "make check" failure with an ISO C 23 conforming C compiler.

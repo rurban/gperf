@@ -1,3 +1,7 @@
+New in 3.2.1:
+
+* The generated code avoids -Wundef warnings in C++ mode.
+
 New in 3.2:
 * The input file may now use Windows line terminators (CR/LF) instead of
   Unix line terminators (LF).
