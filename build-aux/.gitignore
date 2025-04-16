@@ -3,4 +3,7 @@
 /mkinstalldirs
 /compile
 /ar-lib
+# Files brought in by automake:
+/depcomp
+/missing
 

@@ -1,6 +1,6 @@
 dnl autoconf configuration for gperf/lib
 
-dnl Copyright (C) 1998-2024 Free Software Foundation, Inc.
+dnl Copyright (C) 1998-2025 Free Software Foundation, Inc.
 dnl Written by Douglas C. Schmidt <schmidt@ics.uci.edu>
 dnl and Bruno Haible <bruno@clisp.org>.
 dnl
@@ -19,28 +19,26 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-AC_PREREQ([2.64])
-AC_INIT
+AC_PREREQ([2.70])
+AC_INIT([gperf], [package])
 AC_CONFIG_SRCDIR([hash.cc])
 AC_CONFIG_AUX_DIR([../build-aux])
-AC_PROG_MAKE_SET
+AC_CONFIG_MACRO_DIRS([../m4])
+VERSION_NUMBER=`sed -n -e 's/.*version_string = "\(.*\)".*/\1/p' < $srcdir/../src/version.cc`
+gl_INIT_PACKAGE_VERSION([$VERSION_NUMBER])
+AM_INIT_AUTOMAKE
+AC_CONFIG_HEADERS([config.h])
 dnl
 dnl           checks for programs
 dnl
 AC_PROG_CC
                       dnl sets variable CC
-AC_PROG_CPP
-                      dnl sets variable CPP
 AC_PROG_CXX
                       dnl sets variable CXX
-AC_PROG_CXXCPP
-                      dnl sets variable CXXCPP
 AC_CHECK_TOOL([AR], [ar])
                       dnl sets variable AR
 AC_PROG_RANLIB
                       dnl sets variable RANLIB
-AC_PROG_INSTALL
-                      dnl sets variables INSTALL, INSTALL_DATA, INSTALL_PROGRAM
 dnl
 dnl           That's it.
 dnl

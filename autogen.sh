@@ -4,9 +4,9 @@
 # also regenerates all config.h.in, configure files with new versions of
 # autoconf.
 #
-# This script requires autoconf-2.64..2.72 in the PATH.
+# This script requires autoconf-2.64..2.72 and automake-1.16.4..1.17 in the PATH.
 
-# Copyright (C) 2003-2023 Free Software Foundation, Inc.
+# Copyright (C) 2003-2025 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

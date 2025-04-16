@@ -4,7 +4,10 @@
 SHELL = /bin/sh
 MAKE = make
 
-all : configures src/config.h.in
+all : lib/aclocal.m4 configures src/config.h.in lib/config.h.in lib/Makefile.in
+
+lib/aclocal.m4 : force
+	cd lib && aclocal -I ../m4
 
 CONFIGURES = configure lib/configure src/configure tests/configure doc/configure
 
@@ -13,8 +16,8 @@ configures : $(CONFIGURES)
 configure : configure.ac aclocal.m4
 	autoconf -I . && rm -rf autom4te.cache
 
-lib/configure : lib/configure.ac aclocal.m4
-	cd lib && autoconf -I .. && rm -rf autom4te.cache
+lib/configure : lib/configure.ac lib/aclocal.m4
+	cd lib && autoconf && rm -rf autom4te.cache
 
 src/configure : src/configure.ac aclocal.m4
 	cd src && autoconf -I .. && rm -rf autom4te.cache
@@ -29,11 +32,21 @@ check-configures : $(CONFIGURES)
 	set -e; for f in $(CONFIGURES); do bash -x -n $$f; done
 
 src/config.h.in : src/configure.ac aclocal.m4
-	cd src && autoheader -I .. && rm -rf autom4te.cache
+	cd src && autoheader -I .. && touch config.h.in && rm -rf autom4te.cache
+
+lib/config.h.in : lib/configure.ac aclocal.m4
+	cd lib && autoheader && touch config.h.in
+
+lib/Makefile.in : lib/Makefile.am lib/config.h.in lib/configure.ac aclocal.m4
+	# Make sure we get new versions of files brought in by automake.
+	cd build-aux && rm -f depcomp missing
+	cd lib && automake --add-missing --copy && rm -rf autom4te.cache
 
 totally-clean : force
+	rm -f lib/aclocal.m4
 	rm -f $(CONFIGURES)
 	rm -f src/config.h.in
+	rm -f lib/config.h.in lib/Makefile.in
 
 force :
 

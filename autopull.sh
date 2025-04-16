@@ -7,7 +7,7 @@
 #     in a gnulib checkout, or
 #   - an internet connection.
 
-# Copyright (C) 2003-2022 Free Software Foundation, Inc.
+# Copyright (C) 2003-2025 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@ GNULIB_REPO_URL="https://git.savannah.gnu.org/gitweb/?p=gnulib.git;a=blob_plain;
 
 for file in build-aux/install-sh build-aux/mkinstalldirs \
             build-aux/compile build-aux/ar-lib \
+            m4/init-package-version.m4 \
             lib/filename.h; do
   if test -n "$GNULIB_TOOL"; then
     $GNULIB_TOOL --copy-file $file $file

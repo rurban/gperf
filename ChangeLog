@@ -1,3 +1,21 @@
+2025-04-16  Bruno Haible  <bruno@clisp.org>
+
+	build: Use Automake in lib/.
+	* autopull.sh: Copy also m4/init-package-version.m4.
+	* autogen.sh: Mention the requirement for Automake.
+	* Makefile.devel (lib/aclocal.m4, lib/config.h.in, lib/Makefile.in): New
+	rules.
+	(lib/configure): Use lib/aclocal.m4 instead of the top-level aclocal.m4.
+	(src/config.h.in): Fix rule.
+	(totally-clean): Remove the new generated files.
+	* lib/configure.ac: Require Autoconf >= 2.70. Change AC_INIT invocation.
+	Invoke AC_CONFIG_MACRO_DIRS, gl_INIT_PACKAGE_VERSION, AM_INIT_AUTOMAKE,
+	AC_CONFIG_HEADERS. Don't invoke AC_MAKE_SET, AC_PROG_CPP,
+	AC_PROG_CXXCPP, AC_PROG_INSTALL.
+	* lib/Makefile.am: New file.
+	* lib/Makefile.in: Remove file.
+	* Makefile.in (IMPORTED_FILES): Remove lib/filename.h.
+
 2025-04-13  Bruno Haible  <bruno@clisp.org>
 
 	Release gperf-3.2.1.
