@@ -17,12 +17,18 @@
 ## Process this file with automake to produce Makefile.in.
 
 AUTOMAKE_OPTIONS = 1.11 foreign
+EXTRA_DIST =
+MOSTLYCLEANFILES = core *.stackdump
 
 noinst_LIBRARIES = libgp.a
-libgp_a_SOURCES = \
+
+# A small set of gnulib modules.
+include Makefile.gnulib
+
+libgp_a_SOURCES += \
   getopt.h getopt.c getopt1.c \
   getline.h getline.cc \
   hash.h hash.cc
 
-EXTRA_DIST = \
-  filename.h
+# Allow users to use "gnulib-tool --update".
+EXTRA_DIST += gnulib-m4/gnulib-cache.m4

@@ -1,5 +1,18 @@
 2025-04-16  Bruno Haible  <bruno@clisp.org>
 
+	build: Use gnulib-tool with a module list.
+	* .gitmodules: New file.
+	* gitsub.sh: New file, from gnulib/top/gitsub.sh.
+	* autopull.sh: Use gitsub.sh to check out gnulib.
+	* autogen.sh: Accept --skip-gnulib option. Invoke gnulib-tool, assuming
+	a gnulib checkout is already present.
+	* Makefile.devel (lib/aclocal.m4): Update reference to macros directory.
+	* lib/configure.ac: Likewise. Invoke gl_EARLY, gl_INIT.
+	* lib/Makefile.am (EXTRA_DIST, MOSTLYCLEANFILES): New variables.
+	Include Makefile.gnulib.
+
+2025-04-16  Bruno Haible  <bruno@clisp.org>
+
 	build: Use Automake in lib/.
 	* autopull.sh: Copy also m4/init-package-version.m4.
 	* autogen.sh: Mention the requirement for Automake.

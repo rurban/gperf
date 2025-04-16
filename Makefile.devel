@@ -7,7 +7,7 @@ MAKE = make
 all : lib/aclocal.m4 configures src/config.h.in lib/config.h.in lib/Makefile.in
 
 lib/aclocal.m4 : force
-	cd lib && aclocal -I ../m4
+	cd lib && aclocal -I gnulib-m4
 
 CONFIGURES = configure lib/configure src/configure tests/configure doc/configure
 

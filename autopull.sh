@@ -2,11 +2,6 @@
 # Convenience script for fetching auxiliary files that are omitted from
 # the version control repository of this package.
 #
-# This script requires either
-#   - the GNULIB_TOOL environment variable pointing to the gnulib-tool script
-#     in a gnulib checkout, or
-#   - an internet connection.
-
 # Copyright (C) 2003-2025 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -22,22 +17,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# Usage: ./autopull.sh
+# Usage: ./autopull.sh [--one-time]
+#
+# Options:
+#   --one-time          Optimize, assuming that the current directory will be
+#                       used to build the current version only and will be
+#                       thrown away afterwards.
 
-GNULIB_REPO_URL="https://git.savannah.gnu.org/gitweb/?p=gnulib.git;a=blob_plain;hb=HEAD;f="
+# Parse options.
 
-for file in build-aux/install-sh build-aux/mkinstalldirs \
-            build-aux/compile build-aux/ar-lib \
-            m4/init-package-version.m4 \
-            lib/filename.h; do
-  if test -n "$GNULIB_TOOL"; then
-    $GNULIB_TOOL --copy-file $file $file
-  else
-    wget -q --timeout=5 -O $file.tmp "${GNULIB_REPO_URL}$file" \
-      && mv $file.tmp $file
-  fi
+shallow=
+
+while :; do
+  case "$1" in
+    --one-time) shallow='--depth 1'; shift;;
+    *) break ;;
+  esac
 done
-chmod a+x build-aux/install-sh build-aux/mkinstalldirs \
-          build-aux/compile build-aux/ar-lib
+
+
+./gitsub.sh pull $shallow || exit 1
 
 echo "$0: done.  Now you can run './autogen.sh'."
