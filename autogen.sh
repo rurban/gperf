@@ -65,12 +65,15 @@ if test $skip_gnulib = false; then
   }
   GNULIB_MODULES='
     filename
+    read-file
     package-version
   '
   $GNULIB_TOOL --lib=libgp --source-base=lib --m4-base=lib/gnulib-m4 \
     --makefile-name=Makefile.gnulib \
     --import \
     $GNULIB_MODULES
+  $GNULIB_TOOL --copy-file build-aux/config.guess; chmod a+x build-aux/config.guess
+  $GNULIB_TOOL --copy-file build-aux/config.sub;   chmod a+x build-aux/config.sub
   $GNULIB_TOOL --copy-file build-aux/install-sh; chmod a+x build-aux/install-sh
   $GNULIB_TOOL --copy-file build-aux/mkinstalldirs; chmod a+x build-aux/mkinstalldirs
   $GNULIB_TOOL --copy-file build-aux/compile; chmod a+x build-aux/compile

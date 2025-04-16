@@ -1,5 +1,5 @@
 /* A set of byte positions.
-   Copyright (C) 1989-1998, 2000, 2002-2003 Free Software Foundation, Inc.
+   Copyright (C) 1989-1998, 2000, 2002-2003, 2025 Free Software Foundation, Inc.
    Written by Douglas C. Schmidt <schmidt@ics.uci.edu>
    and Bruno Haible <bruno@clisp.org>.
 
@@ -17,6 +17,8 @@
 
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
+
+#include <config.h>
 
 /* Specification. */
 #include "positions.h"

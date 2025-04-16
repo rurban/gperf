@@ -1,5 +1,28 @@
 2025-04-16  Bruno Haible  <bruno@clisp.org>
 
+	build: Use more gnulib modules.
+	* autogen.sh (GNULIB_MODULES): Add read-file.
+	Copy also config.guess and config.sub.
+	* lib/Makefile.am (BUILT_SOURCES, MOSTLYCLEANDIRS): New variables.
+	(libgp_a_SOURCES): Remove getline.h, getline.cc.
+	* lib/getline.h: Remove file.
+	* lib/getline.cc: Remove file.
+	* src/configure.ac: Change config.h to also include ../lib/config.h.
+	* src/output.cc: Include <config.h> first.
+	* src/search.cc: Likewise.
+	* src/bool-array.cc: Include <config.h>.
+	* src/keyword.cc: Likewise.
+	* src/keyword-list.cc: Likewise.
+	* src/hash-table.cc: Likewise.
+	* src/main.cc: Likewise.
+	* src/options.cc: Likewise.
+	* src/positions.cc: Likewise.
+	* src/version.cc: Likewise.
+	* src/input.cc: Likewise. Include read-file.h instead of getline.h.
+	(Input<KT>::read_input): Use fread_file instead of get_delim.
+
+2025-04-16  Bruno Haible  <bruno@clisp.org>
+
 	build: Prepare for using generated .h files in lib/.
 	* src/Makefile.in (CPPFLAGS): Add more -I options.
 

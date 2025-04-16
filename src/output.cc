@@ -18,6 +18,8 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
+#include <config.h>
+
 /* Specification. */
 #include "output.h"
 
@@ -28,7 +30,6 @@
 #include <limits.h> /* defines SCHAR_MAX etc. */
 #include "options.h"
 #include "version.h"
-#include "config.h"
 
 /* ============================== Portability ============================== */
 

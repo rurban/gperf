@@ -1,6 +1,6 @@
 dnl autoconf configuration for gperf/src
 
-dnl Copyright (C) 1998-2024 Free Software Foundation, Inc.
+dnl Copyright (C) 1998-2025 Free Software Foundation, Inc.
 dnl Written by Douglas C. Schmidt <schmidt@ics.uci.edu>
 dnl and Bruno Haible <bruno@clisp.org>.
 dnl
@@ -61,6 +61,16 @@ dnl           checks for libraries
 dnl
 AC_CHECK_LIB([m], [rand], [GPERF_LIBM="-lm"], [GPERF_LIBM=""])
 AC_SUBST([GPERF_LIBM])
+dnl
+dnl           Include lib/config.h through src/config.h.
+dnl
+AH_BOTTOM([
+#undef/**/PACKAGE_NAME
+#undef/**/PACKAGE_STRING
+#undef/**/PACKAGE_TARNAME
+#undef/**/PACKAGE_VERSION
+#include "../lib/config.h"
+])
 dnl
 dnl           That's it.
 dnl

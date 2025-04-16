@@ -18,15 +18,17 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
+#include <config.h>
+
 /* Specification. */
 #include "input.h"
 
 #include <stdio.h>
-#include <stdlib.h> /* declares exit() */
+#include <stdlib.h> /* declares exit(), free() */
 #include <string.h> /* declares strncpy(), strchr() */
 #include <limits.h> /* defines UCHAR_MAX etc. */
 #include "options.h"
-#include "getline.h"
+#include "read-file.h"
 
 template <class KT>
   Input<KT>::Input (FILE *stream, Keyword_Factory<KT> *keyword_factory)
@@ -251,10 +253,9 @@ template <class KT>
        declaration lines starting with %, we go for the first interpretation,
        otherwise for the second interpretation.  */
 
-    char *input = NULL;
-    size_t input_size = 0;
-    int input_length = get_delim (&input, &input_size, EOF, _stream);
-    if (input_length < 0)
+    size_t input_length;
+    char *input = fread_file (_stream, 0, &input_length);
+    if (input == NULL)
       {
         if (ferror (_stream))
           fprintf (stderr, "%s: error while reading input file\n",
@@ -1030,7 +1031,7 @@ template <class KT>
     delete[] const_cast<char*>(_return_type);
     delete[] const_cast<char*>(_struct_tag);
     delete[] const_cast<char*>(_struct_decl);
-    delete[] _input;
+    free (_input);
   }
 
 /* ------------------------------------------------------------------------- */

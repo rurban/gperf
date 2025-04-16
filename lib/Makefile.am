@@ -17,8 +17,10 @@
 ## Process this file with automake to produce Makefile.in.
 
 AUTOMAKE_OPTIONS = 1.11 foreign
+BUILT_SOURCES =
 EXTRA_DIST =
 MOSTLYCLEANFILES = core *.stackdump
+MOSTLYCLEANDIRS =
 
 noinst_LIBRARIES = libgp.a
 
@@ -27,7 +29,6 @@ include Makefile.gnulib
 
 libgp_a_SOURCES += \
   getopt.h getopt.c getopt1.c \
-  getline.h getline.cc \
   hash.h hash.cc
 
 # Allow users to use "gnulib-tool --update".
