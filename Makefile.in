@@ -67,7 +67,8 @@ maintainer-clean : force
 SOURCE_FILES = \
   README INSTALL.windows NEWS AUTHORS JOIN-GNU \
   autogen.sh configure.ac aclocal.m4 Makefile.in \
-  Makefile.devel ChangeLog
+  Makefile.devel ChangeLog \
+  gnulib-local/lib/getopt-pfx-ext.h.diff
 # List of distributed files imported from other packages.
 IMPORTED_FILES = \
   COPYING INSTALL \
@@ -84,7 +85,7 @@ distdir : $(DISTFILES)
 	for file in $(DISTFILES); do \
 	  if test -f $$file; then dir='.'; else dir='$(srcdir)'; fi; \
 	  destdir=`echo '$(distdir)'/$$file | sed -e 's|//*[^/]*$$||'`; \
-	  test -d "$$destdir" || mkdir "$$destdir"; \
+	  test -d "$$destdir" || mkdir -p "$$destdir"; \
 	  cp -p $$dir/$$file '$(distdir)'/$$file || exit 1; \
 	done
 	subdir=@subdir@; test -d '$(distdir)'/$$subdir || mkdir '$(distdir)'/$$subdir; cd $$subdir; $(MAKE) distdir distdir='$(distdir)'/$$subdir

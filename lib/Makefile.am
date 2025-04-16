@@ -28,7 +28,6 @@ noinst_LIBRARIES = libgp.a
 include Makefile.gnulib
 
 libgp_a_SOURCES += \
-  getopt.h getopt.c getopt1.c \
   hash.h hash.cc
 
 # Allow users to use "gnulib-tool --update".

@@ -1,6 +1,19 @@
 2025-04-16  Bruno Haible  <bruno@clisp.org>
 
 	build: Use more gnulib modules.
+	* autogen.sh (GNULIB_MODULES): Add getopt-gnu.
+	Use directory gnulib-local.
+	* gnulib-local/lib/getopt-pfx-ext.h.diff: New file.
+	* Makefile.in (SOURCE_FILES): Add it.
+	(distdir): Use 'mkdir -p' instead of 'mkdir'.
+	* lib/getopt.h: Remove file.
+	* lib/getopt.c: Remove file.
+	* lib/getopt1.c: Remove file.
+	* lib/Makefile.am (libgp_a_SOURCES): Remove them.
+
+2025-04-16  Bruno Haible  <bruno@clisp.org>
+
+	build: Use more gnulib modules.
 	* autogen.sh (GNULIB_MODULES): Add read-file.
 	Copy also config.guess and config.sub.
 	* lib/Makefile.am (BUILT_SOURCES, MOSTLYCLEANDIRS): New variables.

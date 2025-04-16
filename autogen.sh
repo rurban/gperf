@@ -65,11 +65,12 @@ if test $skip_gnulib = false; then
   }
   GNULIB_MODULES='
     filename
+    getopt-gnu
     read-file
     package-version
   '
   $GNULIB_TOOL --lib=libgp --source-base=lib --m4-base=lib/gnulib-m4 \
-    --makefile-name=Makefile.gnulib \
+    --makefile-name=Makefile.gnulib --local-dir=gnulib-local \
     --import \
     $GNULIB_MODULES
   $GNULIB_TOOL --copy-file build-aux/config.guess; chmod a+x build-aux/config.guess
