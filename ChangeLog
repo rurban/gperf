@@ -1,5 +1,9 @@
 2025-04-16  Bruno Haible  <bruno@clisp.org>
 
+	build: Update after gnulib changed.
+	* gnulib-local/lib/getopt-pfx-ext.h.diff: Remove file.
+	* Makefile.in (SOURCE_FILES): Remove it.
+
 	build: Use more gnulib modules.
 	* autogen.sh (GNULIB_MODULES): Add getopt-gnu.
 	Use directory gnulib-local.

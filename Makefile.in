@@ -67,8 +67,7 @@ maintainer-clean : force
 SOURCE_FILES = \
   README INSTALL.windows NEWS AUTHORS JOIN-GNU \
   autogen.sh configure.ac aclocal.m4 Makefile.in \
-  Makefile.devel ChangeLog \
-  gnulib-local/lib/getopt-pfx-ext.h.diff
+  Makefile.devel ChangeLog
 # List of distributed files imported from other packages.
 IMPORTED_FILES = \
   COPYING INSTALL \
