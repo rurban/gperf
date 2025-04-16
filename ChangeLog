@@ -1,5 +1,10 @@
 2025-04-16  Bruno Haible  <bruno@clisp.org>
 
+	build: Prepare for using generated .h files in lib/.
+	* src/Makefile.in (CPPFLAGS): Add more -I options.
+
+2025-04-16  Bruno Haible  <bruno@clisp.org>
+
 	build: Use gnulib-tool with a module list.
 	* .gitmodules: New file.
 	* gitsub.sh: New file, from gnulib/top/gitsub.sh.
