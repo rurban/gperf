@@ -1,3 +1,8 @@
+2025-04-17  Bruno Haible  <bruno@clisp.org>
+
+	Improve comments.
+	* src/search.cc: Fix comments.
+
 2025-04-16  Bruno Haible  <bruno@clisp.org>
 
 	build: Update after gnulib changed.

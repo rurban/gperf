@@ -922,7 +922,7 @@ Search::prepare_asso_values ()
    is the set of characters c with _occurrences[c] > 0.  At the end, C
    is empty.)  To each keyword K, we associate the multiset of _selchars
    for which the _asso_values[] are undetermined:
-                    K  -->  K->_selchars intersect C.
+                    K  -->  K->_selchars ∩ C.
    Consider two keywords equivalent if their value under this mapping is
    the same.  This introduces an equivalence relation on the set of
    keywords.  The equivalence classes partition the keyword set.  (At the
@@ -1206,7 +1206,7 @@ Search::find_asso_values ()
               determined[c] = false;
             }
 
-        /* main_c must be one of these.  */
+        /* chosen_c must be one of these.  */
         if (determined[chosen_c])
           abort ();
 
