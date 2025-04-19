@@ -1,5 +1,13 @@
 2025-04-19  Bruno Haible  <bruno@clisp.org>
 
+	Optimize: Test large equivalence classes for conflict first.
+	This reduces the execution time of gperf on large inputs by ca. 10%.
+	* src/search.cc (cmp_equiv_classes): New function.
+	(compute_partition): Sort the equivalence classes according to
+	decreasing size.
+
+2025-04-19  Bruno Haible  <bruno@clisp.org>
+
 	Refactor: Use an array-list instead of a linked-list of equiv.-classes.
 	* src/search.h (Search::compute_partition): Return a 'Partition *', not
 	a 'EquivalenceClass *'.

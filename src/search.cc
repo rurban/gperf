@@ -1011,6 +1011,19 @@ undetermined_hashcode (KeywordExt *key)
   return key->_undetermined_chars_hashcode;
 }
 
+/* Compares the equivalence classes cls1, cls2 pointed to by ptr1 and ptr2
+   and returns
+     < 0 if cls1 is larger than cls2,
+     0   if cls1 and cls2 have the same size,
+     > 0 if cls1 is smaller than cls1.  */
+static int
+cmp_equiv_classes (void const *ptr1, void const *ptr2)
+{
+  EquivalenceClass const *cls1 = static_cast<EquivalenceClass const *>(ptr1);
+  EquivalenceClass const *cls2 = static_cast<EquivalenceClass const *>(ptr2);
+  return _GL_CMP (cls2->_keywords.size(), cls1->_keywords.size());
+}
+
 Partition *
 Search::compute_partition (bool *undetermined) const
 {
@@ -1066,6 +1079,15 @@ Search::compute_partition (bool *undetermined) const
         partition->_equclasses.get_at(pindex)._keywords.add_last (keyword);
       }
   }
+
+  /* Sort the equivalence classes according to decreasing size.
+     This results in a speedup of find_asso_values, because on average, a large
+     equivalence class has a higher probability for a collision than a smaller
+     equivalence class.  (An equivalence class with just 1 keyword never has
+     a collision.)  */
+  if (partition->_equclasses.size() > 1)
+    qsort (&partition->_equclasses.get_at(0), partition->_equclasses.size(),
+           sizeof (EquivalenceClass), cmp_equiv_classes);
 
   return partition;
 }
