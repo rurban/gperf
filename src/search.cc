@@ -28,7 +28,9 @@
 #include <string.h> /* declares memset(), memcmp() */
 #include <time.h> /* declares time() */
 #include <math.h> /* declares exp() */
-#include <limits.h> /* defines INT_MIN, INT_MAX, UINT_MAX */
+#include <limits.h> /* defines INT_MIN, INT_MAX, UINT_MAX, CHAR_BIT */
+#include "gl_map.hh"
+#include "gl_hash_map.h"
 #include "options.h"
 #include "hash-table.h"
 
@@ -839,6 +841,13 @@ Search::prepare_asso_values ()
   /* Memory allocation.  */
   _asso_values = new int[_alpha_size];
 
+  /* Memory allocation in each Keyword.  */
+  for (temp = _head; temp; temp = temp->rest())
+    {
+      KeywordExt *keyword = temp->first();
+      keyword->_undetermined_chars = new unsigned int[keyword->_selchars_length];
+    }
+
   int non_linked_length = _list_len;
   unsigned int asso_value_max;
 
@@ -943,10 +952,6 @@ struct EquivalenceClass
   KeywordExt_List *     _keywords_last;
   /* The number of keywords in this equivalence class.  */
   unsigned int          _cardinality;
-  /* The undetermined selected characters for the keywords in this
-     equivalence class, as a canonically reordered multiset.  */
-  unsigned int *        _undetermined_chars;
-  unsigned int          _undetermined_chars_length;
 
   EquivalenceClass *    _next;
 };
@@ -984,48 +989,78 @@ equals (const unsigned int *ptr1, const unsigned int *ptr2, unsigned int len)
   return true;
 }
 
+static bool
+undetermined_equals (KeywordExt *key1, KeywordExt *key2)
+{
+  return (key1->_undetermined_chars_length == key2 ->_undetermined_chars_length)
+         && equals (key1->_undetermined_chars, key2->_undetermined_chars,
+                    key1->_undetermined_chars_length);
+}
+
+static size_t
+undetermined_hashcode (KeywordExt *key)
+{
+  return key->_undetermined_chars_hashcode;
+}
+
 EquivalenceClass *
 Search::compute_partition (bool *undetermined) const
 {
-  EquivalenceClass *partition = NULL;
-  EquivalenceClass *partition_last = NULL;
+  /* Prepare the use of the hash-map: For each keyword,
+     compute the undetermined characters and their hash code.  */
   for (KeywordExt_List *temp = _head; temp; temp = temp->rest())
     {
       KeywordExt *keyword = temp->first();
 
-      /* Compute the undetermined characters for this keyword.  */
-      unsigned int *undetermined_chars =
-        new unsigned int[keyword->_selchars_length];
+      /* This scratch memory, an array of length keyword->_selchars_length,
+         was allocated earlier.  */
+      unsigned int *undetermined_chars = keyword->_undetermined_chars;
       unsigned int undetermined_chars_length = 0;
 
       for (int i = 0; i < keyword->_selchars_length; i++)
         if (undetermined[keyword->_selchars[i]])
           undetermined_chars[undetermined_chars_length++] = keyword->_selchars[i];
+      keyword->_undetermined_chars_length = undetermined_chars_length;
+
+      {
+        const int SIZE_BITS = sizeof (size_t) * CHAR_BIT;
+        size_t h = undetermined_chars_length;
+        for (unsigned int i = 0; i < undetermined_chars_length; i++)
+          h = undetermined_chars[i] * 641 + ((h << 9) | (h >> (SIZE_BITS - 9)));
+        keyword->_undetermined_chars_hashcode = h;
+      }
+    }
+
+  EquivalenceClass *partition = NULL;
+  EquivalenceClass *partition_last = NULL;
+  /* A hash-map that maps each keyword to the EquivalenceClass that contains
+     it.  */
+  gl_Map<KeywordExt *, EquivalenceClass const *>
+    map (GL_HASH_MAP, undetermined_equals, undetermined_hashcode, NULL, NULL);
+  for (KeywordExt_List *temp = _head; temp; temp = temp->rest())
+    {
+      KeywordExt *keyword = temp->first();
 
       /* Look up the equivalence class to which this keyword belongs.  */
-      EquivalenceClass *equclass;
-      for (equclass = partition; equclass; equclass = equclass->_next)
-        if (equclass->_undetermined_chars_length == undetermined_chars_length
-            && equals (equclass->_undetermined_chars, undetermined_chars,
-                       undetermined_chars_length))
-          break;
+      EquivalenceClass *equclass = const_cast<EquivalenceClass *>(map.get(keyword));
       if (equclass == NULL)
         {
           equclass = new EquivalenceClass();
           equclass->_keywords = NULL;
           equclass->_keywords_last = NULL;
           equclass->_cardinality = 0;
-          equclass->_undetermined_chars = undetermined_chars;
-          equclass->_undetermined_chars_length = undetermined_chars_length;
           equclass->_next = NULL;
+
+          /* Map this keyword (and all equivalent ones that will be seen later)
+             to equclass.  */
+          map.put(keyword, equclass);
+
           if (partition)
             partition_last->_next = equclass;
           else
             partition = equclass;
           partition_last = equclass;
         }
-      else
-        delete[] undetermined_chars;
 
       /* Add the keyword to the equivalence class.  */
       KeywordExt_List *cons = new KeywordExt_List(keyword);
@@ -1036,10 +1071,6 @@ Search::compute_partition (bool *undetermined) const
       equclass->_keywords_last = cons;
       equclass->_cardinality++;
     }
-
-  /* Free some of the allocated memory.  The caller doesn't need it.  */
-  for (EquivalenceClass *cls = partition; cls; cls = cls->_next)
-    delete[] cls->_undetermined_chars;
 
   return partition;
 }
@@ -1052,7 +1083,6 @@ delete_partition (EquivalenceClass *partition)
       EquivalenceClass *equclass = partition;
       partition = equclass->_next;
       delete_list (equclass->_keywords);
-      //delete[] equclass->_undetermined_chars; // already freed above
       delete equclass;
     }
 }
@@ -1571,6 +1601,13 @@ Search::find_good_asso_values ()
               _alpha_size * sizeof (_asso_values[0]));
       delete[] best_asso_values;
       /* The keywords' _hash_value fields are recomputed below.  */
+    }
+
+  /* Memory deallocation in each Keyword.  */
+  for (KeywordExt_List *temp = _head; temp; temp = temp->rest())
+    {
+      KeywordExt *keyword = temp->first();
+      delete[] keyword->_undetermined_chars;
     }
 }
 

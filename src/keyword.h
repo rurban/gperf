@@ -24,6 +24,8 @@
 #ifndef keyword_h
 #define keyword_h 1
 
+#include <stddef.h> /* defines size_t */
+
 /* Class defined in "positions.h".  */
 class Positions;
 
@@ -71,6 +73,13 @@ struct KeywordExt : public Keyword
   void                  init_selchars_multiset (const Positions& positions, const unsigned int *alpha_unify, const unsigned int *alpha_inc);
   /* Deletes selchars.  */
   void                  delete_selchars ();
+
+  /* Data members used by the algorithm, specifically compute_partition.  */
+  /* The undetermined selected characters for this keyword, as a
+     canonically reordered multiset.  */
+  unsigned int *        _undetermined_chars;
+  unsigned int          _undetermined_chars_length;
+  size_t                _undetermined_chars_hashcode;
 
   /* Data members used by the algorithm.  */
   int                   _hash_value; /* Hash value for the keyword.  */

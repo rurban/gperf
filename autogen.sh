@@ -66,6 +66,7 @@ if test $skip_gnulib = false; then
   GNULIB_MODULES='
     filename
     getopt-gnu
+    map-c++ hash-map
     read-file
     package-version
   '

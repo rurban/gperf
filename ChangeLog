@@ -1,5 +1,23 @@
 2025-04-19  Bruno Haible  <bruno@clisp.org>
 
+	Optimize: Use a hash table in compute_partition.
+	This reduces the execution time of gperf on large inputs by ca. 30%.
+	* autogen.sh (GNULIB_MODULES): Add map-c++, hash-map.
+	* src/keyword.h: Include <stddef.h>.
+	(struct KeywordExt): Add fields _undetermined_chars,
+	_undetermined_chars_length, _undetermined_chars_hashcode.
+	* src/search.cc: Include gl_map.hh, gl_hash_map.h.
+	(Search::prepare_asso_values): Initialize the _undetermined_chars field.
+	(struct EquivalenceClass): Remove the fields _undetermined_chars,
+	_undetermined_chars_length.
+	(undetermined_equals, undetermined_hashcode): New functions.
+	(Search::compute_partition): Initialize the _undetermined_chars* fields
+	of all keywords. Use a hash map instead of a loop over the equivalence
+	classes.
+	(Search::find_good_asso_values): Deallocate the _undetermined_chars field.
+
+2025-04-19  Bruno Haible  <bruno@clisp.org>
+
 	Optimize: Make Bool_Array take less memory.
 	Less memory means: less cache misses.
 	This reduces the execution time of gperf on large inputs by ca. 2.5%.
