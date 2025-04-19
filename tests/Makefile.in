@@ -1,6 +1,6 @@
 # Makefile for gperf/tests
 
-# Copyright (C) 1989, 1992-1993, 1995, 1998, 2000, 2002-2004, 2007-2009, 2012, 2016, 2018 Free Software Foundation, Inc.
+# Copyright (C) 1989, 1992-1993, 1995, 1998, 2000, 2002-2004, 2007-2009, 2012, 2016, 2018, 2025 Free Software Foundation, Inc.
 # Written by Douglas C. Schmidt <schmidt@ics.uci.edu>
 # and Bruno Haible <bruno@clisp.org>.
 #
@@ -61,7 +61,7 @@ installdirs :
 
 uninstall :
 
-check : check-c check-ada check-modula3 check-pascal check-lang-utf8 check-lang-ucs2 check-smtp check-test
+check : check-c check-ada check-modula3 check-pascal check-lang-utf8 check-lang-ucs2 check-smtp check-test check-large
 	@true
 
 extracheck : @CHECK_LANG_SYNTAX@
@@ -173,6 +173,9 @@ check-test: check-ada
 	@echo "only if, do, for, case, goto, else, while, and return should be found "
 	./aout -v < $(srcdir)/c.gperf | $(POSTPROCESS_FOR_MINGW) > test-7.out
 	diff $(srcdir)/test-7.exp test-7.out
+check-large:
+	$(GPERF) -m 10 < $(srcdir)/5000.gperf | $(POSTPROCESS_FOR_MINGW) > 5000.out
+	diff $(srcdir)/5000.exp 5000.out
 
 # The following validates valid language syntax with different parameters.
 # Works only with gcc and g++, and only on platforms where "gcc -ansi" is
@@ -373,6 +376,7 @@ SOURCE_FILES = \
   incomplete.gperf incomplete.exp \
   test-6.exp \
   test-7.exp \
+  generate-5000.sh 5000.gperf 5000.exp \
   validate \
   jstest1.gperf \
   jstest2.gperf \

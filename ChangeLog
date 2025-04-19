@@ -1,5 +1,14 @@
 2025-04-19  Bruno Haible  <bruno@clisp.org>
 
+	tests: Add unit test with many keywords.
+	* tests/generate-5000.sh: New file.
+	* tests/5000.gperf: New generated file.
+	* tests/5000.exp: New generated file.
+	* tests/Makefile.in (SOURCE_FILES): Add them.
+	(check-large): New rule.
+
+2025-04-19  Bruno Haible  <bruno@clisp.org>
+
 	build: Update dependencies after 2025-04-16 change.
 	* src/Makefile.in (*.$(OBJEXT)): Depend on $(CONFIG_H).
 
