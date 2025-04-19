@@ -1,5 +1,12 @@
 2025-04-19  Bruno Haible  <bruno@clisp.org>
 
+	Optimize: Minimize object references in find_asso_values.
+	This reduces the execution time of gperf on large inputs by ca. 4%.
+	* src/search.cc (Search::find_asso_values): Cache some values in local
+	variables.
+
+2025-04-19  Bruno Haible  <bruno@clisp.org>
+
 	Optimize: Use a hash table in compute_partition.
 	This reduces the execution time of gperf on large inputs by ca. 30%.
 	* autogen.sh (GNULIB_MODULES): Add map-c++, hash-map.

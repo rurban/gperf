@@ -1334,6 +1334,11 @@ Search::find_asso_values ()
 
       for (;;)
         {
+          /* Cache some values in local variables, for speed.  */
+          bool hash_includes_len = _hash_includes_len;
+          bool *undetermined = step->_undetermined;
+          int *asso_values = _asso_values;
+
           /* Test whether these asso_values[] lead to collisions among
              the equivalence classes that should be collision-free.  */
           bool has_collision = false;
@@ -1350,12 +1355,12 @@ Search::find_asso_values ()
                      the yet undetermined asso_values[].  */
                   int hashcode;
                   {
-                    int sum = _hash_includes_len ? keyword->_allchars_length : 0;
+                    int sum = hash_includes_len ? keyword->_allchars_length : 0;
                     const unsigned int *p = keyword->_selchars;
                     int i = keyword->_selchars_length;
                     for (; i > 0; p++, i--)
-                      if (!step->_undetermined[*p])
-                        sum += _asso_values[*p];
+                      if (!undetermined[*p])
+                        sum += asso_values[*p];
                     hashcode = sum;
                   }
 
