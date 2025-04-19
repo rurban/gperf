@@ -1,5 +1,15 @@
 2025-04-19  Bruno Haible  <bruno@clisp.org>
 
+	Optimize: Make Bool_Array take less memory.
+	Less memory means: less cache misses.
+	This reduces the execution time of gperf on large inputs by ca. 2.5%.
+	* src/bool-array.h (Bool_Array): For the _storage_array and
+	_iteration_number fields, use 'unsigned char' instead of 'unsigned int'.
+	* src/bool-array.icc (Bool_Array::Bool_Array, Bool_Array::clear: Update.
+	* src/bool-array.cc (Bool_Array::~Bool_Array): Update.
+
+2025-04-19  Bruno Haible  <bruno@clisp.org>
+
 	tests: Add unit test with many keywords.
 	* tests/generate-5000.sh: New file.
 	* tests/5000.gperf: New generated file.

@@ -1,6 +1,6 @@
 /* Inline Functions for bool-array.{h,cc}.
 
-   Copyright (C) 1989-1998, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1989-1998, 2002, 2025 Free Software Foundation, Inc.
    Written by Douglas C. Schmidt <schmidt@ics.uci.edu>
    and Bruno Haible <bruno@clisp.org>.
 
@@ -30,7 +30,7 @@ INLINE
 Bool_Array::Bool_Array (unsigned int size)
   : _size (size),
     _iteration_number (1),
-    _storage_array (new unsigned int [size])
+    _storage_array (new unsigned char [size])
 {
   memset (_storage_array, 0, size * sizeof (_storage_array[0]));
   if (option[DEBUG])
@@ -60,8 +60,8 @@ INLINE void
 Bool_Array::clear ()
 {
   /* If we wrap around it's time to zero things out again!  However, this only
-     occurs once about every 2^32 iterations, so it will not happen more
-     frequently than once per second.  */
+     occurs once about every 2^8 iterations, so it does not take much time on
+     average.  */
 
   if (++_iteration_number == 0)
     {

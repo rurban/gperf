@@ -2,7 +2,7 @@
 
 /* Simple lookup table abstraction implemented as an Iteration Number Array.
 
-   Copyright (C) 1989-1998, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1989-1998, 2002, 2025 Free Software Foundation, Inc.
    Written by Douglas C. Schmidt <schmidt@ics.uci.edu>
    and Bruno Haible <bruno@clisp.org>.
 
@@ -56,11 +56,11 @@ private:
 
   /* Current iteration number.  Always nonzero.  Starts out as 1, and is
      incremented each time clear() is called.  */
-  unsigned int          _iteration_number;
+  unsigned char         _iteration_number;
 
   /* For each index, we store in storage_array[index] the iteration_number at
      the time set_bit(index) was last called.  */
-  unsigned int * const  _storage_array;
+  unsigned char * const _storage_array;
 };
 
 #ifdef __OPTIMIZE__  /* efficiency hack! */
