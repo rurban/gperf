@@ -1,3 +1,8 @@
+2025-04-19  Bruno Haible  <bruno@clisp.org>
+
+	build: Update dependencies after 2025-04-16 change.
+	* src/Makefile.in (*.$(OBJEXT)): Depend on $(CONFIG_H).
+
 2025-04-17  Bruno Haible  <bruno@clisp.org>
 
 	Improve comments.

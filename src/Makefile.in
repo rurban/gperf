@@ -97,27 +97,27 @@ HASH_TABLE_H = hash-table.h $(KEYWORD_H)
 SEARCH_H = search.h $(KEYWORD_LIST_H) $(POSITIONS_H) $(BOOL_ARRAY_H)
 OUTPUT_H = output.h $(KEYWORD_LIST_H) $(POSITIONS_H)
 
-version.$(OBJEXT): version.cc $(VERSION_H)
+version.$(OBJEXT): version.cc $(CONFIG_H) $(VERSION_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/version.cc
-positions.$(OBJEXT): positions.cc $(POSITIONS_H)
+positions.$(OBJEXT): positions.cc $(CONFIG_H) $(POSITIONS_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/positions.cc
-options.$(OBJEXT): options.cc $(OPTIONS_H) $(VERSION_H)
+options.$(OBJEXT): options.cc $(CONFIG_H) $(OPTIONS_H) $(VERSION_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/options.cc
-keyword.$(OBJEXT): keyword.cc $(KEYWORD_H) $(POSITIONS_H)
+keyword.$(OBJEXT): keyword.cc $(CONFIG_H) $(KEYWORD_H) $(POSITIONS_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/keyword.cc
-keyword-list.$(OBJEXT): keyword-list.cc $(KEYWORD_LIST_H)
+keyword-list.$(OBJEXT): keyword-list.cc $(CONFIG_H) $(KEYWORD_LIST_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/keyword-list.cc
-input.$(OBJEXT): input.cc $(INPUT_H) $(OPTIONS_H)
+input.$(OBJEXT): input.cc $(CONFIG_H) $(INPUT_H) $(OPTIONS_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/input.cc
-bool-array.$(OBJEXT): bool-array.cc $(BOOL_ARRAY_H) $(OPTIONS_H)
+bool-array.$(OBJEXT): bool-array.cc $(CONFIG_H) $(BOOL_ARRAY_H) $(OPTIONS_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/bool-array.cc
-hash-table.$(OBJEXT): hash-table.cc $(HASH_TABLE_H) $(OPTIONS_H)
+hash-table.$(OBJEXT): hash-table.cc $(CONFIG_H) $(HASH_TABLE_H) $(OPTIONS_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/hash-table.cc
-search.$(OBJEXT): search.cc $(SEARCH_H) $(OPTIONS_H) $(HASH_TABLE_H) $(CONFIG_H)
+search.$(OBJEXT): search.cc $(CONFIG_H) $(SEARCH_H) $(OPTIONS_H) $(HASH_TABLE_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/search.cc
-output.$(OBJEXT): output.cc $(OUTPUT_H) $(OPTIONS_H) $(VERSION_H)
+output.$(OBJEXT): output.cc $(CONFIG_H) $(OUTPUT_H) $(OPTIONS_H) $(VERSION_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/output.cc
-main.$(OBJEXT): main.cc $(OPTIONS_H) $(INPUT_H) $(SEARCH_H) $(OUTPUT_H)
+main.$(OBJEXT): main.cc $(CONFIG_H) $(OPTIONS_H) $(INPUT_H) $(SEARCH_H) $(OUTPUT_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/main.cc
 
 install : all force
