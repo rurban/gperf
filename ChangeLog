@@ -1,5 +1,24 @@
 2025-04-19  Bruno Haible  <bruno@clisp.org>
 
+	Optimize: Use an array-list instead of a linked-list of keywords.
+	Storing list elements in contiguous memory means: less cache misses.
+	This reduces the execution time of gperf on large inputs by ca. 30%.
+	* src/arraylist.h: New file.
+	* src/arraylist.cc: New file.
+	* src/Makefile.in (OBJECTS): Add arraylist.$(OBJEXT).
+	(ARRAYLIST_H): New variable.
+	(arraylist.$(OBJEXT)): New rule.
+	(search.$(OBJEXT)): Update dependencies.
+	(SOURCE_FILES): Add arraylist.cc and arraylist.h.
+	* src/search.cc: Include arraylist.h.
+	(struct EquivalenceClass): An an ArrayList field. Remove the linked-list
+	fields. Add a constructor.
+	(Search::compute_partition, delete_partition): Update.
+	(Search::count_possible_collisions, Search::unchanged_partition,
+	Search::find_asso_values): Update.
+
+2025-04-19  Bruno Haible  <bruno@clisp.org>
+
 	Optimize: Minimize object references in find_asso_values.
 	This reduces the execution time of gperf on large inputs by ca. 4%.
 	* src/search.cc (Search::find_asso_values): Cache some values in local

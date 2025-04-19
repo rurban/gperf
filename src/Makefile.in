@@ -61,8 +61,19 @@ SHELL = /bin/sh
 
 VPATH = $(srcdir)
 
-OBJECTS  = version.$(OBJEXT) positions.$(OBJEXT) options.$(OBJEXT) keyword.$(OBJEXT) keyword-list.$(OBJEXT) \
-           input.$(OBJEXT) bool-array.$(OBJEXT) hash-table.$(OBJEXT) search.$(OBJEXT) output.$(OBJEXT) main.$(OBJEXT)
+OBJECTS = \
+  version.$(OBJEXT) \
+  positions.$(OBJEXT) \
+  options.$(OBJEXT) \
+  keyword.$(OBJEXT) \
+  keyword-list.$(OBJEXT) \
+  input.$(OBJEXT) \
+  arraylist.$(OBJEXT) \
+  bool-array.$(OBJEXT) \
+  hash-table.$(OBJEXT) \
+  search.$(OBJEXT) \
+  output.$(OBJEXT) \
+  main.$(OBJEXT)
 LIBS     = ../lib/libgp.a @GPERF_LIBM@
 CPPFLAGS = @CPPFLAGS@ \
            -I. -I$(srcdir) \
@@ -92,6 +103,7 @@ OPTIONS_H = options.h options.icc $(POSITIONS_H)
 KEYWORD_H = keyword.h keyword.icc
 KEYWORD_LIST_H = keyword-list.h keyword-list.icc $(KEYWORD_H)
 INPUT_H = input.h $(KEYWORD_LIST_H)
+ARRAYLIST_H = arraylist.h
 BOOL_ARRAY_H = bool-array.h bool-array.icc $(OPTIONS_H)
 HASH_TABLE_H = hash-table.h $(KEYWORD_H)
 SEARCH_H = search.h $(KEYWORD_LIST_H) $(POSITIONS_H) $(BOOL_ARRAY_H)
@@ -109,11 +121,13 @@ keyword-list.$(OBJEXT): keyword-list.cc $(CONFIG_H) $(KEYWORD_LIST_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/keyword-list.cc
 input.$(OBJEXT): input.cc $(CONFIG_H) $(INPUT_H) $(OPTIONS_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/input.cc
+arraylist.$(OBJEXT): arraylist.cc $(CONFIG_H) $(ARRAYLIST_H)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/arraylist.cc
 bool-array.$(OBJEXT): bool-array.cc $(CONFIG_H) $(BOOL_ARRAY_H) $(OPTIONS_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/bool-array.cc
 hash-table.$(OBJEXT): hash-table.cc $(CONFIG_H) $(HASH_TABLE_H) $(OPTIONS_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/hash-table.cc
-search.$(OBJEXT): search.cc $(CONFIG_H) $(SEARCH_H) $(OPTIONS_H) $(HASH_TABLE_H)
+search.$(OBJEXT): search.cc $(CONFIG_H) $(SEARCH_H) $(OPTIONS_H) $(HASH_TABLE_H) $(ARRAYLIST_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/search.cc
 output.$(OBJEXT): output.cc $(CONFIG_H) $(OUTPUT_H) $(OPTIONS_H) $(VERSION_H)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/output.cc
@@ -151,6 +165,7 @@ SOURCE_FILES = \
   keyword.cc $(KEYWORD_H) \
   keyword-list.cc $(KEYWORD_LIST_H) \
   input.cc $(INPUT_H) \
+  arraylist.cc $(ARRAYLIST_H) \
   bool-array.cc $(BOOL_ARRAY_H) \
   hash-table.cc $(HASH_TABLE_H) \
   search.cc $(SEARCH_H) \
