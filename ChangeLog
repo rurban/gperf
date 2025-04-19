@@ -1,5 +1,23 @@
 2025-04-19  Bruno Haible  <bruno@clisp.org>
 
+	Refactor: Use an array-list instead of a linked-list of equiv.-classes.
+	* src/search.h (Search::compute_partition): Return a 'Partition *', not
+	a 'EquivalenceClass *'.
+	(Search::count_possible_collisions, Search::unchanged_partition): Change
+	parameter from 'EquivalenceClass *' to 'Partition *'.
+	* src/search.cc (struct EquivalenceClass): Remove field _next.
+	(struct Partition): New type.
+	(struct Step): Change type of _partition from 'EquivalenceClass *' to
+	'Partition *'.
+	(Search::compute_partition): Return a 'Partition *', not a
+	'EquivalenceClass *'.
+	(delete_partition): Update.
+	(Search::count_possible_collisions, Search::unchanged_partition): Change
+	parameter from 'EquivalenceClass *' to 'Partition *'.
+	(Search::find_asso_values): Update.
+
+2025-04-19  Bruno Haible  <bruno@clisp.org>
+
 	Optimize: Use an array-list instead of a linked-list of keywords.
 	Storing list elements in contiguous memory means: less cache misses.
 	This reduces the execution time of gperf on large inputs by ca. 30%.

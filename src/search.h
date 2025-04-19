@@ -2,7 +2,7 @@
 
 /* Search algorithm.
 
-   Copyright (C) 1989-1998, 2000, 2002-2003, 2009 Free Software Foundation, Inc.
+   Copyright (C) 1989-1998, 2000, 2002-2003, 2009, 2025 Free Software Foundation, Inc.
    Written by Douglas C. Schmidt <schmidt@ics.uci.edu>
    and Bruno Haible <bruno@clisp.org>.
 
@@ -28,7 +28,7 @@
 #include "positions.h"
 #include "bool-array.h"
 
-struct EquivalenceClass;
+struct Partition;
 
 class Search
 {
@@ -80,11 +80,11 @@ private:
   /* Initializes the asso_values[] related parameters.  */
   void                  prepare_asso_values ();
 
-  EquivalenceClass *    compute_partition (bool *undetermined) const;
+  Partition *           compute_partition (bool *undetermined) const;
 
-  unsigned int          count_possible_collisions (EquivalenceClass *partition, unsigned int c) const;
+  unsigned int          count_possible_collisions (Partition *partition, unsigned int c) const;
 
-  bool                  unchanged_partition (EquivalenceClass *partition, unsigned int c) const;
+  bool                  unchanged_partition (Partition *partition, unsigned int c) const;
 
   /* Finds some _asso_values[] that fit.  */
   void                  find_asso_values ();
