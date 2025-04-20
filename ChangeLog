@@ -1,5 +1,12 @@
 2025-04-20  Bruno Haible  <bruno@clisp.org>
 
+	Release gperf-3.3.
+	* src/version.cc (version_string): Bump.
+	* tests/*.exp: Update.
+	* NEWS: Mention the changes.
+
+2025-04-20  Bruno Haible  <bruno@clisp.org>
+
 	Add two more assertions.
 	Suggested by Frank Wojcik.
 	* src/search.cc (Search::find_asso_values): Assert that a step's

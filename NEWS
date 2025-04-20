@@ -1,8 +1,13 @@
+New in 3.3:
+
+* Speedup: gperf is now between 2x and 2.5x faster.
+
 New in 3.2.1:
 
 * The generated code avoids -Wundef warnings in C++ mode.
 
 New in 3.2:
+
 * The input file may now use Windows line terminators (CR/LF) instead of
   Unix line terminators (LF).
   Note: This is an incompatible change. If you want to use a keyword that
@@ -14,6 +19,7 @@ New in 3.2:
   - "zero as null pointer constant" warnings.
 
 New in 3.1:
+
 * The generated C code is now in ANSI-C by default. If you want to support
   pre-ANSI-C compilers, you need to provide the option --language=C on the
   command line or %language=C in the source file.
