@@ -1068,7 +1068,9 @@ Search::compute_partition (bool *undetermined) const
           {
             /* Allocate a new EquivalenceClass and add it as the last element to
                the partition.  */
-            pindex = partition->_equclasses.add_last (* new EquivalenceClass());
+            char temp_storage[sizeof (EquivalenceClass)];
+            EquivalenceClass * temp_equclass = new (temp_storage) EquivalenceClass ();
+            pindex = partition->_equclasses.add_last (* temp_equclass);
 
             /* Map this keyword (and all equivalent ones that will be seen later)
                to the equivalence class number pindex.  */

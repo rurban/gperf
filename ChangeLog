@@ -1,5 +1,10 @@
 2025-04-20  Bruno Haible  <bruno@clisp.org>
 
+	Use an array-list instead of a linked-list of equiv.-classes, part 2.
+	* src/search.cc (Search::compute_partition): Fix a memory leak.
+
+2025-04-20  Bruno Haible  <bruno@clisp.org>
+
 	Use a hash table in compute_partition, part 2.
 	* src/search.cc (Search::compute_partition): Fix a memory leak.
 
