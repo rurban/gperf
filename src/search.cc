@@ -1078,6 +1078,7 @@ Search::compute_partition (bool *undetermined) const
         /* Add the keyword to the equivalence class number pindex.  */
         partition->_equclasses.get_at(pindex)._keywords.add_last (keyword);
       }
+    map.free ();
   }
 
   /* Sort the equivalence classes according to decreasing size.
