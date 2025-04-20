@@ -1224,7 +1224,7 @@ Search::find_asso_values ()
           if (best_possible_collisions == UINT_MAX)
             {
               /* All c with _occurrences[c] > 0 are undetermined.  We are
-                 are the starting situation and don't need any more step.  */
+                 at the starting situation and don't need any more step.  */
               delete_partition (partition);
               break;
             }
