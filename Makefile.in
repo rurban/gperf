@@ -65,7 +65,7 @@ maintainer-clean : force
 
 # List of source files.
 SOURCE_FILES = \
-  README INSTALL.windows NEWS AUTHORS JOIN-GNU \
+  README INSTALL.windows NEWS AUTHORS DEPENDENCIES HACKING JOIN-GNU \
   autogen.sh configure.ac aclocal.m4 Makefile.in \
   Makefile.devel ChangeLog
 # List of distributed files imported from other packages.
