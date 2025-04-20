@@ -967,7 +967,7 @@ struct Partition
 struct Step
 {
   /* The characters whose values are being determined in this step.  */
-  unsigned int          _changing_count;
+  unsigned int          _changing_count;                      /* > 0 */
   unsigned int *        _changing;
   /* Exclusive upper bound for the _asso_values[c] of this step.
      A power of 2.  */
@@ -1276,6 +1276,11 @@ Search::find_asso_values ()
           if (undetermined[c] && !step->_undetermined[c])
             changing[changing_count++] = c;
 
+        /* The set of changing characters is non-empty, since it contains
+           chosen_c.  */
+        if (changing_count == 0)
+          abort ();
+
         step->_changing = changing;
         step->_changing_count = changing_count;
 
@@ -1344,6 +1349,8 @@ Search::find_asso_values ()
 
       /* Initialize the asso_values[].  */
       unsigned int k = step->_changing_count;
+      if (k == 0)
+        abort ();
       for (unsigned int i = 0; i < k; i++)
         {
           unsigned int c = step->_changing[i];

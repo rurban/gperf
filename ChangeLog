@@ -1,5 +1,12 @@
 2025-04-20  Bruno Haible  <bruno@clisp.org>
 
+	Add two more assertions.
+	Suggested by Frank Wojcik.
+	* src/search.cc (Search::find_asso_values): Assert that a step's
+	_changing_count is positive.
+
+2025-04-20  Bruno Haible  <bruno@clisp.org>
+
 	Fix typo in comment.
 	Reported by Frank Wojcik.
 	* src/search.cc (Search::find_asso_values): Fix typo in comment.
